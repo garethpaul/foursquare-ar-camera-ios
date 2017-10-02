@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13168.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13147.4"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FSQView" customModule="FoursquareARCamera" customModuleProvider="target">
+            <connections>
+                <outlet property="categoryName" destination="A7M-Ce-b1h" id="iOs-vm-Ypq"/>
+                <outlet property="venueName" destination="MVn-Gk-NbI" id="AXS-Xv-aI1"/>
+                <outlet property="view" destination="iN0-l3-epB" id="vUY-oW-jm5"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleAspectFit" id="iN0-l3-epB" userLabel="FSQView" customClass="xw">
+            <rect key="frame" x="0.0" y="0.0" width="362" height="291"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="marker" translatesAutoresizingMaskIntoConstraints="NO" id="bem-EY-C6l">
+                    <rect key="frame" x="0.0" y="0.0" width="362" height="291"/>
+                </imageView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Foundation Cafe" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MVn-Gk-NbI" userLabel="VenueName">
+                    <rect key="frame" x="30" y="70" width="312" height="46"/>
+                    <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="38"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Coffee" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="A7M-Ce-b1h" userLabel="venueInfo">
+                    <rect key="frame" x="30" y="122" width="67" height="24"/>
+                    <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="20"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="greenCircle" translatesAutoresizingMaskIntoConstraints="NO" id="Rv7-Dx-BeC">
+                    <rect key="frame" x="286" y="146" width="60" height="60"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="60" id="7eU-gF-ueH"/>
+                        <constraint firstAttribute="width" constant="60" id="L4P-vp-qIW"/>
+                    </constraints>
+                </imageView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2.3" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8n2-K7-Y6j">
+                    <rect key="frame" x="295.5" y="160.5" width="41.5" height="31.5"/>
+                    <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="26"/>
+                    <color key="textColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fsqLogo" translatesAutoresizingMaskIntoConstraints="NO" id="Kro-rw-LOW">
+                    <rect key="frame" x="13" y="13" width="37" height="50"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="37" id="0Id-P5-ueV"/>
+                        <constraint firstAttribute="height" constant="50" id="5yN-Xl-mGA"/>
+                    </constraints>
+                </imageView>
+            </subviews>
+            <color key="backgroundColor" red="0.99989169836044312" green="1" blue="0.99988096952438354" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <rect key="contentStretch" x="0.0" y="0.0" width="0.75" height="1"/>
+            <constraints>
+                <constraint firstItem="8n2-K7-Y6j" firstAttribute="centerY" secondItem="Rv7-Dx-BeC" secondAttribute="centerY" id="3Cj-eL-M47"/>
+                <constraint firstAttribute="trailing" secondItem="Rv7-Dx-BeC" secondAttribute="trailing" constant="16" id="E1p-3A-RUt"/>
+                <constraint firstItem="Kro-rw-LOW" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="13" id="KBZ-ob-Lnw"/>
+                <constraint firstAttribute="trailing" secondItem="bem-EY-C6l" secondAttribute="trailing" id="Ml5-iN-Bkb"/>
+                <constraint firstItem="8n2-K7-Y6j" firstAttribute="centerX" secondItem="Rv7-Dx-BeC" secondAttribute="centerX" id="NJ0-EV-Bkn"/>
+                <constraint firstItem="Rv7-Dx-BeC" firstAttribute="top" secondItem="MVn-Gk-NbI" secondAttribute="bottom" constant="30" id="P0B-5O-ulP"/>
+                <constraint firstItem="MVn-Gk-NbI" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="70" id="TW3-bZ-cir"/>
+                <constraint firstAttribute="trailing" secondItem="MVn-Gk-NbI" secondAttribute="trailing" constant="20" id="XIi-qE-e2B"/>
+                <constraint firstItem="A7M-Ce-b1h" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="30" id="b9L-cB-IkC"/>
+                <constraint firstItem="bem-EY-C6l" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="cpZ-Ex-gIe"/>
+                <constraint firstAttribute="bottom" secondItem="bem-EY-C6l" secondAttribute="bottom" id="mAq-fz-PuE"/>
+                <constraint firstItem="A7M-Ce-b1h" firstAttribute="top" secondItem="MVn-Gk-NbI" secondAttribute="bottom" constant="6" id="nnX-LS-yvg"/>
+                <constraint firstItem="Kro-rw-LOW" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="13" id="qil-CJ-swZ"/>
+                <constraint firstItem="MVn-Gk-NbI" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="30" id="v39-6p-KKg"/>
+                <constraint firstItem="bem-EY-C6l" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="zCT-Qy-gXz"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <edgeInsets key="layoutMargins" top="8" left="8" bottom="8" right="8"/>
+            <userDefinedRuntimeAttributes>
+                <userDefinedRuntimeAttribute type="number" keyPath="height">
+                    <real key="value" value="50"/>
+                </userDefinedRuntimeAttribute>
+            </userDefinedRuntimeAttributes>
+            <point key="canvasLocation" x="30" y="-212.5"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="fsqLogo" width="292" height="400"/>
+        <image name="greenCircle" width="1024" height="1024"/>
+        <image name="marker" width="3337" height="2105"/>
+    </resources>
+</document>
