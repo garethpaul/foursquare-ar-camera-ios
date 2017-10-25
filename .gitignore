@@ -6,6 +6,8 @@
 build/
 DerivedData/
 
+mapbox_access_token
+
 ## Various settings
 *.pbxuser
 !default.pbxuser

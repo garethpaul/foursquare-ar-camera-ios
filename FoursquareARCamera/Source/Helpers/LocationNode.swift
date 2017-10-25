@@ -49,6 +49,7 @@ open class LocationNode: SCNNode {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
 }
 
 
@@ -95,4 +96,6 @@ open class LocationAnnotationNode: LocationNode {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    
 }

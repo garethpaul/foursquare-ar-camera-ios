@@ -281,9 +281,9 @@ extension UIImage {
         
         */
        
-        let bitmapInfo:CGBitmapInfo = [CGBitmapInfo.byteOrderMask, CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue)]
+        //let _:CGBitmapInfo = [CGBitmapInfo.byteOrderMask, CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue)]
         
-        let colorSpace = CGColorSpaceCreateDeviceGray()
+        //_ = CGColorSpaceCreateDeviceGray()
         
         let imageMask: CGImage = CGImage.init(width: Int(width),
                                               height: Int(height),
@@ -302,7 +302,7 @@ extension UIImage {
         
         let maskedImage:CGImage = cgOriginalImage.masking(imageMask)!
         
-        let context = CGContext(data: nil,
+        _ = CGContext(data: nil,
                                 width: Int(width),
                                 height: Int(height),
                                 bitsPerComponent: 8,
