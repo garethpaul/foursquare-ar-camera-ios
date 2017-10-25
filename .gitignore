@@ -6,6 +6,7 @@
 build/
 DerivedData/
 
+.DS_Store
 mapbox_access_token
 
 ## Various settings
