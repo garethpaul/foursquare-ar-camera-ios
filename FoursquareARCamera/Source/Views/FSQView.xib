@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13168.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13147.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FSQView" customModule="FoursquareARCamera" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FSQView" customModule="PlacesARCamera" customModuleProvider="target">
             <connections>
                 <outlet property="categoryName" destination="A7M-Ce-b1h" id="iOs-vm-Ypq"/>
+                <outlet property="ratingStr" destination="8n2-K7-Y6j" id="59T-iH-N7f"/>
                 <outlet property="venueName" destination="MVn-Gk-NbI" id="AXS-Xv-aI1"/>
                 <outlet property="view" destination="iN0-l3-epB" id="vUY-oW-jm5"/>
             </connections>
@@ -35,17 +36,17 @@
                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="greenCircle" translatesAutoresizingMaskIntoConstraints="NO" id="Rv7-Dx-BeC">
-                    <rect key="frame" x="286" y="146" width="60" height="60"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="redCircle" translatesAutoresizingMaskIntoConstraints="NO" id="Rv7-Dx-BeC">
+                    <rect key="frame" x="266" y="146" width="80" height="80"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="60" id="7eU-gF-ueH"/>
-                        <constraint firstAttribute="width" constant="60" id="L4P-vp-qIW"/>
+                        <constraint firstAttribute="height" constant="80" id="7eU-gF-ueH"/>
+                        <constraint firstAttribute="width" constant="80" id="L4P-vp-qIW"/>
                     </constraints>
                 </imageView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2.3" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8n2-K7-Y6j">
-                    <rect key="frame" x="295.5" y="160.5" width="41.5" height="31.5"/>
-                    <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="26"/>
-                    <color key="textColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <rect key="frame" x="292" y="175.5" width="29.5" height="21.5"/>
+                    <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="18"/>
+                    <color key="textColor" red="1" green="0.99998801946640015" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fsqLogo" translatesAutoresizingMaskIntoConstraints="NO" id="Kro-rw-LOW">
@@ -87,7 +88,7 @@
     </objects>
     <resources>
         <image name="fsqLogo" width="292" height="400"/>
-        <image name="greenCircle" width="1024" height="1024"/>
         <image name="marker" width="3337" height="2105"/>
+        <image name="redCircle" width="1024" height="1024"/>
     </resources>
 </document>

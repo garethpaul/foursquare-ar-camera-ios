@@ -13,10 +13,11 @@ import CocoaLumberjack
 import Alamofire
 import SwiftyJSON
 import Mapbox
+import ReachabilitySwift
 
 class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, SceneLocationViewDelegate {
     let sceneLocationView = SceneLocationView()
-    
+
     var subway =  CLLocation()
     
     let mapView = MKMapView()
@@ -44,21 +45,37 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     var loaded: Bool = false
     
     var adjustNorthByTappingSidesOfScreen = false
-    
-    
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
+  
+        let reach = Reachability()!
+        
+        if reach.currentReachabilityString == "No Connection" {
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Oops", message: "We are currently struggling to access to the internet. This app requires access to the internet in order to find locations around you.", preferredStyle: UIAlertControllerStyle.alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default) { action in
+                    // perhaps use action.title here
+                })
+                self.present(alert, animated: true)
+            }
+        }
+    
         
         // Add Foursquare Attribution
         let imgAttr = UIImage.init(named: "fsq")
         let imgAttrView = UIImageView.init(image: imgAttr)
+        
+        
         imgAttrView.frame = CGRect(x: imgAttrView.frame.origin.x,
                                    y: self.view.frame.height-120,
                                    width: self.view.frame.width-100,
                                    height: 200)
         imgAttrView.center.x = self.view.center.x
         imgAttrView.contentMode = UIViewContentMode.scaleAspectFit
+        
+        
         sceneLocationView.addSubview(imgAttrView)
         sceneLocationView.showAxesNode = true
         sceneLocationView.locationDelegate = self
@@ -67,20 +84,32 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         view.addSubview(sceneLocationView)
         
 
+        
 
+        // Add the compass to the View
+        // See https://blog.mapbox.com/compass-for-arkit-42c0692c4e51
         compass = MBXCompassMapView(frame: CGRect(x: self.view.frame.width-110,
                                                   y:  self.view.frame.height-160,
                                                   width: 100,
                                                   height: 100),
                                     styleURL: URL(string: "mapbox://styles/mapbox/navigation-guidance-day-v2"))
-        
         compass.isMapInteractive = false
         compass.tintColor = .black
         compass.delegate = self
         view.addSubview(compass)
-
-        //setConstraints()
         
+
+        
+    }
+    
+    @objc
+    func imageTapped(_ tapGestureRecognizer: UITapGestureRecognizer)
+    {
+        print(tapGestureRecognizer)
+        let sceneTapped = tapGestureRecognizer.view
+        sceneTapped?.isHidden = true
+        //let tappedImage = tapGestureRecognizer.view
+        //tappedImage.isHidden = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -112,49 +141,63 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         // Release any cached data, images, etc that aren't in use.
     }
     
-
+    // MARK: Get foursquare locations
     
     func getFoursquareLocations(_ currentLocation:CLLocation) {
         
+        // Check if the request has loaded to avoid multuple requests.
         if self.loaded == false  {
             self.loaded = true
             let lat = String(currentLocation.coordinate.latitude)
             let lng = String(currentLocation.coordinate.longitude)
             let client_id = ""
             let client_secret = ""
+            let categoryId = "4d4b7105d754a06374d81259" // food
             let ll = lat + "," + lng
-            let url = "https://api.foursquare.com/v2/venues/search?v=20161016&ll=\(ll)&client_id=\(client_id)&client_secret=\(client_secret)&limit=10&radius=200"
+            let url = "https://api.foursquare.com/v2/venues/search?v=20161016&ll=\(ll)&client_id=\(client_id)&client_secret=\(client_secret)&limit=5&categoryId=\(categoryId)&radius=200"
             
+            // Send HTTP request
             Alamofire.request(url).responseJSON { response in
                 switch response.result {
                 case .success(let value):
                     let json = JSON(value)
                     let resp = json["response"]
-                    //print(resp)
                     let venues = resp["venues"]
+                    // Iterate through the venues
                     for venue in venues {
                         let name = (venue.1["name"])
                         let lat = venue.1["location"]["lat"]
                         let lng = venue.1["location"]["lng"]
                         let categoryName = venue.1["categories"][0]["name"]
+                        let ratingStr = Int(venue.1["location"]["distance"].double! * 3.28084)
                         
                         let frameSize = CGRect(x: 0, y: 0, width: 362, height: 291)
                         let fsview = FSQView(frame: frameSize)
                         fsview.venueName.text = name.string
                         fsview.categoryName.text = categoryName.string
+                        fsview.ratingStr.text = "\(ratingStr)ft"
+                        
                         var image = UIImage.imageWithView(view: fsview)
                         
+                        
+                        // Mask an image to avoid pixelated images in AR.
                         let m = UIImage(named: "fsqMask")!
                         image = UIImage.aImage(image: image, mask:m)
                         image = UIImage.resizeImage(image: image, newHeight: 200)
                         
                         let starbucksCoordinate = CLLocationCoordinate2D(latitude: lat.double!, longitude: lng.double!)
-                        let starbucksLocation = CLLocation(coordinate: starbucksCoordinate, altitude: 40.84)
+                        let starbucksLocation = CLLocation(coordinate: starbucksCoordinate, altitude: 30.84)
                         let starbucksImage = image
                         let starbucksLocationNode = LocationAnnotationNode(location: starbucksLocation, image: starbucksImage)
+
+
+                         let tapGesture = UITapGestureRecognizer(target: self,  action: #selector(self.handleTap(_:)))
+                        
+                        self.sceneLocationView.isUserInteractionEnabled = true
+                        self.sceneLocationView.addGestureRecognizer(tapGesture)
+                        
                         self.sceneLocationView.addLocationNodeWithConfirmedLocation(locationNode: starbucksLocationNode)
 
-                        
                         let compassMarker = MGLPointAnnotation()
                         compassMarker.coordinate = starbucksCoordinate
                         self.compass.addAnnotation(compassMarker)
@@ -167,13 +210,50 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             }
             
         }
-        
-        
-        
     }
     
- 
     
+    
+    @objc
+    func handleTap(_ gestureRecognize: UIGestureRecognizer) {
+        // retrieve the SCNView
+        let scnView = self.sceneLocationView// as! ARSCNView
+        
+        // check what nodes are tapped
+        let p = gestureRecognize.location(in: scnView)
+        let hitResults = scnView.hitTest(p, options: [:])
+        // check that we clicked on at least one object
+        if hitResults.count > 0 {
+            // retrieved the first clicked object
+            let result = hitResults[0]
+            
+            // get its material
+            let material = result.node.geometry!.firstMaterial!
+            
+            // highlight it
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0.5
+            
+            // on completion - unhighlight
+            SCNTransaction.completionBlock = {
+                SCNTransaction.begin()
+                SCNTransaction.animationDuration = 0.5
+                
+                material.emission.contents = UIColor.black
+                
+                SCNTransaction.commit()
+            }
+            
+            material.emission.contents = UIColor.red
+            SCNTransaction.commit()
+            
+            result.node.isHidden = true
+        }
+    }
+    
+    
+    
+    // MARK: Update the user location
     
     @objc func updateUserLocation() {
         
@@ -235,6 +315,8 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         }
     }
     
+    // MARK: Update the label information
+    
     @objc func updateInfoLabel() {
         if let position = sceneLocationView.currentScenePosition() {
             infoLabel.text = "x: \(String(format: "%.2f", position.x)), y: \(String(format: "%.2f", position.y)), z: \(String(format: "%.2f", position.z))\n"
@@ -256,36 +338,6 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             infoLabel.text!.append("\(String(format: "%02d", hour)):\(String(format: "%02d", minute)):\(String(format: "%02d", second)):\(String(format: "%03d", nanosecond / 1000000))")
         }
     }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesBegan(touches, with: event)
-        
-        if let touch = touches.first {
-            if touch.view != nil {
-                if (mapView == touch.view! ||
-                    mapView.recursiveSubviews().contains(touch.view!)) {
-                    centerMapOnUserLocation = false
-                } else {
-                    
-                    let location = touch.location(in: self.view)
-
-                    if location.x <= 40 && adjustNorthByTappingSidesOfScreen {
-                        print("left side of the screen")
-                        sceneLocationView.moveSceneHeadingAntiClockwise()
-                    } else if location.x >= view.frame.size.width - 40 && adjustNorthByTappingSidesOfScreen {
-                        print("right side of the screen")
-                        sceneLocationView.moveSceneHeadingClockwise()
-                    } else {
-                        let image = UIImage(named: "pin")!
-                        let annotationNode = LocationAnnotationNode(location: nil, image: image)
-                        annotationNode.scaleRelativeToDistance = true
-                        sceneLocationView.addLocationNodeForCurrentPosition(locationNode: annotationNode)
-                    }
-                }
-            }
-        }
-    }
-
     
     //MARK: SceneLocationViewDelegate
     

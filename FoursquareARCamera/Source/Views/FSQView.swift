@@ -13,7 +13,7 @@ class FSQView: UIView {
     var shouldSetupConstraints = true
     
     @IBOutlet weak var venueName: UILabel!
-    
+    @IBOutlet weak var ratingStr: UILabel!
     @IBOutlet weak var categoryName: UILabel!
     @IBOutlet var view: FSQView!
     

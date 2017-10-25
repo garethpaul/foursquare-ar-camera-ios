@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>PlaceARCamera</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,21 +17,21 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.4</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>MGLMapboxAccessToken</key>
+	<string>pk.eyJ1IjoiZ3BqYXRmb3Vyc3F1YXJlIiwiYSI6ImNpdmluYmIxaDAxNGoyeWxiaWxrd2Y0Nm0ifQ.mUUlc-mTeHP3fI5f_ed50Q</string>
+	<key>MGLMapboxMetricsEnabledSettingShownInApp</key>
+	<string>YES</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This application will use the camera for Augmented Reality.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This application will use location for Augmented Reality.</string>
-	<key>MGLMapboxMetricsEnabledSettingShownInApp</key>
-	<string>YES</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-	<key>MGLMapboxAccessToken</key>
-	<string></string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
