@@ -13,7 +13,7 @@ import CocoaLumberjack
 import Alamofire
 import SwiftyJSON
 import Mapbox
-import ReachabilitySwift
+import Reachability
 
 class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, SceneLocationViewDelegate {
     let sceneLocationView = SceneLocationView()
