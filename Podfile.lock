@@ -1,18 +1,28 @@
 PODS:
-  - Alamofire (4.5.1)
-  - AlamofireSwiftyJSON (1.0.0):
+  - Alamofire (4.7.3)
+  - AlamofireSwiftyJSON (1.0.1):
     - Alamofire (~> 4.0)
-    - SwiftyJSON (~> 3.0)
-  - CocoaLumberjack/Default (3.2.1)
-  - CocoaLumberjack/Swift (3.2.1):
+    - SwiftyJSON (~> 4.0)
+  - CocoaLumberjack/Default (3.4.2)
+  - CocoaLumberjack/Swift (3.4.2):
     - CocoaLumberjack/Default
-  - Mapbox-iOS-SDK (3.6.4)
-  - SwiftyJSON (3.1.4)
+  - Mapbox-iOS-SDK (4.2.0)
+  - ReachabilitySwift (4.1.0)
+  - SwiftyJSON (4.1.0)
 
 DEPENDENCIES:
   - AlamofireSwiftyJSON
   - CocoaLumberjack/Swift (from `https://github.com/CocoaLumberjack/CocoaLumberjack`, branch `master`)
   - Mapbox-iOS-SDK
+  - ReachabilitySwift
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Alamofire
+    - AlamofireSwiftyJSON
+    - Mapbox-iOS-SDK
+    - ReachabilitySwift
+    - SwiftyJSON
 
 EXTERNAL SOURCES:
   CocoaLumberjack:
@@ -21,16 +31,17 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   CocoaLumberjack:
-    :commit: f4294a13470d43260569d62aac6e1009fbef491a
+    :commit: 4a7b595ea47eb14e5523e49971f1de2976923839
     :git: https://github.com/CocoaLumberjack/CocoaLumberjack
 
 SPEC CHECKSUMS:
-  Alamofire: 2d95912bf4c34f164fdfc335872e8c312acaea4a
-  AlamofireSwiftyJSON: 78908b766483a28aa5cc90fd191a687467042973
-  CocoaLumberjack: 520616f8e72226ca2c729b43981b66bc483745ce
-  Mapbox-iOS-SDK: 47847dd44285477e0dfffd0130f65c8a52823ada
-  SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220
+  Alamofire: c7287b6e5d7da964a70935e5db17046b7fde6568
+  AlamofireSwiftyJSON: ad896b68b586aea5de8ddba641ad3b402b8d5511
+  CocoaLumberjack: 431b5643a0fedb12c441344054d8d5a4aa7c217d
+  Mapbox-iOS-SDK: 706d52e3ad095e16944d9643f37d5a97627f6c19
+  ReachabilitySwift: 6849231cd4e06559f3b9ef4a97a0a0f96d41e09f
+  SwiftyJSON: c29297daf073d2aa016295d5809cdd68045c39b3
 
-PODFILE CHECKSUM: de49009947665df59c3e8399b35c779a2ab5c3f2
+PODFILE CHECKSUM: 77ca3dcc004b0ac4229560299242c7710d861fdc
 
-COCOAPODS: 1.3.1
+COCOAPODS: 1.5.3

@@ -7,25 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4901EF051F1B7D560067870D /* SceneLocationEstimate+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901EF041F1B7D560067870D /* SceneLocationEstimate+Extensions.swift */; };
-		49099E391F24BAE5007B76FD /* SCNVector3+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49099E381F24BAE5007B76FD /* SCNVector3+Extensions.swift */; };
-		49A3FBDC1F09988100AA59C8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBDB1F09988100AA59C8 /* AppDelegate.swift */; };
-		49A3FBE01F09988100AA59C8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBDF1F09988100AA59C8 /* ViewController.swift */; };
 		49A3FBE81F09988100AA59C8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 49A3FBE61F09988100AA59C8 /* LaunchScreen.storyboard */; };
-		49A3FBF51F099A5F00AA59C8 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBF41F099A5F00AA59C8 /* LocationManager.swift */; };
-		49A3FBF71F099C8100AA59C8 /* SceneLocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBF61F099C8100AA59C8 /* SceneLocationView.swift */; };
-		49A3FBFD1F09B00400AA59C8 /* CLLocation+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBFC1F09B00400AA59C8 /* CLLocation+Extensions.swift */; };
-		49A3FBFF1F09B1D200AA59C8 /* LocationNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBFE1F09B1D200AA59C8 /* LocationNode.swift */; };
-		49A3FC011F09B9CF00AA59C8 /* SceneLocationEstimate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FC001F09B9CF00AA59C8 /* SceneLocationEstimate.swift */; };
-		49A3FC031F09BADB00AA59C8 /* FloatingPoint+Radians.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FC021F09BADB00AA59C8 /* FloatingPoint+Radians.swift */; };
-		49A3FC051F0A423800AA59C8 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FC041F0A423800AA59C8 /* CGPoint+Extensions.swift */; };
-		49D206F31F124BDD00D7D622 /* SCNNode+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D206F21F124BDD00D7D622 /* SCNNode+Extensions.swift */; };
+		A475237D2103BBF700AA72A1 /* Helpers in Resources */ = {isa = PBXBuildFile; fileRef = A475237C2103BBF600AA72A1 /* Helpers */; };
+		A47523802103CC1D00AA72A1 /* SceneLocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBF61F099C8100AA59C8 /* SceneLocationView.swift */; };
+		A47523812103CC1D00AA72A1 /* LocationNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBFE1F09B1D200AA59C8 /* LocationNode.swift */; };
+		A47523822103CC1D00AA72A1 /* UIImage-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3452AEA1F2FBD7100389E0A /* UIImage-Extension.swift */; };
+		A47523832103CC1D00AA72A1 /* SceneLocationEstimate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FC001F09B9CF00AA59C8 /* SceneLocationEstimate.swift */; };
+		A47523842103CC1D00AA72A1 /* SceneLocationEstimate+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901EF041F1B7D560067870D /* SceneLocationEstimate+Extensions.swift */; };
+		A47523852103CC1D00AA72A1 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBF41F099A5F00AA59C8 /* LocationManager.swift */; };
+		A47523862103CC1D00AA72A1 /* CLLocation+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBFC1F09B00400AA59C8 /* CLLocation+Extensions.swift */; };
+		A47523872103CC1D00AA72A1 /* SCNVector3+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49099E381F24BAE5007B76FD /* SCNVector3+Extensions.swift */; };
+		A47523882103CC1D00AA72A1 /* MBXCompassMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C360F7E31F7EAF8100486670 /* MBXCompassMapView.swift */; };
+		A475238A2103CC1D00AA72A1 /* FloatingPoint+Radians.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FC021F09BADB00AA59C8 /* FloatingPoint+Radians.swift */; };
+		A475238B2103CC1D00AA72A1 /* CGPoint+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FC041F0A423800AA59C8 /* CGPoint+Extensions.swift */; };
+		A475238C2103CC1D00AA72A1 /* SCNNode+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D206F21F124BDD00D7D622 /* SCNNode+Extensions.swift */; };
+		A475238D2103D1F700AA72A1 /* FSQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3452AE71F2FBD2600389E0A /* FSQView.swift */; };
+		A4A70ECE2103D8FF00AED75C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBDB1F09988100AA59C8 /* AppDelegate.swift */; };
+		A4A70ECF2103D8FF00AED75C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBDF1F09988100AA59C8 /* ViewController.swift */; };
 		C3452AE61F2F9F7700389E0A /* FSQView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C3452AE51F2F9F7700389E0A /* FSQView.xib */; };
-		C3452AE81F2FBD2600389E0A /* FSQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3452AE71F2FBD2600389E0A /* FSQView.swift */; };
-		C3452AEB1F2FBD7100389E0A /* UIImage-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3452AEA1F2FBD7100389E0A /* UIImage-Extension.swift */; };
 		C3452AEE1F30E8F300389E0A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C3452AED1F30E8F300389E0A /* Assets.xcassets */; };
 		C360F7E11F7EAEDB00486670 /* Pods_FoursquareARCamera.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C360F7E21F7EAEDB00486670 /* Pods_FoursquareARCamera.framework */; };
-		C360F7E41F7EAF8100486670 /* MBXCompassMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C360F7E31F7EAF8100486670 /* MBXCompassMapView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 		538ACD0633ADC285954D8A5D /* Pods_FoursquareARCamera.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FoursquareARCamera.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6014FD86770301DB285D988E /* Pods-FoursquareARCamera.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FoursquareARCamera.release.xcconfig"; path = "Pods/Target Support Files/Pods-FoursquareARCamera/Pods-FoursquareARCamera.release.xcconfig"; sourceTree = "<group>"; };
 		6C10523EF85AA6B7CDF962AD /* Pods_ARKit_CoreLocation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ARKit_CoreLocation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A475237C2103BBF600AA72A1 /* Helpers */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Helpers; sourceTree = "<group>"; };
 		C3452AE51F2F9F7700389E0A /* FSQView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FSQView.xib; sourceTree = "<group>"; };
 		C3452AE71F2FBD2600389E0A /* FSQView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSQView.swift; sourceTree = "<group>"; };
 		C3452AEA1F2FBD7100389E0A /* UIImage-Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage-Extension.swift"; sourceTree = "<group>"; };
@@ -113,6 +115,7 @@
 				49A3FBFC1F09B00400AA59C8 /* CLLocation+Extensions.swift */,
 				49099E381F24BAE5007B76FD /* SCNVector3+Extensions.swift */,
 				C360F7E31F7EAF8100486670 /* MBXCompassMapView.swift */,
+				A475237C2103BBF600AA72A1 /* Helpers */,
 				49A3FC021F09BADB00AA59C8 /* FloatingPoint+Radians.swift */,
 				49A3FC041F0A423800AA59C8 /* CGPoint+Extensions.swift */,
 				49D206F21F124BDD00D7D622 /* SCNNode+Extensions.swift */,
@@ -161,7 +164,6 @@
 				49A3FBD51F09988100AA59C8 /* Frameworks */,
 				49A3FBD61F09988100AA59C8 /* Resources */,
 				B912B23DE2753A7230AC73FF /* [CP] Embed Pods Frameworks */,
-				3B65648ABF0CBE46120C6ABF /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -179,7 +181,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0900;
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = "Project Dent";
 				TargetAttributes = {
 					49A3FBD71F09988100AA59C8 = {
@@ -212,6 +214,7 @@
 			files = (
 				C3452AEE1F30E8F300389E0A /* Assets.xcassets in Resources */,
 				C3452AE61F2F9F7700389E0A /* FSQView.xib in Resources */,
+				A475237D2103BBF700AA72A1 /* Helpers in Resources */,
 				49A3FBE81F09988100AA59C8 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -219,24 +222,9 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		3B65648ABF0CBE46120C6ABF /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-FoursquareARCamera/Pods-FoursquareARCamera-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		63B0FABA6912CCD1470FF302 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			files = (
 			);
 			inputPaths = (
@@ -264,6 +252,7 @@
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework",
 				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework.dSYM",
+				"${BUILT_PRODUCTS_DIR}/ReachabilitySwift/Reachability.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftyJSON/SwiftyJSON.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -273,6 +262,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Mapbox.framework",
 				"${DWARF_DSYM_FOLDER_PATH}/Mapbox.framework.dSYM",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Reachability.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyJSON.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -287,21 +277,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49099E391F24BAE5007B76FD /* SCNVector3+Extensions.swift in Sources */,
-				C3452AE81F2FBD2600389E0A /* FSQView.swift in Sources */,
-				49A3FBF71F099C8100AA59C8 /* SceneLocationView.swift in Sources */,
-				49A3FC031F09BADB00AA59C8 /* FloatingPoint+Radians.swift in Sources */,
-				49A3FBFF1F09B1D200AA59C8 /* LocationNode.swift in Sources */,
-				49A3FBFD1F09B00400AA59C8 /* CLLocation+Extensions.swift in Sources */,
-				49A3FC051F0A423800AA59C8 /* CGPoint+Extensions.swift in Sources */,
-				49A3FBE01F09988100AA59C8 /* ViewController.swift in Sources */,
-				4901EF051F1B7D560067870D /* SceneLocationEstimate+Extensions.swift in Sources */,
-				49A3FC011F09B9CF00AA59C8 /* SceneLocationEstimate.swift in Sources */,
-				49A3FBDC1F09988100AA59C8 /* AppDelegate.swift in Sources */,
-				49D206F31F124BDD00D7D622 /* SCNNode+Extensions.swift in Sources */,
-				C360F7E41F7EAF8100486670 /* MBXCompassMapView.swift in Sources */,
-				49A3FBF51F099A5F00AA59C8 /* LocationManager.swift in Sources */,
-				C3452AEB1F2FBD7100389E0A /* UIImage-Extension.swift in Sources */,
+				A4A70ECE2103D8FF00AED75C /* AppDelegate.swift in Sources */,
+				A4A70ECF2103D8FF00AED75C /* ViewController.swift in Sources */,
+				A475238D2103D1F700AA72A1 /* FSQView.swift in Sources */,
+				A47523802103CC1D00AA72A1 /* SceneLocationView.swift in Sources */,
+				A47523812103CC1D00AA72A1 /* LocationNode.swift in Sources */,
+				A47523822103CC1D00AA72A1 /* UIImage-Extension.swift in Sources */,
+				A47523832103CC1D00AA72A1 /* SceneLocationEstimate.swift in Sources */,
+				A47523842103CC1D00AA72A1 /* SceneLocationEstimate+Extensions.swift in Sources */,
+				A47523852103CC1D00AA72A1 /* LocationManager.swift in Sources */,
+				A47523862103CC1D00AA72A1 /* CLLocation+Extensions.swift in Sources */,
+				A47523872103CC1D00AA72A1 /* SCNVector3+Extensions.swift in Sources */,
+				A47523882103CC1D00AA72A1 /* MBXCompassMapView.swift in Sources */,
+				A475238A2103CC1D00AA72A1 /* FloatingPoint+Radians.swift in Sources */,
+				A475238B2103CC1D00AA72A1 /* CGPoint+Extensions.swift in Sources */,
+				A475238C2103CC1D00AA72A1 /* SCNNode+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,6 +323,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -340,6 +331,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -390,6 +382,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -397,6 +390,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -431,10 +425,11 @@
 			baseConfigurationReference = 359749B04AFDD68C056A44D3 /* Pods-FoursquareARCamera.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 53AF9EMAN4;
+				DEVELOPMENT_TEAM = XZ5B49F6KT;
+				"HEADER_SEARCH_PATHS[arch=*]" = "";
 				INFOPLIST_FILE = "$(SRCROOT)/FoursquareARCamera/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "ProjectDent.ARKit-CoreLocation";
+				PRODUCT_BUNDLE_IDENTIFIER = "Foursquare.ARKit-CoreLocation";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -446,10 +441,10 @@
 			baseConfigurationReference = 6014FD86770301DB285D988E /* Pods-FoursquareARCamera.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 53AF9EMAN4;
+				DEVELOPMENT_TEAM = XZ5B49F6KT;
 				INFOPLIST_FILE = "$(SRCROOT)/FoursquareARCamera/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "ProjectDent.ARKit-CoreLocation";
+				PRODUCT_BUNDLE_IDENTIFIER = "Foursquare.ARKit-CoreLocation";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
