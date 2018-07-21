@@ -13,7 +13,7 @@ import CocoaLumberjack
 import Alamofire
 import SwiftyJSON
 import Mapbox
-import ReachabilitySwift
+import Reachability
 
 class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, SceneLocationViewDelegate {
     let sceneLocationView = SceneLocationView()
@@ -63,22 +63,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         }
     
         
-        // Add Foursquare Attribution
-        let imgAttr = UIImage.init(named: "fsq")
-        let imgAttrView = UIImageView.init(image: imgAttr)
         
-        
-        imgAttrView.frame = CGRect(x: imgAttrView.frame.origin.x,
-                                   y: self.view.frame.height-120,
-                                   width: self.view.frame.width-100,
-                                   height: 200)
-        imgAttrView.center.x = self.view.center.x
-        imgAttrView.contentMode = UIViewContentMode.scaleAspectFit
-        
-        
-        sceneLocationView.addSubview(imgAttrView)
-        sceneLocationView.showAxesNode = true
-        sceneLocationView.locationDelegate = self
         
         // Add Scene Location
         view.addSubview(sceneLocationView)
