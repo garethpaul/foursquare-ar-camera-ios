@@ -6,7 +6,7 @@ public class Reachability {
         
         var Status:Bool = false
         
-        let url = URL(url: "http://google.com/")
+        let url = URL(url: "https://www.google.com/")
 
         let request = NSMutableURLRequest(URL: url!)
         
