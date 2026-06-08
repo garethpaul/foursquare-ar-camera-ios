@@ -42,7 +42,7 @@ frames, store user location histories, or log API credentials.
 
 Location-based requests should be user-visible and use documented configuration.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Hardcoded real Foursquare or Mapbox credentials
 - Background location tracking or camera data upload
