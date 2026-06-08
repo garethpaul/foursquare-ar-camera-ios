@@ -46,6 +46,19 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     
     var adjustNorthByTappingSidesOfScreen = false
 
+    private func configuredValue(_ key: String) -> String? {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
+            return nil
+        }
+
+        let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedValue.isEmpty || trimmedValue.hasPrefix("$(") {
+            return nil
+        }
+
+        return trimmedValue
+    }
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -105,7 +118,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     @objc
     func imageTapped(_ tapGestureRecognizer: UITapGestureRecognizer)
     {
-        print(tapGestureRecognizer)
+        DDLogDebug("Scene image tapped")
         let sceneTapped = tapGestureRecognizer.view
         sceneTapped?.isHidden = true
         //let tappedImage = tapGestureRecognizer.view
@@ -150,14 +163,27 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             self.loaded = true
             let lat = String(currentLocation.coordinate.latitude)
             let lng = String(currentLocation.coordinate.longitude)
-            let client_id = ""
-            let client_secret = ""
+            guard let clientID = configuredValue("FoursquareClientID"),
+                let clientSecret = configuredValue("FoursquareClientSecret") else {
+                DDLogWarn("Skipping Foursquare venue lookup because API credentials are not configured.")
+                self.loaded = false
+                return
+            }
+
             let categoryId = "4d4b7105d754a06374d81259" // food
             let ll = lat + "," + lng
-            let url = "https://api.foursquare.com/v2/venues/search?v=20161016&ll=\(ll)&client_id=\(client_id)&client_secret=\(client_secret)&limit=5&categoryId=\(categoryId)&radius=200"
+            let parameters: Parameters = [
+                "v": "20161016",
+                "ll": ll,
+                "client_id": clientID,
+                "client_secret": clientSecret,
+                "limit": 5,
+                "categoryId": categoryId,
+                "radius": 200,
+            ]
             
             // Send HTTP request
-            Alamofire.request(url).responseJSON { response in
+            Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters).responseJSON { response in
                 switch response.result {
                 case .success(let value):
                     let json = JSON(value)
@@ -204,8 +230,8 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                         
                     }
                     
-                case .failure(let error):
-                    print(error)
+                case .failure:
+                    DDLogWarn("Foursquare venue lookup failed.")
                 }
             }
             
@@ -263,17 +289,11 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                     let position = self.sceneLocationView.currentScenePosition() {
                     
                     self.getFoursquareLocations(currentLocation)
-                    DDLogDebug("")
-                    DDLogDebug("Fetch current location")
-                    DDLogDebug("best location estimate, position: \(bestEstimate.position), location: \(bestEstimate.location.coordinate), accuracy: \(bestEstimate.location.horizontalAccuracy), date: \(bestEstimate.location.timestamp)")
-                    DDLogDebug("current position: \(position)")
-                    DDLogDebug("altitude: \(currentLocation.altitude)")
+                    DDLogDebug("Updating AR location estimate")
                     
-                    let translation = bestEstimate.translatedLocation(to: position)
+                    _ = bestEstimate.translatedLocation(to: position)
                     
-                    DDLogDebug("translation: \(translation)")
-                    DDLogDebug("translated location: \(currentLocation)")
-                    DDLogDebug("")
+                    DDLogDebug("Updated translated AR location estimate")
                 }
                 
                 if self.userAnnotation == nil {
@@ -346,11 +366,11 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         // Add Foursquare Location
         self.getFoursquareLocations(location)
         
-        DDLogDebug("add scene location estimate, position: \(position), location: \(location.coordinate), accuracy: \(location.horizontalAccuracy), altitude: \(location.altitude), date: \(location.timestamp)")
+        DDLogDebug("Added scene location estimate")
     }
     
     func sceneLocationViewDidRemoveSceneLocationEstimate(sceneLocationView: SceneLocationView, position: SCNVector3, location: CLLocation) {
-        DDLogDebug("remove scene location estimate, position: \(position), location: \(location.coordinate), accuracy: \(location.horizontalAccuracy), date: \(location.timestamp)")
+        DDLogDebug("Removed scene location estimate")
     }
     
     func sceneLocationViewDidConfirmLocationOfNode(sceneLocationView: SceneLocationView, node: LocationNode) {

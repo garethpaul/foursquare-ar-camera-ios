@@ -9,6 +9,12 @@ DerivedData/
 .DS_Store
 mapbox_access_token
 
+# Local credentials and per-machine build settings
+.env
+.env.*
+*.xcconfig
+!*.xcconfig.example
+
 ## Various settings
 *.pbxuser
 !default.pbxuser

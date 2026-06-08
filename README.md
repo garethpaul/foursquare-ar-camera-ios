@@ -12,18 +12,22 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `Podfile` - Apple platform dependency metadata
+- `CHANGES.md` - concise history of maintenance changes
+- `Makefile` - local verification entry point
 - `FoursquareARCamera` - source or example code
 - `FoursquareARCamera.xcodeproj` - Xcode project file
+- `FoursquareARCamera.xcworkspace` - CocoaPods workspace to open after dependency install
 - `Podfile.lock` - Apple platform dependency metadata
 - `ReadMe.md` - project overview and local usage notes
 - `SECURITY.md` - security reporting and disclosure guidance
+- `scripts/check-baseline.sh` - static credential, privacy, and project-shape checks
 - `VISION.md` - project direction and maintenance guardrails
 
 Additional scan context:
 
 - Source directories: FoursquareARCamera
 - Dependency and build manifests: Podfile, Podfile.lock
-- Entry points or build surfaces: FoursquareARCamera.xcodeproj
+- Entry points or build surfaces: FoursquareARCamera.xcworkspace, FoursquareARCamera.xcodeproj
 - Test-looking files: no obvious test files detected
 
 ## Getting Started
@@ -46,17 +50,30 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Running or Using the Project
 
-- Open `FoursquareARCamera.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
+- Open `FoursquareARCamera.xcworkspace` in Xcode after `pod install`, choose the app or sample scheme, and run it on a physical device for AR/camera/location behavior.
+- Configure `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET` as local build settings, for example through an untracked `.xcconfig` file or Xcode scheme environment.
 
 ## Testing and Verification
 
-- Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
+Run the static baseline:
+
+```bash
+make check
+```
+
+The baseline verifies that credentials are build settings, tracked machine
+artifacts are absent, location logs avoid detailed coordinates, and the
+workspace can be listed when `xcodebuild` is installed. For functional
+verification, use Xcode's test action or `xcodebuild test` with the appropriate
+scheme and destination.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
 ## Configuration and Secrets
 
 - Detected references to Foursquare, Mapbox. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
+- Required local build settings: `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET`.
+- Do not commit `.xcconfig` files, API credentials, signing material, camera output, or user location data.
 
 ## Security and Privacy Notes
 
@@ -65,10 +82,12 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Review changes touching network requests, sockets, or service endpoints; examples from the scan include FoursquareARCamera/Info.plist, FoursquareARCamera/Source/Reachability.swift, FoursquareARCamera/ViewController.swift, Podfile.
 - Review changes touching mobile permissions or privacy-sensitive device data; examples from the scan include FoursquareARCamera/Info.plist, FoursquareARCamera/Source/Helpers/CLLocation+Extensions.swift, FoursquareARCamera/Source/Helpers/LocationManager.swift, FoursquareARCamera/Source/Helpers/LocationNode.swift, and 4 more.
 - Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include FoursquareARCamera/Info.plist, FoursquareARCamera/Source/Helpers/LocationNode.swift, FoursquareARCamera/Source/Helpers/UIImage-Extension.swift, FoursquareARCamera/ViewController.swift.
+- Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
 
 ## Maintenance Notes
 
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
+- Run `make check` before pushing changes that touch credentials, location/camera behavior, CocoaPods, or project files.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 

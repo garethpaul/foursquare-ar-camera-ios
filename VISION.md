@@ -23,10 +23,20 @@ Priority:
 - Avoid committing real API credentials, access tokens, or user location data
 - Maintain attribution and network reachability behavior
 
+Current baseline:
+
+- `scripts/check-baseline.sh` and `make check` verify credential placeholders,
+  local artifact ignores, Info.plist XML, and workspace visibility.
+- `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and
+  `FOURSQUARE_CLIENT_SECRET` are local build settings.
+- detailed location logs are avoided in the venue lookup and scene-location
+  delegate flow.
+- `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
+
 Next priorities:
 
-- Move Foursquare and Mapbox configuration into documented local settings
-- Add README setup and device verification instructions
+- Verify AR, camera, location, Mapbox, and Foursquare behavior on a physical device
+- Add tests or manual checklists for missing credentials and API failure states
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
   dedicated pass
 - Add safer error handling for API failures and missing credentials

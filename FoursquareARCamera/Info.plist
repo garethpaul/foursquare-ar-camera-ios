@@ -22,8 +22,12 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>FoursquareClientID</key>
+	<string>$(FOURSQUARE_CLIENT_ID)</string>
+	<key>FoursquareClientSecret</key>
+	<string>$(FOURSQUARE_CLIENT_SECRET)</string>
 	<key>MGLMapboxAccessToken</key>
-	<string>pk.eyJ1IjoiZ3BqYXRmb3Vyc3F1YXJlIiwiYSI6ImNpdmluYmIxaDAxNGoyeWxiaWxrd2Y0Nm0ifQ.mUUlc-mTeHP3fI5f_ed50Q</string>
+	<string>$(MAPBOX_ACCESS_TOKEN)</string>
 	<key>MGLMapboxMetricsEnabledSettingShownInApp</key>
 	<string>YES</string>
 	<key>NSCameraUsageDescription</key>

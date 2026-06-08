@@ -1,0 +1,10 @@
+# Changes
+
+## 2026-06-08
+
+- Moved Mapbox and Foursquare credentials to local build settings.
+- Removed tracked `.DS_Store` files and the empty `mapbox_access_token`
+  placeholder.
+- Removed detailed location debug logs from the venue lookup flow.
+- Added `make check` and `scripts/check-baseline.sh` for static credential,
+  privacy, and project-shape verification.
