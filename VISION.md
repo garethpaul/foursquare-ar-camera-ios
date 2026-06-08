@@ -1,5 +1,8 @@
 ## Foursquare AR Camera iOS Vision
 
+This document explains the current state and direction of the project.
+Project overview and developer docs: [`README.md`](README.md)
+
 Foursquare AR Camera iOS is a Swift AR camera app that uses location, Mapbox,
 SceneKit, and the Foursquare API to display nearby food venues in augmented
 reality.
