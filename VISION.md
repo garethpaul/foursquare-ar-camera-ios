@@ -48,3 +48,6 @@ Location-based requests should be user-visible and use documented configuration.
 - Background location tracking or camera data upload
 - Broad dependency migrations bundled with AR behavior changes
 - Venue API changes without attribution and failure-handling notes
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
