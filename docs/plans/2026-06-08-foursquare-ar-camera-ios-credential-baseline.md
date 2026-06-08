@@ -17,6 +17,8 @@ detailed location logs.
 - Added `FOURSQUARE_CLIENT_ID` and `FOURSQUARE_CLIENT_SECRET` Info.plist build
   settings and guarded Foursquare requests when credentials are missing.
 - Stopped constructing a Foursquare URL string with interpolated credentials.
+- Guarded Foursquare venue response parsing so malformed venue records are
+  skipped instead of force-unwrapped.
 - Removed detailed coordinate/location debug logs from the view controller.
 - Switched the reachability probe to HTTPS.
 - Removed tracked `.DS_Store` files and the tracked `mapbox_access_token`

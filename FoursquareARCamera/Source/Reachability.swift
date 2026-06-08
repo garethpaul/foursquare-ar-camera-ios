@@ -3,30 +3,30 @@ import Foundation
 public class Reachability {
     
     class func isConnectedToNetwork()->Bool{
-        
-        var Status:Bool = false
-        
-        guard let url = URL(string: "https://www.google.com/") else {
+
+        guard let url = URL(string: "https://www.google.com/generate_204") else {
             return false
         }
 
-        let request = NSMutableURLRequest(url: url)
-        
-        request.HTTPMethod = "HEAD"
-        request.cachePolicy = NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData
+        var request = URLRequest(url: url)
+        request.httpMethod = "HEAD"
+        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         request.timeoutInterval = 10.0
-        
-        var response: NSURLResponse?
-        
-        var data = NSURLConnection.sendSynchronousRequest(request, returningResponse: &response, error: nil) as NSData?
-        
-        if let httpResponse = response as? NSHTTPURLResponse {
-            
-            if httpResponse.statusCode == 200 {
-                Status = true
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var isConnected = false
+
+        let task = URLSession.shared.dataTask(with: request) { _, response, _ in
+            if let httpResponse = response as? HTTPURLResponse {
+                isConnected = (200..<400).contains(httpResponse.statusCode)
             }
+
+            semaphore.signal()
         }
-        
-        return Status
+
+        task.resume()
+        _ = semaphore.wait(timeout: .now() + 10)
+
+        return isConnected
     }
 }

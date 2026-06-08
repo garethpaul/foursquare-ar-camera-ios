@@ -57,8 +57,10 @@ fi
 view="$ROOT_DIR/FoursquareARCamera/ViewController.swift"
 if ! grep -Fq 'configuredValue("FoursquareClientID")' "$view" ||
   ! grep -Fq 'configuredValue("FoursquareClientSecret")' "$view" ||
+  ! grep -Fq "Skipping malformed Foursquare venue response" "$view" ||
   ! grep -Fq 'Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)' "$view" ||
   grep -Eq 'let client_(id|secret) = ""|client_secret=|client_id=' "$view" ||
+  grep -Eq '\["(name|location)"\].*\!|\["categories"\]\[0\]' "$view" ||
   grep -Eq 'DDLogDebug\(.*(coordinate|currentLocation|translated location|best location estimate|altitude)' "$view"; then
   printf '%s\n' "ViewController must use local credentials and avoid detailed location logging." >&2
   exit 1

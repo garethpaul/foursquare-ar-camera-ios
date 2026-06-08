@@ -457,29 +457,29 @@ public class SceneLocationView: ARSCNView, ARSCNViewDelegate {
     }
     
     public func sessionWasInterrupted(_ session: ARSession) {
-        print("session was interrupted")
+        NSLog("session was interrupted")
     }
     
     public func sessionInterruptionEnded(_ session: ARSession) {
-        print("session interruption ended")
+        NSLog("session interruption ended")
     }
     
     public func session(_ session: ARSession, didFailWithError error: Error) {
-        print("session did fail with error: \(error)")
+        NSLog("session did fail with error: \(error)")
     }
     
     public func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
         switch camera.trackingState {
         case .limited(.insufficientFeatures):
-            print("camera did change tracking state: limited, insufficient features")
+            NSLog("camera did change tracking state: limited, insufficient features")
         case .limited(.excessiveMotion):
-            print("camera did change tracking state: limited, excessive motion")
+            NSLog("camera did change tracking state: limited, excessive motion")
         case .limited(.initializing):
-            print("camera did change tracking state: limited, initializing")
+            NSLog("camera did change tracking state: limited, initializing")
         case .normal:
-            print("camera did change tracking state: normal")
+            NSLog("camera did change tracking state: normal")
         case .notAvailable:
-            print("camera did change tracking state: not available")
+            NSLog("camera did change tracking state: not available")
         }
     }
 }

@@ -52,7 +52,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         }
 
         let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedValue.isEmpty || trimmedValue.hasPrefix("$(") {
+        if trimmedValue.isEmpty || trimmedValue.contains("$(") {
             return nil
         }
 
@@ -191,16 +191,21 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                     let venues = resp["venues"]
                     // Iterate through the venues
                     for venue in venues {
-                        let name = (venue.1["name"])
-                        let lat = venue.1["location"]["lat"]
-                        let lng = venue.1["location"]["lng"]
-                        let categoryName = venue.1["categories"][0]["name"]
-                        let ratingStr = Int(venue.1["location"]["distance"].double! * 3.28084)
+                        guard let name = venue.1["name"].string,
+                            let venueLatitude = venue.1["location"]["lat"].double,
+                            let venueLongitude = venue.1["location"]["lng"].double,
+                            let distance = venue.1["location"]["distance"].double else {
+                            DDLogWarn("Skipping malformed Foursquare venue response.")
+                            continue
+                        }
+
+                        let categoryName = venue.1["categories"].array?.first?["name"].string ?? "Venue"
+                        let ratingStr = Int(distance * 3.28084)
                         
                         let frameSize = CGRect(x: 0, y: 0, width: 362, height: 291)
                         let fsview = FSQView(frame: frameSize)
-                        fsview.venueName.text = name.string
-                        fsview.categoryName.text = categoryName.string
+                        fsview.venueName.text = name
+                        fsview.categoryName.text = categoryName
                         fsview.ratingStr.text = "\(ratingStr)ft"
                         
                         var image = UIImage.imageWithView(view: fsview)
@@ -211,10 +216,10 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                         image = UIImage.aImage(image: image, mask:m)
                         image = UIImage.resizeImage(image: image, newHeight: 200)
                         
-                        let starbucksCoordinate = CLLocationCoordinate2D(latitude: lat.double!, longitude: lng.double!)
-                        let starbucksLocation = CLLocation(coordinate: starbucksCoordinate, altitude: 30.84)
-                        let starbucksImage = image
-                        let starbucksLocationNode = LocationAnnotationNode(location: starbucksLocation, image: starbucksImage)
+                        let venueCoordinate = CLLocationCoordinate2D(latitude: venueLatitude, longitude: venueLongitude)
+                        let venueLocation = CLLocation(coordinate: venueCoordinate, altitude: 30.84)
+                        let venueImage = image
+                        let venueLocationNode = LocationAnnotationNode(location: venueLocation, image: venueImage)
 
 
                          let tapGesture = UITapGestureRecognizer(target: self,  action: #selector(self.handleTap(_:)))
@@ -222,16 +227,17 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                         self.sceneLocationView.isUserInteractionEnabled = true
                         self.sceneLocationView.addGestureRecognizer(tapGesture)
                         
-                        self.sceneLocationView.addLocationNodeWithConfirmedLocation(locationNode: starbucksLocationNode)
+                        self.sceneLocationView.addLocationNodeWithConfirmedLocation(locationNode: venueLocationNode)
 
                         let compassMarker = MGLPointAnnotation()
-                        compassMarker.coordinate = starbucksCoordinate
+                        compassMarker.coordinate = venueCoordinate
                         self.compass.addAnnotation(compassMarker)
                         
                     }
                     
                 case .failure:
                     DDLogWarn("Foursquare venue lookup failed.")
+                    self.loaded = false
                 }
             }
             

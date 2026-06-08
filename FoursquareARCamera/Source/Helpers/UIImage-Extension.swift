@@ -54,13 +54,13 @@ extension UIImage {
         
         let colorSpace = CGColorSpaceCreateDeviceGray()
         guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width, space: colorSpace, bitmapInfo: CGImageAlphaInfo.alphaOnly.rawValue) else {
-            print("Couldn't create CGContext")
+            NSLog("Couldn't create CGContext")
             return nil
         }
         
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
         guard let image = context.makeImage() else {
-            print("Couldn't create image from context")
+            NSLog("Couldn't create image from context")
             return nil
         }
         
