@@ -20,7 +20,9 @@ detailed location logs.
 - Guarded Foursquare venue response parsing so malformed venue records are
   skipped instead of force-unwrapped.
 - Removed detailed coordinate/location debug logs from the view controller.
-- Switched the reachability probe to HTTPS.
+- Replaced `print` diagnostics in Swift source with logger-backed calls.
+- Switched the reachability probe to HTTPS and away from deprecated
+  synchronous `NSURLConnection` calls.
 - Removed tracked `.DS_Store` files and the tracked `mapbox_access_token`
   placeholder while keeping those paths ignored.
 - Added `scripts/check-baseline.sh` and `make check` for repeatable static

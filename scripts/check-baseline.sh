@@ -66,8 +66,21 @@ if ! grep -Fq 'configuredValue("FoursquareClientID")' "$view" ||
   exit 1
 fi
 
-if grep -Fq "http://google.com/" "$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift"; then
-  printf '%s\n' "Reachability check must not use an HTTP URL." >&2
+if grep -R -n 'print(' "$ROOT_DIR/FoursquareARCamera"; then
+  printf '%s\n' "Swift source must not use print for app/runtime diagnostics." >&2
+  exit 1
+fi
+
+reachability="$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift"
+if grep -Fq "http://google.com/" "$reachability" ||
+  grep -Fq "NSURLConnection.sendSynchronousRequest" "$reachability" ||
+  ! grep -Fq "https://www.google.com/generate_204" "$reachability"; then
+  printf '%s\n' "Reachability check must use HTTPS without deprecated synchronous URL loading." >&2
+  exit 1
+fi
+
+if grep -Eq 'URL\(url:|NSMutableURLRequest\(URL|sendSynchronousRequest' "$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift"; then
+  printf '%s\n' "Reachability helper must not use legacy Swift 2 URL/request APIs." >&2
   exit 1
 fi
 
