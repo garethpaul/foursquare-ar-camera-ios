@@ -37,6 +37,11 @@ Contribution rules:
 
 ## Security And Privacy
 
+Canonical security policy and reporting:
+
+- [`SECURITY.md`](SECURITY.md)
+
+
 The app uses camera, location, and venue search data. It must not upload camera
 frames, store user location histories, or log API credentials.
 
