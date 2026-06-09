@@ -25,6 +25,11 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     
     var heading: CLLocationDirection?
     var headingAccuracy: CLLocationDegrees?
+
+    private func isAuthorizedForLocationUpdates(_ status: CLAuthorizationStatus) -> Bool {
+        return status == CLAuthorizationStatus.authorizedAlways ||
+            status == CLAuthorizationStatus.authorizedWhenInUse
+    }
     
     override init() {
         super.init()
@@ -35,17 +40,18 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
         self.locationManager!.headingFilter = kCLHeadingFilterNone
         self.locationManager!.pausesLocationUpdatesAutomatically = false
         self.locationManager!.delegate = self
-        self.locationManager!.startUpdatingHeading()
-        self.locationManager!.startUpdatingLocation()
-        
         self.locationManager!.requestWhenInUseAuthorization()
+
+        if isAuthorizedForLocationUpdates(CLLocationManager.authorizationStatus()) {
+            self.locationManager!.startUpdatingHeading()
+            self.locationManager!.startUpdatingLocation()
+        }
         
         self.currentLocation = self.locationManager!.location
     }
     
     func requestAuthorization() {
-        if CLLocationManager.authorizationStatus() == CLAuthorizationStatus.authorizedAlways ||
-            CLLocationManager.authorizationStatus() == CLAuthorizationStatus.authorizedWhenInUse {
+        if isAuthorizedForLocationUpdates(CLLocationManager.authorizationStatus()) {
             return
         }
         
@@ -60,7 +66,10 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     //MARK: - CLLocationManagerDelegate
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        
+        if isAuthorizedForLocationUpdates(status) {
+            manager.startUpdatingHeading()
+            manager.startUpdatingLocation()
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -87,4 +96,3 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
         return true
     }
 }
-

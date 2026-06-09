@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Gated Core Location heading and location updates on authorization before
+  starting AR venue lookup behavior.
 - Moved Mapbox and Foursquare credentials to local build settings.
 - Removed tracked `.DS_Store` files and the empty `mapbox_access_token`
   placeholder.

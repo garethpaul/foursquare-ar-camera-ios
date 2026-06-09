@@ -5,6 +5,7 @@ ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"
 MASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md"
 TAP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md"
+LOCATION_AUTH_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-authorization-start-guard.md"
 
 require_file() {
   path=$1
@@ -27,7 +28,9 @@ for path in \
   "FoursquareARCamera.xcodeproj/project.pbxproj" \
   "FoursquareARCamera/Info.plist" \
   "FoursquareARCamera/ViewController.swift" \
+  "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
+  "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md" \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
@@ -92,6 +95,34 @@ if grep -R -n 'print(' "$ROOT_DIR/FoursquareARCamera"; then
   exit 1
 fi
 
+location_manager="$ROOT_DIR/FoursquareARCamera/Source/Helpers/LocationManager.swift"
+if ! grep -Fq "private func isAuthorizedForLocationUpdates" "$location_manager" ||
+  ! grep -Fq "requestWhenInUseAuthorization()" "$location_manager" ||
+  ! grep -Fq "didChangeAuthorization" "$location_manager" ||
+  ! grep -Fq "manager.startUpdatingLocation()" "$location_manager"; then
+  printf '%s\n' "Location updates must be gated on Core Location authorization." >&2
+  exit 1
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "$location_manager" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text()
+init_start = source.index("override init()")
+request_start = source.index("func requestAuthorization")
+init_body = source[init_start:request_start]
+
+request_index = init_body.index("requestWhenInUseAuthorization()")
+start_index = init_body.index("startUpdatingLocation()")
+if request_index > start_index:
+    raise SystemExit("Location authorization must be requested before updates start.")
+PY
+else
+  printf '%s\n' "Skipping LocationManager order check: python3 is not installed."
+fi
+
 reachability="$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift"
 if grep -Fq "http://google.com/" "$reachability" ||
   grep -Fq "NSURLConnection.sendSynchronousRequest" "$reachability" ||
@@ -109,6 +140,8 @@ if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
   ! grep -Fq "make check" "$ROOT_DIR/README.md" ||
   ! grep -Fq "venue mask asset is not force-unwrapped" "$ROOT_DIR/README.md" ||
   ! grep -Fq "venue tap interaction guard" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Core Location authorization" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "location-authorization-start-guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FOURSQUARE_CLIENT_ID" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document workspace usage, verification, and local credentials." >&2
@@ -119,8 +152,14 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue rendering keeps working" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue tap handling installs one gesture recognizer" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Location and heading updates start only after" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "detailed location" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe current credential and location guardrails." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Core Location updates should stay gated on authorization" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document the Core Location authorization boundary." >&2
   exit 1
 fi
 
@@ -150,6 +189,11 @@ fi
 
 if ! grep -Fq "status: completed" "$TAP_PLAN"; then
   printf '%s\n' "Venue tap interaction plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LOCATION_AUTH_PLAN"; then
+  printf '%s\n' "Location authorization start plan must be marked completed." >&2
   exit 1
 fi
 

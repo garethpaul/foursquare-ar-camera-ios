@@ -65,9 +65,10 @@ The baseline verifies that credentials are build settings, tracked machine
 artifacts are absent, location logs avoid detailed coordinates, and the
 venue mask asset is not force-unwrapped. The workspace can be listed when
 `xcodebuild` is installed. The venue tap interaction guard keeps one tap
-recognizer on the scene and skips nodes without highlight materials. For functional
-verification, use Xcode's test action or `xcodebuild test` with the appropriate
-scheme and destination.
+recognizer on the scene and skips nodes without highlight materials. Location
+and heading updates start only after Core Location authorization is available.
+For functional verification, use Xcode's test action or `xcodebuild test` with
+the appropriate scheme and destination.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -85,6 +86,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Review changes touching mobile permissions or privacy-sensitive device data; examples from the scan include FoursquareARCamera/Info.plist, FoursquareARCamera/Source/Helpers/CLLocation+Extensions.swift, FoursquareARCamera/Source/Helpers/LocationManager.swift, FoursquareARCamera/Source/Helpers/LocationNode.swift, and 4 more.
 - Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include FoursquareARCamera/Info.plist, FoursquareARCamera/Source/Helpers/LocationNode.swift, FoursquareARCamera/Source/Helpers/UIImage-Extension.swift, FoursquareARCamera/ViewController.swift.
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
+- Keep Core Location updates gated on authorization before starting AR venue
+  lookup behavior.
 
 ## Maintenance Notes
 
@@ -96,6 +99,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   asset guardrails.
 - See `docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md` for venue
   tap interaction guardrails.
+- See `docs/plans/2026-06-09-location-authorization-start-guard.md` for
+  Core Location authorization startup guardrails.
 
 ## Contributing
 
