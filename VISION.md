@@ -31,6 +31,8 @@ Current baseline:
   `FOURSQUARE_CLIENT_SECRET` are local build settings.
 - detailed location logs are avoided in the venue lookup and scene-location
   delegate flow.
+- Venue rendering keeps working without force-unwrapping the optional
+  `fsqMask` asset.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
 
 Next priorities:

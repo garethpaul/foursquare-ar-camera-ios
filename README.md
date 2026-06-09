@@ -63,7 +63,8 @@ make check
 
 The baseline verifies that credentials are build settings, tracked machine
 artifacts are absent, location logs avoid detailed coordinates, and the
-workspace can be listed when `xcodebuild` is installed. For functional
+venue mask asset is not force-unwrapped. The workspace can be listed when
+`xcodebuild` is installed. For functional
 verification, use Xcode's test action or `xcodebuild test` with the appropriate
 scheme and destination.
 
@@ -90,6 +91,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Run `make check` before pushing changes that touch credentials, location/camera behavior, CocoaPods, or project files.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md` for venue mask
+  asset guardrails.
 
 ## Contributing
 

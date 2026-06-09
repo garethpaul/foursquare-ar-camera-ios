@@ -212,8 +212,11 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                         
                         
                         // Mask an image to avoid pixelated images in AR.
-                        let m = UIImage(named: "fsqMask")!
-                        image = UIImage.aImage(image: image, mask:m)
+                        if let mask = UIImage(named: "fsqMask") {
+                            image = UIImage.aImage(image: image, mask: mask)
+                        } else {
+                            DDLogWarn("Rendering Foursquare venue without the fsqMask asset.")
+                        }
                         image = UIImage.resizeImage(image: image, newHeight: 200)
                         
                         let venueCoordinate = CLLocationCoordinate2D(latitude: venueLatitude, longitude: venueLongitude)
