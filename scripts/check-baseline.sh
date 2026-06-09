@@ -8,6 +8,7 @@ TAP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md
 LOCATION_AUTH_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-authorization-start-guard.md"
 INFO_LABEL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-info-label-text-guard.md"
 REACHABILITY_INIT_PLAN="$ROOT_DIR/docs/plans/2026-06-09-reachability-init-guard.md"
+MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-make-gate-aliases.md"
 
 require_file() {
   path=$1
@@ -34,12 +35,20 @@ for path in \
   "FoursquareARCamera/Source/Reachability.swift" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
+  "docs/plans/2026-06-09-make-gate-aliases.md" \
   "docs/plans/2026-06-09-reachability-init-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md" \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
   require_file "$path"
 done
+
+makefile="$ROOT_DIR/Makefile"
+if ! grep -Eq '^\.PHONY: .*build.*check.*lint.*test|^\.PHONY: .*build.*lint.*test.*check' "$makefile" ||
+  ! grep -Fq "lint test build: check" "$makefile"; then
+  printf '%s\n' "Makefile must expose lint, test, build, and check gate targets." >&2
+  exit 1
+fi
 
 if git -C "$ROOT_DIR" ls-files | grep -Eq '(^|/)\.DS_Store$|^mapbox_access_token$'; then
   printf '%s\n' "Local Finder artifacts and token placeholder files must not be tracked." >&2
@@ -155,6 +164,9 @@ if grep -Eq 'URL\(url:|NSMutableURLRequest\(URL|sendSynchronousRequest' "$ROOT_D
 fi
 
 if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "make lint" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "make test" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "make build" "$ROOT_DIR/README.md" ||
   ! grep -Fq "make check" "$ROOT_DIR/README.md" ||
   ! grep -Fq "venue mask asset is not force-unwrapped" "$ROOT_DIR/README.md" ||
   ! grep -Fq "venue tap interaction guard" "$ROOT_DIR/README.md" ||
@@ -167,6 +179,9 @@ if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
 fi
 
 if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "make lint" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "make test" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "make build" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue rendering keeps working" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue tap handling installs one gesture recognizer" "$ROOT_DIR/VISION.md" ||
@@ -228,6 +243,11 @@ fi
 
 if ! grep -Fq "status: completed" "$REACHABILITY_INIT_PLAN"; then
   printf '%s\n' "Reachability initialization guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$MAKE_GATES_PLAN"; then
+  printf '%s\n' "Make gate alias plan must be marked completed." >&2
   exit 1
 fi
 

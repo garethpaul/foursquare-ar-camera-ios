@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added `make lint`, `make test`, and `make build` aliases so local verification
+  has the expected pre-push gate targets in addition to `make check`.
 - Guarded debug info label updates so optional label text is not force-unwrapped
   when only partial AR state is available.
 - Guarded Reachability initialization so the offline check cannot crash before

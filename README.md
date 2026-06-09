@@ -58,11 +58,16 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 Run the static baseline:
 
 ```bash
+make lint
+make test
+make build
 make check
 ```
 
-The baseline verifies that credentials are build settings, tracked machine
-artifacts are absent, location logs avoid detailed coordinates, and the
+The `lint`, `test`, and `build` targets currently delegate to the static
+baseline so the repository has a consistent local gate even when Xcode is not
+installed. The baseline verifies that credentials are build settings, tracked
+machine artifacts are absent, location logs avoid detailed coordinates, and the
 venue mask asset is not force-unwrapped. The workspace can be listed when
 `xcodebuild` is installed. The venue tap interaction guard keeps one tap
 recognizer on the scene and skips nodes without highlight materials. Location
@@ -99,7 +104,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Maintenance Notes
 
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
-- Run `make check` before pushing changes that touch credentials, location/camera behavior, CocoaPods, or project files.
+- Run `make lint`, `make test`, `make build`, and `make check` before pushing
+  changes that touch credentials, location/camera behavior, CocoaPods, or
+  project files.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md` for venue mask
@@ -112,6 +119,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   text guardrails.
 - See `docs/plans/2026-06-09-reachability-init-guard.md` for reachability
   initialization guardrails.
+- See `docs/plans/2026-06-09-make-gate-aliases.md` for local verification
+  target guardrails.
 
 ## Contributing
 

@@ -25,8 +25,9 @@ Priority:
 
 Current baseline:
 
-- `scripts/check-baseline.sh` and `make check` verify credential placeholders,
-  local artifact ignores, Info.plist XML, and workspace visibility.
+- `scripts/check-baseline.sh`, `make lint`, `make test`, `make build`, and
+  `make check` verify credential placeholders, local artifact ignores,
+  Info.plist XML, and workspace visibility.
 - `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and
   `FOURSQUARE_CLIENT_SECRET` are local build settings.
 - detailed location logs are avoided in the venue lookup and scene-location
@@ -41,6 +42,8 @@ Current baseline:
   partial AR state is available.
 - Reachability setup avoids force-unwrapping initialization before the offline
   alert path.
+- The local Makefile exposes lint, test, build, and check targets for a stable
+  pre-push gate.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
 
 Next priorities:
@@ -52,6 +55,8 @@ Next priorities:
   update independently
 - Keep Core Location authorization gating intact when changing AR startup
 - Keep reachability setup optional-safe when changing network checks
+- Keep local verification targets available even while full Xcode testing needs
+  a macOS toolchain
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
   dedicated pass
 - Add safer error handling for API failures and missing credentials
