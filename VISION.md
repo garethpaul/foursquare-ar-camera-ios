@@ -39,6 +39,8 @@ Current baseline:
 - FSQView nib setup guards missing outlets before venue card subviews are added.
 - Location and heading updates start only after Core Location authorization is
   already available or newly granted.
+- Location manager setup avoids force-unwrapping optional manager or heading
+  state while forwarding delegate updates.
 - Debug info label updates avoid force-unwrapping optional label text when
   partial AR state is available.
 - Reachability setup avoids force-unwrapping initialization before the offline
@@ -55,6 +57,8 @@ Next priorities:
 - Keep debug overlays resilient when AR position, heading, and time values
   update independently
 - Keep Core Location authorization gating intact when changing AR startup
+- Preserve the LocationManager optional-state guard when changing Core Location
+  setup or heading forwarding
 - Keep reachability setup optional-safe when changing network checks
 - Preserve the FSQView nib outlet guard when changing venue card rendering
 - Keep local verification targets available even while full Xcode testing needs

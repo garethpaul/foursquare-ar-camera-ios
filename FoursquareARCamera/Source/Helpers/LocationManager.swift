@@ -33,21 +33,21 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     
     override init() {
         super.init()
-        
-        self.locationManager = CLLocationManager()
-        self.locationManager!.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-        self.locationManager!.distanceFilter = kCLDistanceFilterNone
-        self.locationManager!.headingFilter = kCLHeadingFilterNone
-        self.locationManager!.pausesLocationUpdatesAutomatically = false
-        self.locationManager!.delegate = self
-        self.locationManager!.requestWhenInUseAuthorization()
+        let manager = CLLocationManager()
+        self.locationManager = manager
+        manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        manager.distanceFilter = kCLDistanceFilterNone
+        manager.headingFilter = kCLHeadingFilterNone
+        manager.pausesLocationUpdatesAutomatically = false
+        manager.delegate = self
+        manager.requestWhenInUseAuthorization()
 
         if isAuthorizedForLocationUpdates(CLLocationManager.authorizationStatus()) {
-            self.locationManager!.startUpdatingHeading()
-            self.locationManager!.startUpdatingLocation()
+            manager.startUpdatingHeading()
+            manager.startUpdatingLocation()
         }
         
-        self.currentLocation = self.locationManager!.location
+        self.currentLocation = manager.location
     }
     
     func requestAuthorization() {
@@ -81,15 +81,17 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        let headingValue: CLLocationDirection
         if newHeading.headingAccuracy >= 0 {
-            self.heading = newHeading.trueHeading
+            headingValue = newHeading.trueHeading
         } else {
-            self.heading = newHeading.magneticHeading
+            headingValue = newHeading.magneticHeading
         }
         
+        self.heading = headingValue
         self.headingAccuracy = newHeading.headingAccuracy
         
-        self.delegate?.locationManagerDidUpdateHeading(self, heading: self.heading!, accuracy: newHeading.headingAccuracy)
+        self.delegate?.locationManagerDidUpdateHeading(self, heading: headingValue, accuracy: newHeading.headingAccuracy)
     }
     
     func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {

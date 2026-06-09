@@ -10,6 +10,7 @@ INFO_LABEL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-info-label-text-guard.md"
 REACHABILITY_INIT_PLAN="$ROOT_DIR/docs/plans/2026-06-09-reachability-init-guard.md"
 MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-make-gate-aliases.md"
 FSQ_VIEW_NIB_PLAN="$ROOT_DIR/docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md"
+LOCATION_MANAGER_OPTIONAL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-manager-optional-guard.md"
 
 require_file() {
   path=$1
@@ -35,6 +36,7 @@ for path in \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
+  "docs/plans/2026-06-09-location-manager-optional-guard.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -142,6 +144,16 @@ if ! grep -Fq "private func isAuthorizedForLocationUpdates" "$location_manager" 
   exit 1
 fi
 
+if grep -Fq "self.locationManager!" "$location_manager" ||
+  grep -Fq "self.heading!" "$location_manager" ||
+  ! grep -Fq "let manager = CLLocationManager()" "$location_manager" ||
+  ! grep -Fq "self.locationManager = manager" "$location_manager" ||
+  ! grep -Fq "let headingValue: CLLocationDirection" "$location_manager" ||
+  ! grep -Fq "heading: headingValue" "$location_manager"; then
+  printf '%s\n' "Location manager setup and heading forwarding must avoid force unwraps." >&2
+  exit 1
+fi
+
 if command -v python3 >/dev/null 2>&1; then
   python3 - "$location_manager" <<'PY'
 import sys
@@ -198,6 +210,7 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue rendering keeps working" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue tap handling installs one gesture recognizer" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Location and heading updates start only after" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Location manager setup avoids force-unwrapping" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "FSQView nib setup guards" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Debug info label updates avoid force-unwrapping optional label text" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "detailed location" "$ROOT_DIR/VISION.md"; then
@@ -207,6 +220,11 @@ fi
 
 if ! grep -Fq "Core Location updates should stay gated on authorization" "$ROOT_DIR/SECURITY.md"; then
   printf '%s\n' "SECURITY must document the Core Location authorization boundary." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Location manager setup should avoid force-unwrapping" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document the location manager optional boundary." >&2
   exit 1
 fi
 
@@ -271,6 +289,16 @@ fi
 
 if ! grep -Fq "status: completed" "$FSQ_VIEW_NIB_PLAN"; then
   printf '%s\n' "FSQView nib outlet guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LOCATION_MANAGER_OPTIONAL_PLAN"; then
+  printf '%s\n' "Location manager optional guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$LOCATION_MANAGER_OPTIONAL_PLAN"; then
+  printf '%s\n' "Location manager optional guard plan must record make check verification." >&2
   exit 1
 fi
 

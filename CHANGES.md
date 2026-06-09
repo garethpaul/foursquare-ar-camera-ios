@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Removed LocationManager force unwraps during manager setup and heading
+  forwarding.
 - Guarded FSQView nib outlet setup so missing or miswired venue card views do
   not crash rendering.
 - Added `make lint`, `make test`, and `make build` aliases so local verification

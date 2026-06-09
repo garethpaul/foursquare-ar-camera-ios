@@ -72,6 +72,8 @@ venue mask asset is not force-unwrapped. The workspace can be listed when
 `xcodebuild` is installed. The venue tap interaction guard keeps one tap
 recognizer on the scene and skips nodes without highlight materials. Location
 and heading updates start only after Core Location authorization is available.
+Location manager setup and heading forwarding avoid force-unwrapping optional
+state.
 Debug info label updates avoid force-unwrapping optional label text when partial
 AR state is available. Reachability setup avoids force-unwrapping initialization
 before showing offline state. FSQView nib outlet setup is guarded before venue
@@ -97,6 +99,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
 - Keep Core Location updates gated on authorization before starting AR venue
   lookup behavior.
+- Keep location manager setup and heading forwarding resilient when optional
+  Core Location state is unavailable.
 - Keep debug info label updates resilient when only position, heading, or
   timestamp data is available.
 - Keep reachability setup resilient so network-check initialization cannot crash
@@ -118,6 +122,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   tap interaction guardrails.
 - See `docs/plans/2026-06-09-location-authorization-start-guard.md` for
   Core Location authorization startup guardrails.
+- See `docs/plans/2026-06-09-location-manager-optional-guard.md` for
+  LocationManager optional-state guardrails.
 - See `docs/plans/2026-06-09-info-label-text-guard.md` for debug info label
   text guardrails.
 - See `docs/plans/2026-06-09-reachability-init-guard.md` for reachability

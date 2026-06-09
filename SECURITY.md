@@ -38,6 +38,8 @@ If this project requests device permissions such as location, camera, microphone
 
 Core Location updates should stay gated on authorization before AR venue lookup
 behavior starts.
+Location manager setup should avoid force-unwrapping optional manager or heading
+state while forwarding Core Location updates.
 Debug label updates should not force-unwrap optional text because AR position,
 heading, and time values can become available independently.
 FSQView nib setup should guard missing outlets before venue card rendering.
