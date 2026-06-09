@@ -64,7 +64,8 @@ make check
 The baseline verifies that credentials are build settings, tracked machine
 artifacts are absent, location logs avoid detailed coordinates, and the
 venue mask asset is not force-unwrapped. The workspace can be listed when
-`xcodebuild` is installed. For functional
+`xcodebuild` is installed. The venue tap interaction guard keeps one tap
+recognizer on the scene and skips nodes without highlight materials. For functional
 verification, use Xcode's test action or `xcodebuild test` with the appropriate
 scheme and destination.
 
@@ -93,6 +94,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md` for venue mask
   asset guardrails.
+- See `docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md` for venue
+  tap interaction guardrails.
 
 ## Contributing
 

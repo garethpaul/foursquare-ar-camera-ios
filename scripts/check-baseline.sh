@@ -4,6 +4,7 @@ set -eu
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"
 MASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md"
+TAP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md"
 
 require_file() {
   path=$1
@@ -27,6 +28,7 @@ for path in \
   "FoursquareARCamera/Info.plist" \
   "FoursquareARCamera/ViewController.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
+  "docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md" \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
   require_file "$path"
@@ -75,6 +77,16 @@ if grep -Fq 'UIImage(named: "fsqMask")!' "$view" ||
   exit 1
 fi
 
+if grep -Fq "geometry!.firstMaterial!" "$view" ||
+  grep -Fq "hitResults[0]" "$view" ||
+  ! grep -Fq "private var hasVenueTapGesture = false" "$view" ||
+  ! grep -Fq "private func ensureVenueTapGesture()" "$view" ||
+  ! grep -Fq "guard let material = result.node.geometry?.firstMaterial" "$view" ||
+  ! grep -Fq "Skipping AR node highlight because material is unavailable" "$view"; then
+  printf '%s\n' "AR venue tap handling must avoid duplicate gestures and unsafe material force unwraps." >&2
+  exit 1
+fi
+
 if grep -R -n 'print(' "$ROOT_DIR/FoursquareARCamera"; then
   printf '%s\n' "Swift source must not use print for app/runtime diagnostics." >&2
   exit 1
@@ -96,6 +108,7 @@ fi
 if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
   ! grep -Fq "make check" "$ROOT_DIR/README.md" ||
   ! grep -Fq "venue mask asset is not force-unwrapped" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "venue tap interaction guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FOURSQUARE_CLIENT_ID" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document workspace usage, verification, and local credentials." >&2
@@ -105,6 +118,7 @@ fi
 if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue rendering keeps working" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Venue tap handling installs one gesture recognizer" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "detailed location" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe current credential and location guardrails." >&2
   exit 1
@@ -131,6 +145,11 @@ fi
 
 if ! grep -Fq "status: completed" "$MASK_PLAN"; then
   printf '%s\n' "Mask asset guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$TAP_PLAN"; then
+  printf '%s\n' "Venue tap interaction plan must be marked completed." >&2
   exit 1
 fi
 

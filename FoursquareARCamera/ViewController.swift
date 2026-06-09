@@ -43,6 +43,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     var updateInfoLabelTimer: Timer?
     
     var loaded: Bool = false
+    private var hasVenueTapGesture = false
     
     var adjustNorthByTappingSidesOfScreen = false
 
@@ -225,10 +226,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                         let venueLocationNode = LocationAnnotationNode(location: venueLocation, image: venueImage)
 
 
-                         let tapGesture = UITapGestureRecognizer(target: self,  action: #selector(self.handleTap(_:)))
-                        
-                        self.sceneLocationView.isUserInteractionEnabled = true
-                        self.sceneLocationView.addGestureRecognizer(tapGesture)
+                        self.ensureVenueTapGesture()
                         
                         self.sceneLocationView.addLocationNodeWithConfirmedLocation(locationNode: venueLocationNode)
 
@@ -257,33 +255,45 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         // check what nodes are tapped
         let p = gestureRecognize.location(in: scnView)
         let hitResults = scnView.hitTest(p, options: [:])
-        // check that we clicked on at least one object
-        if hitResults.count > 0 {
-            // retrieved the first clicked object
-            let result = hitResults[0]
-            
-            // get its material
-            let material = result.node.geometry!.firstMaterial!
-            
-            // highlight it
+
+        guard let result = hitResults.first else {
+            return
+        }
+
+        guard let material = result.node.geometry?.firstMaterial else {
+            DDLogWarn("Skipping AR node highlight because material is unavailable.")
+            return
+        }
+
+        // highlight it
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0.5
+
+        // on completion - unhighlight
+        SCNTransaction.completionBlock = {
             SCNTransaction.begin()
             SCNTransaction.animationDuration = 0.5
-            
-            // on completion - unhighlight
-            SCNTransaction.completionBlock = {
-                SCNTransaction.begin()
-                SCNTransaction.animationDuration = 0.5
-                
-                material.emission.contents = UIColor.black
-                
-                SCNTransaction.commit()
-            }
-            
-            material.emission.contents = UIColor.red
+
+            material.emission.contents = UIColor.black
+
             SCNTransaction.commit()
-            
-            result.node.isHidden = true
         }
+
+        material.emission.contents = UIColor.red
+        SCNTransaction.commit()
+
+        result.node.isHidden = true
+    }
+
+    private func ensureVenueTapGesture() {
+        if hasVenueTapGesture {
+            return
+        }
+
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
+        sceneLocationView.isUserInteractionEnabled = true
+        sceneLocationView.addGestureRecognizer(tapGesture)
+        hasVenueTapGesture = true
     }
     
     

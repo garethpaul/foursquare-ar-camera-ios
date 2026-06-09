@@ -9,5 +9,7 @@
 - Hardened venue response parsing and reachability checks.
 - Replaced app/runtime `print` diagnostics with logger-backed calls.
 - Guarded Foursquare venue rendering when the mask asset is missing.
+- Guarded AR venue tap handling so one recognizer is installed and tapped nodes
+  without materials do not crash highlighting.
 - Added `make check` and `scripts/check-baseline.sh` for static credential,
   privacy, and project-shape verification.

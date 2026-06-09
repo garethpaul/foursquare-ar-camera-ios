@@ -33,12 +33,15 @@ Current baseline:
   delegate flow.
 - Venue rendering keeps working without force-unwrapping the optional
   `fsqMask` asset.
+- Venue tap handling installs one gesture recognizer and skips nodes without
+  highlight materials.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
 
 Next priorities:
 
 - Verify AR, camera, location, Mapbox, and Foursquare behavior on a physical device
 - Add tests or manual checklists for missing credentials and API failure states
+- Keep venue tap handling resilient when SceneKit node shapes change
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
   dedicated pass
 - Add safer error handling for API failures and missing credentials
