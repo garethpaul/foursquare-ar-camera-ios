@@ -11,6 +11,7 @@ REACHABILITY_INIT_PLAN="$ROOT_DIR/docs/plans/2026-06-09-reachability-init-guard.
 MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-make-gate-aliases.md"
 FSQ_VIEW_NIB_PLAN="$ROOT_DIR/docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md"
 LOCATION_MANAGER_OPTIONAL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-manager-optional-guard.md"
+MAP_ANNOTATION_PLAN="$ROOT_DIR/docs/plans/2026-06-09-map-annotation-optional-guard.md"
 
 require_file() {
   path=$1
@@ -37,6 +38,7 @@ for path in \
   "FoursquareARCamera/Source/Reachability.swift" \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
   "docs/plans/2026-06-09-location-manager-optional-guard.md" \
+  "docs/plans/2026-06-09-map-annotation-optional-guard.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -135,6 +137,18 @@ if grep -Fq "infoLabel.text!.append" "$view" ||
   exit 1
 fi
 
+if grep -Fq "self.userAnnotation!" "$view" ||
+  grep -Fq "self.locationEstimateAnnotation!" "$view" ||
+  grep -Fq "bestLocationEstimate!" "$view" ||
+  ! grep -Fq "let userAnnotation: MKPointAnnotation" "$view" ||
+  ! grep -Fq "self.mapView.addAnnotation(userAnnotation)" "$view" ||
+  ! grep -Fq "let locationEstimateAnnotation: MKPointAnnotation" "$view" ||
+  ! grep -Fq "self.mapView.addAnnotation(locationEstimateAnnotation)" "$view" ||
+  ! grep -Fq "if let locationEstimateAnnotation = self.locationEstimateAnnotation" "$view"; then
+  printf '%s\n' "Map annotation updates must avoid force-unwrapping optional annotations." >&2
+  exit 1
+fi
+
 location_manager="$ROOT_DIR/FoursquareARCamera/Source/Helpers/LocationManager.swift"
 if ! grep -Fq "private func isAuthorizedForLocationUpdates" "$location_manager" ||
   ! grep -Fq "requestWhenInUseAuthorization()" "$location_manager" ||
@@ -195,6 +209,8 @@ if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
   ! grep -Fq "venue tap interaction guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Core Location authorization" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FSQView nib outlet" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Map annotation updates avoid force-unwrapping optional" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "annotations while tracking the user and debug location estimate" "$ROOT_DIR/README.md" ||
   ! grep -Fq "location-authorization-start-guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FOURSQUARE_CLIENT_ID" "$ROOT_DIR/README.md"; then
@@ -212,6 +228,7 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Location and heading updates start only after" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Location manager setup avoids force-unwrapping" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "FSQView nib setup guards" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Map annotation updates avoid force-unwrapping optional annotations" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Debug info label updates avoid force-unwrapping optional label text" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "detailed location" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe current credential and location guardrails." >&2
@@ -235,6 +252,11 @@ fi
 
 if ! grep -Fq "FSQView nib setup should guard missing outlets" "$ROOT_DIR/SECURITY.md"; then
   printf '%s\n' "SECURITY must document the FSQView nib outlet boundary." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Map annotation updates should avoid force-unwrapping optional annotation state" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document the map annotation optional boundary." >&2
   exit 1
 fi
 
@@ -297,8 +319,18 @@ if ! grep -Fq "status: completed" "$LOCATION_MANAGER_OPTIONAL_PLAN"; then
   exit 1
 fi
 
+if ! grep -Fq "status: completed" "$MAP_ANNOTATION_PLAN"; then
+  printf '%s\n' "Map annotation optional guard plan must be marked completed." >&2
+  exit 1
+fi
+
 if ! grep -Fq "make check" "$LOCATION_MANAGER_OPTIONAL_PLAN"; then
   printf '%s\n' "Location manager optional guard plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$MAP_ANNOTATION_PLAN"; then
+  printf '%s\n' "Map annotation optional guard plan must record make check verification." >&2
   exit 1
 fi
 

@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Guarded map annotation updates so optional user and debug location markers are
+  not force-unwrapped.
 - Removed LocationManager force unwraps during manager setup and heading
   forwarding.
 - Guarded FSQView nib outlet setup so missing or miswired venue card views do

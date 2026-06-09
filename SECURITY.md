@@ -43,6 +43,8 @@ state while forwarding Core Location updates.
 Debug label updates should not force-unwrap optional text because AR position,
 heading, and time values can become available independently.
 FSQView nib setup should guard missing outlets before venue card rendering.
+Map annotation updates should avoid force-unwrapping optional annotation state
+while displaying user or debug location markers.
 
 ## Dependency and Supply Chain Security
 

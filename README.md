@@ -77,7 +77,8 @@ state.
 Debug info label updates avoid force-unwrapping optional label text when partial
 AR state is available. Reachability setup avoids force-unwrapping initialization
 before showing offline state. FSQView nib outlet setup is guarded before venue
-card subviews are added.
+card subviews are added. Map annotation updates avoid force-unwrapping optional
+annotations while tracking the user and debug location estimate.
 For functional verification, use Xcode's test action or `xcodebuild test` with
 the appropriate scheme and destination.
 
@@ -107,6 +108,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   before the offline alert path.
 - Keep FSQView nib outlet setup resilient so missing or miswired venue card
   views do not crash rendering.
+- Keep map annotation updates resilient so optional annotation state cannot
+  crash user or debug location tracking.
 
 ## Maintenance Notes
 
@@ -132,6 +135,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   target guardrails.
 - See `docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md` for venue card nib
   outlet guardrails.
+- See `docs/plans/2026-06-09-map-annotation-optional-guard.md` for map
+  annotation optional-state guardrails.
 
 ## Contributing
 

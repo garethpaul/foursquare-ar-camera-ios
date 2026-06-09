@@ -317,18 +317,22 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                     DDLogDebug("Updated translated AR location estimate")
                 }
                 
-                if self.userAnnotation == nil {
-                    self.userAnnotation = MKPointAnnotation()
-                    self.mapView.addAnnotation(self.userAnnotation!)
+                let userAnnotation: MKPointAnnotation
+                if let existingUserAnnotation = self.userAnnotation {
+                    userAnnotation = existingUserAnnotation
+                } else {
+                    userAnnotation = MKPointAnnotation()
+                    self.userAnnotation = userAnnotation
+                    self.mapView.addAnnotation(userAnnotation)
                 }
                 
                 UIView.animate(withDuration: 0.5, delay: 0, options: UIViewAnimationOptions.allowUserInteraction, animations: {
-                    self.userAnnotation?.coordinate = currentLocation.coordinate
+                    userAnnotation.coordinate = currentLocation.coordinate
                 }, completion: nil)
             
                 if self.centerMapOnUserLocation {
                     UIView.animate(withDuration: 0.45, delay: 0, options: UIViewAnimationOptions.allowUserInteraction, animations: {
-                        self.mapView.setCenter(self.userAnnotation!.coordinate, animated: false)
+                        self.mapView.setCenter(userAnnotation.coordinate, animated: false)
                     }, completion: {
                         _ in
                         self.mapView.region.span = MKCoordinateSpan(latitudeDelta: 0.0005, longitudeDelta: 0.0005)
@@ -336,18 +340,20 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                 }
                 
                 if self.displayDebugging {
-                    let bestLocationEstimate = self.sceneLocationView.bestLocationEstimate()
-                    
-                    if bestLocationEstimate != nil {
-                        if self.locationEstimateAnnotation == nil {
-                            self.locationEstimateAnnotation = MKPointAnnotation()
-                            self.mapView.addAnnotation(self.locationEstimateAnnotation!)
+                    if let bestLocationEstimate = self.sceneLocationView.bestLocationEstimate() {
+                        let locationEstimateAnnotation: MKPointAnnotation
+                        if let existingLocationEstimateAnnotation = self.locationEstimateAnnotation {
+                            locationEstimateAnnotation = existingLocationEstimateAnnotation
+                        } else {
+                            locationEstimateAnnotation = MKPointAnnotation()
+                            self.locationEstimateAnnotation = locationEstimateAnnotation
+                            self.mapView.addAnnotation(locationEstimateAnnotation)
                         }
-                        
-                        self.locationEstimateAnnotation!.coordinate = bestLocationEstimate!.location.coordinate
+
+                        locationEstimateAnnotation.coordinate = bestLocationEstimate.location.coordinate
                     } else {
-                        if self.locationEstimateAnnotation != nil {
-                            self.mapView.removeAnnotation(self.locationEstimateAnnotation!)
+                        if let locationEstimateAnnotation = self.locationEstimateAnnotation {
+                            self.mapView.removeAnnotation(locationEstimateAnnotation)
                             self.locationEstimateAnnotation = nil
                         }
                     }

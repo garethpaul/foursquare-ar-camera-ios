@@ -37,6 +37,8 @@ Current baseline:
 - Venue tap handling installs one gesture recognizer and skips nodes without
   highlight materials.
 - FSQView nib setup guards missing outlets before venue card subviews are added.
+- Map annotation updates avoid force-unwrapping optional annotations while user
+  and debug location markers change.
 - Location and heading updates start only after Core Location authorization is
   already available or newly granted.
 - Location manager setup avoids force-unwrapping optional manager or heading
@@ -61,6 +63,8 @@ Next priorities:
   setup or heading forwarding
 - Keep reachability setup optional-safe when changing network checks
 - Preserve the FSQView nib outlet guard when changing venue card rendering
+- Preserve the map annotation optional-state guard when changing map tracking
+  overlays
 - Keep local verification targets available even while full Xcode testing needs
   a macOS toolchain
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
