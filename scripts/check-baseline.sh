@@ -7,6 +7,7 @@ MASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md"
 TAP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md"
 LOCATION_AUTH_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-authorization-start-guard.md"
 INFO_LABEL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-info-label-text-guard.md"
+REACHABILITY_INIT_PLAN="$ROOT_DIR/docs/plans/2026-06-09-reachability-init-guard.md"
 
 require_file() {
   path=$1
@@ -33,6 +34,7 @@ for path in \
   "FoursquareARCamera/Source/Reachability.swift" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
+  "docs/plans/2026-06-09-reachability-init-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md" \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
@@ -79,6 +81,13 @@ if grep -Fq 'UIImage(named: "fsqMask")!' "$view" ||
   ! grep -Fq 'if let mask = UIImage(named: "fsqMask")' "$view" ||
   ! grep -Fq "Rendering Foursquare venue without the fsqMask asset" "$view"; then
   printf '%s\n' "Foursquare venue rendering must not force-unwrap the mask asset." >&2
+  exit 1
+fi
+
+if grep -Fq "Reachability()!" "$view" ||
+  ! grep -Fq "if let reach = Reachability()" "$view" ||
+  ! grep -Fq "Reachability could not be created" "$view"; then
+  printf '%s\n' "ViewController must not force-unwrap Reachability initialization." >&2
   exit 1
 fi
 
@@ -214,6 +223,11 @@ fi
 
 if ! grep -Fq "status: completed" "$INFO_LABEL_PLAN"; then
   printf '%s\n' "Info label text guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$REACHABILITY_INIT_PLAN"; then
+  printf '%s\n' "Reachability initialization guard plan must be marked completed." >&2
   exit 1
 fi
 

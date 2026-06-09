@@ -64,16 +64,18 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     override func viewDidLoad() {
         super.viewDidLoad()
   
-        let reach = Reachability()!
-        
-        if reach.currentReachabilityString == "No Connection" {
-            DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Oops", message: "We are currently struggling to access to the internet. This app requires access to the internet in order to find locations around you.", preferredStyle: UIAlertControllerStyle.alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default) { action in
-                    // perhaps use action.title here
-                })
-                self.present(alert, animated: true)
+        if let reach = Reachability() {
+            if reach.currentReachabilityString == "No Connection" {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Oops", message: "We are currently struggling to access to the internet. This app requires access to the internet in order to find locations around you.", preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default) { action in
+                        // perhaps use action.title here
+                    })
+                    self.present(alert, animated: true)
+                }
             }
+        } else {
+            DDLogWarn("Skipping reachability check because Reachability could not be created.")
         }
     
         

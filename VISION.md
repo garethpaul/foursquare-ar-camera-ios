@@ -39,6 +39,8 @@ Current baseline:
   already available or newly granted.
 - Debug info label updates avoid force-unwrapping optional label text when
   partial AR state is available.
+- Reachability setup avoids force-unwrapping initialization before the offline
+  alert path.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
 
 Next priorities:
@@ -49,6 +51,7 @@ Next priorities:
 - Keep debug overlays resilient when AR position, heading, and time values
   update independently
 - Keep Core Location authorization gating intact when changing AR startup
+- Keep reachability setup optional-safe when changing network checks
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
   dedicated pass
 - Add safer error handling for API failures and missing credentials

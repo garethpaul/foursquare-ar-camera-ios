@@ -4,6 +4,8 @@
 
 - Guarded debug info label updates so optional label text is not force-unwrapped
   when only partial AR state is available.
+- Guarded Reachability initialization so the offline check cannot crash before
+  displaying network state.
 
 ## 2026-06-08
 

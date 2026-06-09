@@ -68,7 +68,8 @@ venue mask asset is not force-unwrapped. The workspace can be listed when
 recognizer on the scene and skips nodes without highlight materials. Location
 and heading updates start only after Core Location authorization is available.
 Debug info label updates avoid force-unwrapping optional label text when partial
-AR state is available.
+AR state is available. Reachability setup avoids force-unwrapping initialization
+before showing offline state.
 For functional verification, use Xcode's test action or `xcodebuild test` with
 the appropriate scheme and destination.
 
@@ -92,6 +93,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   lookup behavior.
 - Keep debug info label updates resilient when only position, heading, or
   timestamp data is available.
+- Keep reachability setup resilient so network-check initialization cannot crash
+  before the offline alert path.
 
 ## Maintenance Notes
 
@@ -107,6 +110,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Core Location authorization startup guardrails.
 - See `docs/plans/2026-06-09-info-label-text-guard.md` for debug info label
   text guardrails.
+- See `docs/plans/2026-06-09-reachability-init-guard.md` for reachability
+  initialization guardrails.
 
 ## Contributing
 
