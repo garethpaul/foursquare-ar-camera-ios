@@ -43,6 +43,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     var updateInfoLabelTimer: Timer?
     
     var loaded: Bool = false
+    private let venueLookupRetryDelay: TimeInterval = 30.0
     private var hasVenueTapGesture = false
     
     var adjustNorthByTappingSidesOfScreen = false
@@ -58,6 +59,13 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         }
 
         return trimmedValue
+    }
+
+    private func allowVenueLookupRetryAfterDelay(reason: String) {
+        DDLogWarn("\(reason) Allowing venue lookup retry after \(Int(venueLookupRetryDelay)) seconds.")
+        DispatchQueue.main.asyncAfter(timeInterval: venueLookupRetryDelay) { [weak self] in
+            self?.loaded = false
+        }
     }
 
     
@@ -168,8 +176,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             let lng = String(currentLocation.coordinate.longitude)
             guard let clientID = configuredValue("FoursquareClientID"),
                 let clientSecret = configuredValue("FoursquareClientSecret") else {
-                DDLogWarn("Skipping Foursquare venue lookup because API credentials are not configured.")
-                self.loaded = false
+                self.allowVenueLookupRetryAfterDelay(reason: "Skipping Foursquare venue lookup because API credentials are not configured.")
                 return
             }
 
@@ -192,6 +199,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                     let json = JSON(value)
                     let resp = json["response"]
                     let venues = resp["venues"]
+                    var validVenueCount = 0
                     // Iterate through the venues
                     for venue in venues {
                         guard let name = venue.1["name"].string,
@@ -235,12 +243,16 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                         let compassMarker = MGLPointAnnotation()
                         compassMarker.coordinate = venueCoordinate
                         self.compass.addAnnotation(compassMarker)
+                        validVenueCount += 1
                         
+                    }
+
+                    if validVenueCount == 0 {
+                        self.allowVenueLookupRetryAfterDelay(reason: "No valid Foursquare venues were returned.")
                     }
                     
                 case .failure:
-                    DDLogWarn("Foursquare venue lookup failed.")
-                    self.loaded = false
+                    self.allowVenueLookupRetryAfterDelay(reason: "Foursquare venue lookup failed.")
                 }
             }
             

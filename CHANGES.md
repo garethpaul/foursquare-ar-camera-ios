@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Bounded Foursquare venue lookup retries after missing credentials, request
+  failures, or empty/malformed successful responses.
 - Guarded map annotation updates so optional user and debug location markers are
   not force-unwrapped.
 - Removed LocationManager force unwraps during manager setup and heading

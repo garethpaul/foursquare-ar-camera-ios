@@ -79,6 +79,8 @@ AR state is available. Reachability setup avoids force-unwrapping initialization
 before showing offline state. FSQView nib outlet setup is guarded before venue
 card subviews are added. Map annotation updates avoid force-unwrapping optional
 annotations while tracking the user and debug location estimate.
+Foursquare venue lookup retries use a bounded cooldown when credentials are
+missing, requests fail, or successful responses contain no valid venue payloads.
 For functional verification, use Xcode's test action or `xcodebuild test` with
 the appropriate scheme and destination.
 
@@ -110,6 +112,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   views do not crash rendering.
 - Keep map annotation updates resilient so optional annotation state cannot
   crash user or debug location tracking.
+- Keep Foursquare venue lookup retries bounded so missing credentials, failed
+  requests, or empty/malformed responses do not trigger immediate request loops.
 
 ## Maintenance Notes
 
@@ -137,6 +141,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   outlet guardrails.
 - See `docs/plans/2026-06-09-map-annotation-optional-guard.md` for map
   annotation optional-state guardrails.
+- See `docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md` for venue
+  lookup retry guardrails.
 
 ## Contributing
 

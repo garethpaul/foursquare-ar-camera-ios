@@ -47,6 +47,8 @@ Current baseline:
   partial AR state is available.
 - Reachability setup avoids force-unwrapping initialization before the offline
   alert path.
+- Foursquare venue lookup retries use a bounded cooldown when credentials are
+  missing, requests fail, or successful responses contain no valid venues.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
@@ -65,6 +67,8 @@ Next priorities:
 - Preserve the FSQView nib outlet guard when changing venue card rendering
 - Preserve the map annotation optional-state guard when changing map tracking
   overlays
+- Preserve bounded Foursquare venue lookup retries when changing API failure
+  handling
 - Keep local verification targets available even while full Xcode testing needs
   a macOS toolchain
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a

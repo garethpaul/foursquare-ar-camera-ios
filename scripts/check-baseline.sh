@@ -12,6 +12,7 @@ MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-make-gate-aliases.md"
 FSQ_VIEW_NIB_PLAN="$ROOT_DIR/docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md"
 LOCATION_MANAGER_OPTIONAL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-manager-optional-guard.md"
 MAP_ANNOTATION_PLAN="$ROOT_DIR/docs/plans/2026-06-09-map-annotation-optional-guard.md"
+VENUE_LOOKUP_RETRY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md"
 
 require_file() {
   path=$1
@@ -39,6 +40,7 @@ for path in \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
   "docs/plans/2026-06-09-location-manager-optional-guard.md" \
   "docs/plans/2026-06-09-map-annotation-optional-guard.md" \
+  "docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -104,6 +106,18 @@ if grep -Fq "Reachability()!" "$view" ||
   ! grep -Fq "if let reach = Reachability()" "$view" ||
   ! grep -Fq "Reachability could not be created" "$view"; then
   printf '%s\n' "ViewController must not force-unwrap Reachability initialization." >&2
+  exit 1
+fi
+
+if ! grep -Fq "private let venueLookupRetryDelay: TimeInterval = 30.0" "$view" ||
+  ! grep -Fq "private func allowVenueLookupRetryAfterDelay(reason: String)" "$view" ||
+  ! grep -Fq "DispatchQueue.main.asyncAfter(timeInterval: venueLookupRetryDelay)" "$view" ||
+  ! grep -Fq "var validVenueCount = 0" "$view" ||
+  ! grep -Fq "validVenueCount += 1" "$view" ||
+  ! grep -Fq "if validVenueCount == 0" "$view" ||
+  ! grep -Fq "No valid Foursquare venues were returned." "$view" ||
+  grep -Fq "self.loaded = false" "$view"; then
+  printf '%s\n' "Foursquare venue lookup failures must release the loaded gate through a bounded retry delay." >&2
   exit 1
 fi
 
@@ -211,6 +225,7 @@ if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FSQView nib outlet" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Map annotation updates avoid force-unwrapping optional" "$ROOT_DIR/README.md" ||
   ! grep -Fq "annotations while tracking the user and debug location estimate" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Foursquare venue lookup retries use a bounded cooldown" "$ROOT_DIR/README.md" ||
   ! grep -Fq "location-authorization-start-guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FOURSQUARE_CLIENT_ID" "$ROOT_DIR/README.md"; then
@@ -229,6 +244,7 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Location manager setup avoids force-unwrapping" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "FSQView nib setup guards" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Map annotation updates avoid force-unwrapping optional annotations" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Foursquare venue lookup retries use a bounded cooldown" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Debug info label updates avoid force-unwrapping optional label text" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "detailed location" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe current credential and location guardrails." >&2
@@ -257,6 +273,11 @@ fi
 
 if ! grep -Fq "Map annotation updates should avoid force-unwrapping optional annotation state" "$ROOT_DIR/SECURITY.md"; then
   printf '%s\n' "SECURITY must document the map annotation optional boundary." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Foursquare venue lookup retries should stay bounded" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document the venue lookup retry boundary." >&2
   exit 1
 fi
 
@@ -324,6 +345,11 @@ if ! grep -Fq "status: completed" "$MAP_ANNOTATION_PLAN"; then
   exit 1
 fi
 
+if ! grep -Fq "status: completed" "$VENUE_LOOKUP_RETRY_PLAN"; then
+  printf '%s\n' "Venue lookup retry guard plan must be marked completed." >&2
+  exit 1
+fi
+
 if ! grep -Fq "make check" "$LOCATION_MANAGER_OPTIONAL_PLAN"; then
   printf '%s\n' "Location manager optional guard plan must record make check verification." >&2
   exit 1
@@ -331,6 +357,11 @@ fi
 
 if ! grep -Fq "make check" "$MAP_ANNOTATION_PLAN"; then
   printf '%s\n' "Map annotation optional guard plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$VENUE_LOOKUP_RETRY_PLAN"; then
+  printf '%s\n' "Venue lookup retry guard plan must record make check verification." >&2
   exit 1
 fi
 

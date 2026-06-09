@@ -45,6 +45,9 @@ heading, and time values can become available independently.
 FSQView nib setup should guard missing outlets before venue card rendering.
 Map annotation updates should avoid force-unwrapping optional annotation state
 while displaying user or debug location markers.
+Foursquare venue lookup retries should stay bounded so missing credentials,
+failed requests, or empty/malformed responses do not create immediate request
+loops while location updates continue.
 
 ## Dependency and Supply Chain Security
 
