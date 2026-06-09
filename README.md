@@ -67,6 +67,8 @@ venue mask asset is not force-unwrapped. The workspace can be listed when
 `xcodebuild` is installed. The venue tap interaction guard keeps one tap
 recognizer on the scene and skips nodes without highlight materials. Location
 and heading updates start only after Core Location authorization is available.
+Debug info label updates avoid force-unwrapping optional label text when partial
+AR state is available.
 For functional verification, use Xcode's test action or `xcodebuild test` with
 the appropriate scheme and destination.
 
@@ -88,6 +90,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
 - Keep Core Location updates gated on authorization before starting AR venue
   lookup behavior.
+- Keep debug info label updates resilient when only position, heading, or
+  timestamp data is available.
 
 ## Maintenance Notes
 
@@ -101,6 +105,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   tap interaction guardrails.
 - See `docs/plans/2026-06-09-location-authorization-start-guard.md` for
   Core Location authorization startup guardrails.
+- See `docs/plans/2026-06-09-info-label-text-guard.md` for debug info label
+  text guardrails.
 
 ## Contributing
 

@@ -37,6 +37,8 @@ Current baseline:
   highlight materials.
 - Location and heading updates start only after Core Location authorization is
   already available or newly granted.
+- Debug info label updates avoid force-unwrapping optional label text when
+  partial AR state is available.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
 
 Next priorities:
@@ -44,6 +46,8 @@ Next priorities:
 - Verify AR, camera, location, Mapbox, and Foursquare behavior on a physical device
 - Add tests or manual checklists for missing credentials and API failure states
 - Keep venue tap handling resilient when SceneKit node shapes change
+- Keep debug overlays resilient when AR position, heading, and time values
+  update independently
 - Keep Core Location authorization gating intact when changing AR startup
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
   dedicated pass

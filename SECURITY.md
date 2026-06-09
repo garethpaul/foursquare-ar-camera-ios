@@ -38,6 +38,8 @@ If this project requests device permissions such as location, camera, microphone
 
 Core Location updates should stay gated on authorization before AR venue lookup
 behavior starts.
+Debug label updates should not force-unwrap optional text because AR position,
+heading, and time values can become available independently.
 
 ## Dependency and Supply Chain Security
 

@@ -357,25 +357,29 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     // MARK: Update the label information
     
     @objc func updateInfoLabel() {
+        var infoLabelLines = [String]()
+
         if let position = sceneLocationView.currentScenePosition() {
-            infoLabel.text = "x: \(String(format: "%.2f", position.x)), y: \(String(format: "%.2f", position.y)), z: \(String(format: "%.2f", position.z))\n"
+            infoLabelLines.append("x: \(String(format: "%.2f", position.x)), y: \(String(format: "%.2f", position.y)), z: \(String(format: "%.2f", position.z))")
         }
         
         if let eulerAngles = sceneLocationView.currentEulerAngles() {
-            infoLabel.text!.append("Euler x: \(String(format: "%.2f", eulerAngles.x)), y: \(String(format: "%.2f", eulerAngles.y)), z: \(String(format: "%.2f", eulerAngles.z))\n")
+            infoLabelLines.append("Euler x: \(String(format: "%.2f", eulerAngles.x)), y: \(String(format: "%.2f", eulerAngles.y)), z: \(String(format: "%.2f", eulerAngles.z))")
         }
         
         if let heading = sceneLocationView.locationManager.heading,
             let accuracy = sceneLocationView.locationManager.headingAccuracy {
-            infoLabel.text!.append("Heading: \(heading)º, accuracy: \(Int(round(accuracy)))º\n")
+            infoLabelLines.append("Heading: \(heading)º, accuracy: \(Int(round(accuracy)))º")
         }
         
         let date = Date()
         let comp = Calendar.current.dateComponents([.hour, .minute, .second, .nanosecond], from: date)
         
         if let hour = comp.hour, let minute = comp.minute, let second = comp.second, let nanosecond = comp.nanosecond {
-            infoLabel.text!.append("\(String(format: "%02d", hour)):\(String(format: "%02d", minute)):\(String(format: "%02d", second)):\(String(format: "%03d", nanosecond / 1000000))")
+            infoLabelLines.append("\(String(format: "%02d", hour)):\(String(format: "%02d", minute)):\(String(format: "%02d", second)):\(String(format: "%03d", nanosecond / 1000000))")
         }
+
+        infoLabel.text = infoLabelLines.joined(separator: "\n")
     }
     
     //MARK: SceneLocationViewDelegate

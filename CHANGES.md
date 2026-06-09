@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-09
+
+- Guarded debug info label updates so optional label text is not force-unwrapped
+  when only partial AR state is available.
+
 ## 2026-06-08
 
 - Gated Core Location heading and location updates on authorization before

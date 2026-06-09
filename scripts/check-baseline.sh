@@ -6,6 +6,7 @@ PLAN="$ROOT_DIR/docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseli
 MASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md"
 TAP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md"
 LOCATION_AUTH_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-authorization-start-guard.md"
+INFO_LABEL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-info-label-text-guard.md"
 
 require_file() {
   path=$1
@@ -31,6 +32,7 @@ for path in \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
+  "docs/plans/2026-06-09-info-label-text-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-tap-interaction-guard.md" \
   "docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md" \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
@@ -95,6 +97,13 @@ if grep -R -n 'print(' "$ROOT_DIR/FoursquareARCamera"; then
   exit 1
 fi
 
+if grep -Fq "infoLabel.text!.append" "$view" ||
+  ! grep -Fq "var infoLabelLines = [String]()" "$view" ||
+  ! grep -Fq 'infoLabel.text = infoLabelLines.joined(separator: "\n")' "$view"; then
+  printf '%s\n' "Debug info label updates must not force-unwrap optional label text." >&2
+  exit 1
+fi
+
 location_manager="$ROOT_DIR/FoursquareARCamera/Source/Helpers/LocationManager.swift"
 if ! grep -Fq "private func isAuthorizedForLocationUpdates" "$location_manager" ||
   ! grep -Fq "requestWhenInUseAuthorization()" "$location_manager" ||
@@ -153,6 +162,7 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue rendering keeps working" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue tap handling installs one gesture recognizer" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Location and heading updates start only after" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Debug info label updates avoid force-unwrapping optional label text" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "detailed location" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe current credential and location guardrails." >&2
   exit 1
@@ -160,6 +170,11 @@ fi
 
 if ! grep -Fq "Core Location updates should stay gated on authorization" "$ROOT_DIR/SECURITY.md"; then
   printf '%s\n' "SECURITY must document the Core Location authorization boundary." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Debug label updates should not force-unwrap optional text" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document the debug label force-unwrap boundary." >&2
   exit 1
 fi
 
@@ -194,6 +209,11 @@ fi
 
 if ! grep -Fq "status: completed" "$LOCATION_AUTH_PLAN"; then
   printf '%s\n' "Location authorization start plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$INFO_LABEL_PLAN"; then
+  printf '%s\n' "Info label text guard plan must be marked completed." >&2
   exit 1
 fi
 
