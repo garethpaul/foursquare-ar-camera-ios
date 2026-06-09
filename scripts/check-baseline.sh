@@ -9,6 +9,7 @@ LOCATION_AUTH_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-authorization-start
 INFO_LABEL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-info-label-text-guard.md"
 REACHABILITY_INIT_PLAN="$ROOT_DIR/docs/plans/2026-06-09-reachability-init-guard.md"
 MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-make-gate-aliases.md"
+FSQ_VIEW_NIB_PLAN="$ROOT_DIR/docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md"
 
 require_file() {
   path=$1
@@ -33,6 +34,8 @@ for path in \
   "FoursquareARCamera/ViewController.swift" \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
+  "FoursquareARCamera/Source/Views/FSQView.swift" \
+  "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
   "docs/plans/2026-06-09-make-gate-aliases.md" \
@@ -115,6 +118,14 @@ if grep -R -n 'print(' "$ROOT_DIR/FoursquareARCamera"; then
   exit 1
 fi
 
+fsq_view="$ROOT_DIR/FoursquareARCamera/Source/Views/FSQView.swift"
+if grep -Fq "view.frame = CGRect" "$fsq_view" ||
+  ! grep -Fq "guard let loadedView = view" "$fsq_view" ||
+  ! grep -Fq "Skipping FSQView setup because nib outlet is unavailable" "$fsq_view"; then
+  printf '%s\n' "FSQView nib setup must guard the loaded outlet before adding subviews." >&2
+  exit 1
+fi
+
 if grep -Fq "infoLabel.text!.append" "$view" ||
   ! grep -Fq "var infoLabelLines = [String]()" "$view" ||
   ! grep -Fq 'infoLabel.text = infoLabelLines.joined(separator: "\n")' "$view"; then
@@ -171,6 +182,7 @@ if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
   ! grep -Fq "venue mask asset is not force-unwrapped" "$ROOT_DIR/README.md" ||
   ! grep -Fq "venue tap interaction guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Core Location authorization" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "FSQView nib outlet" "$ROOT_DIR/README.md" ||
   ! grep -Fq "location-authorization-start-guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FOURSQUARE_CLIENT_ID" "$ROOT_DIR/README.md"; then
@@ -186,6 +198,7 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue rendering keeps working" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Venue tap handling installs one gesture recognizer" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Location and heading updates start only after" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "FSQView nib setup guards" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Debug info label updates avoid force-unwrapping optional label text" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "detailed location" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe current credential and location guardrails." >&2
@@ -199,6 +212,11 @@ fi
 
 if ! grep -Fq "Debug label updates should not force-unwrap optional text" "$ROOT_DIR/SECURITY.md"; then
   printf '%s\n' "SECURITY must document the debug label force-unwrap boundary." >&2
+  exit 1
+fi
+
+if ! grep -Fq "FSQView nib setup should guard missing outlets" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document the FSQView nib outlet boundary." >&2
   exit 1
 fi
 
@@ -248,6 +266,11 @@ fi
 
 if ! grep -Fq "status: completed" "$MAKE_GATES_PLAN"; then
   printf '%s\n' "Make gate alias plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$FSQ_VIEW_NIB_PLAN"; then
+  printf '%s\n' "FSQView nib outlet guard plan must be marked completed." >&2
   exit 1
 fi
 

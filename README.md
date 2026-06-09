@@ -74,7 +74,8 @@ recognizer on the scene and skips nodes without highlight materials. Location
 and heading updates start only after Core Location authorization is available.
 Debug info label updates avoid force-unwrapping optional label text when partial
 AR state is available. Reachability setup avoids force-unwrapping initialization
-before showing offline state.
+before showing offline state. FSQView nib outlet setup is guarded before venue
+card subviews are added.
 For functional verification, use Xcode's test action or `xcodebuild test` with
 the appropriate scheme and destination.
 
@@ -100,6 +101,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   timestamp data is available.
 - Keep reachability setup resilient so network-check initialization cannot crash
   before the offline alert path.
+- Keep FSQView nib outlet setup resilient so missing or miswired venue card
+  views do not crash rendering.
 
 ## Maintenance Notes
 
@@ -121,6 +124,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   initialization guardrails.
 - See `docs/plans/2026-06-09-make-gate-aliases.md` for local verification
   target guardrails.
+- See `docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md` for venue card nib
+  outlet guardrails.
 
 ## Contributing
 

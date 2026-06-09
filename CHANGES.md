@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Guarded FSQView nib outlet setup so missing or miswired venue card views do
+  not crash rendering.
 - Added `make lint`, `make test`, and `make build` aliases so local verification
   has the expected pre-push gate targets in addition to `make check`.
 - Guarded debug info label updates so optional label text is not force-unwrapped

@@ -40,6 +40,7 @@ Core Location updates should stay gated on authorization before AR venue lookup
 behavior starts.
 Debug label updates should not force-unwrap optional text because AR position,
 heading, and time values can become available independently.
+FSQView nib setup should guard missing outlets before venue card rendering.
 
 ## Dependency and Supply Chain Security
 

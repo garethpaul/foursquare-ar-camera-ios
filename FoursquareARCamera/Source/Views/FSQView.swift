@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CocoaLumberjack
 
 @IBDesignable
 class FSQView: UIView {
@@ -24,8 +25,13 @@ class FSQView: UIView {
     
     private func commonInit() {
         Bundle.main.loadNibNamed("FSQView", owner: self, options: nil)
-        view.frame = CGRect(x: 0, y: 0, width: 362, height: 291)
-        addSubview(view)
+        guard let loadedView = view else {
+            DDLogWarn("Skipping FSQView setup because nib outlet is unavailable.")
+            return
+        }
+
+        loadedView.frame = CGRect(x: 0, y: 0, width: 362, height: 291)
+        addSubview(loadedView)
     }
     
     required init?(coder aDecoder: NSCoder) {

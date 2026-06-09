@@ -36,6 +36,7 @@ Current baseline:
   `fsqMask` asset.
 - Venue tap handling installs one gesture recognizer and skips nodes without
   highlight materials.
+- FSQView nib setup guards missing outlets before venue card subviews are added.
 - Location and heading updates start only after Core Location authorization is
   already available or newly granted.
 - Debug info label updates avoid force-unwrapping optional label text when
@@ -55,6 +56,7 @@ Next priorities:
   update independently
 - Keep Core Location authorization gating intact when changing AR startup
 - Keep reachability setup optional-safe when changing network checks
+- Preserve the FSQView nib outlet guard when changing venue card rendering
 - Keep local verification targets available even while full Xcode testing needs
   a macOS toolchain
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
