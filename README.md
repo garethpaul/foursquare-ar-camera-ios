@@ -53,6 +53,16 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Open `FoursquareARCamera.xcworkspace` in Xcode after `pod install`, choose the app or sample scheme, and run it on a physical device for AR/camera/location behavior.
 - Configure `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET` as local build settings, for example through an untracked `.xcconfig` file or Xcode scheme environment.
 
+This is a preserved Swift 4.0 and iOS 11-era sample, not a current production
+SDK baseline. The CocoaPods graph includes legacy dependencies, including a
+CocoaLumberjack master branch reference, and the checked-in Mapbox, ARKit/Core
+Location, and Foursquare venue integration should be modernized in isolated,
+device-verified changes rather than through an unreviewed bulk update.
+The current lockfile records CocoaPods 1.3.1; any regenerated lockfile should
+document the replacement CocoaPods version and dependency review.
+`make check` parses the checked-in Xcode project when Xcode is available. Use
+the workspace for functional builds only after generating Pods locally.
+
 ## Testing and Verification
 
 Run the static baseline:
@@ -143,6 +153,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   annotation optional-state guardrails.
 - See `docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md` for venue
   lookup retry guardrails.
+- See `docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md` for the
+  legacy SDK and dependency modernization sequence.
 
 ## Contributing
 

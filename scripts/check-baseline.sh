@@ -13,6 +13,7 @@ FSQ_VIEW_NIB_PLAN="$ROOT_DIR/docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md"
 LOCATION_MANAGER_OPTIONAL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-manager-optional-guard.md"
 MAP_ANNOTATION_PLAN="$ROOT_DIR/docs/plans/2026-06-09-map-annotation-optional-guard.md"
 VENUE_LOOKUP_RETRY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md"
+LEGACY_SDK_PLAN="$ROOT_DIR/docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md"
 
 require_file() {
   path=$1
@@ -41,6 +42,7 @@ for path in \
   "docs/plans/2026-06-09-location-manager-optional-guard.md" \
   "docs/plans/2026-06-09-map-annotation-optional-guard.md" \
   "docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md" \
+  "docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -281,6 +283,30 @@ if ! grep -Fq "Foursquare venue lookup retries should stay bounded" "$ROOT_DIR/S
   exit 1
 fi
 
+if ! grep -Fq "Swift 4.0 and iOS 11" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "CocoaLumberjack master branch" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "legacy-sdk-modernization-boundary" "$ROOT_DIR/README.md"; then
+  printf '%s\n' "README must document the legacy SDK and dependency boundary." >&2
+  exit 1
+fi
+
+if ! grep -Fq ":branch => 'master'" "$ROOT_DIR/Podfile" ||
+  ! grep -Fq "COCOAPODS: 1.3.1" "$ROOT_DIR/Podfile.lock"; then
+  printf '%s\n' "Legacy modernization boundary must track the mutable pod source and lockfile tool version." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Swift 4.0 and iOS 11" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Pin CocoaPods dependencies" "$ROOT_DIR/VISION.md"; then
+  printf '%s\n' "VISION must describe the legacy SDK modernization sequence." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Legacy Swift, CocoaPods, Mapbox, ARKit, Core Location, or Foursquare API modernization" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document legacy SDK modernization review boundaries." >&2
+  exit 1
+fi
+
 if ! grep -Fq "*.xcconfig" "$ROOT_DIR/.gitignore" ||
   ! grep -Fq ".env" "$ROOT_DIR/.gitignore" ||
   ! grep -Fq ".DS_Store" "$ROOT_DIR/.gitignore" ||
@@ -290,9 +316,9 @@ if ! grep -Fq "*.xcconfig" "$ROOT_DIR/.gitignore" ||
 fi
 
 if command -v xcodebuild >/dev/null 2>&1; then
-  xcodebuild -list -workspace "$ROOT_DIR/FoursquareARCamera.xcworkspace"
+  xcodebuild -list -project "$ROOT_DIR/FoursquareARCamera.xcodeproj" >/dev/null
 else
-  printf '%s\n' "Skipping xcodebuild workspace listing: xcodebuild is not installed."
+  printf '%s\n' "Skipping xcodebuild project listing: xcodebuild is not installed."
 fi
 
 if ! grep -Fq "status: completed" "$PLAN"; then
@@ -362,6 +388,15 @@ fi
 
 if ! grep -Fq "make check" "$VENUE_LOOKUP_RETRY_PLAN"; then
   printf '%s\n' "Venue lookup retry guard plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LEGACY_SDK_PLAN" ||
+  ! grep -Fq "SWIFT_VERSION = 4.0" "$LEGACY_SDK_PLAN" ||
+  ! grep -Fq "IPHONEOS_DEPLOYMENT_TARGET = 11.0" "$LEGACY_SDK_PLAN" ||
+  ! grep -Fq "CocoaPods 1.3.1" "$LEGACY_SDK_PLAN" ||
+  ! grep -Fq "make check" "$LEGACY_SDK_PLAN"; then
+  printf '%s\n' "Legacy SDK modernization plan must record the current boundary and verification." >&2
   exit 1
 fi
 

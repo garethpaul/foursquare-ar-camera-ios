@@ -52,6 +52,8 @@ Current baseline:
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
+- Swift 4.0 and iOS 11 remain the checked-in legacy compiler and deployment
+  boundary; this repository does not claim a current production SDK baseline.
 
 Next priorities:
 
@@ -73,6 +75,8 @@ Next priorities:
   a macOS toolchain
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
   dedicated pass
+- Pin CocoaPods dependencies before changing Swift, Mapbox, ARKit/Core
+  Location, or Foursquare API behavior
 - Add safer error handling for API failures and missing credentials
 
 Contribution rules:

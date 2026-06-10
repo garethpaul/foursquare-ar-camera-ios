@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-10
+
+- Documented the Swift 4.0, iOS 11, CocoaPods, Mapbox, ARKit/Core Location, and
+  Foursquare venue integration boundary with a staged modernization sequence,
+  including the CocoaPods 1.3.1 lockfile baseline.
+
 ## 2026-06-09
 
 - Bounded Foursquare venue lookup retries after missing credentials, request
