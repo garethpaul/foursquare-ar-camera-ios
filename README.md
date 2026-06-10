@@ -91,6 +91,8 @@ card subviews are added. Map annotation updates avoid force-unwrapping optional
 annotations while tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are
 missing, requests fail, or successful responses contain no valid venue payloads.
+Venue responses also require finite latitude/longitude within geographic bounds
+and a finite nonnegative distance before rendering.
 For functional verification, use Xcode's test action or `xcodebuild test` with
 the appropriate scheme and destination.
 

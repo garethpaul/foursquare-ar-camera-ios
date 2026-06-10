@@ -2,6 +2,8 @@
 
 ## 2026-06-10
 
+- Rejected non-finite, out-of-range venue coordinates and negative distances
+  before creating AR nodes or map annotations.
 - Documented the Swift 4.0, iOS 11, CocoaPods, Mapbox, ARKit/Core Location, and
   Foursquare venue integration boundary with a staged modernization sequence,
   including the CocoaPods 1.3.1 lockfile baseline.

@@ -13,6 +13,7 @@ FSQ_VIEW_NIB_PLAN="$ROOT_DIR/docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md"
 LOCATION_MANAGER_OPTIONAL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-location-manager-optional-guard.md"
 MAP_ANNOTATION_PLAN="$ROOT_DIR/docs/plans/2026-06-09-map-annotation-optional-guard.md"
 VENUE_LOOKUP_RETRY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md"
+VENUE_COORDINATE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-venue-coordinate-validation.md"
 LEGACY_SDK_PLAN="$ROOT_DIR/docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md"
 
 require_file() {
@@ -42,6 +43,7 @@ for path in \
   "docs/plans/2026-06-09-location-manager-optional-guard.md" \
   "docs/plans/2026-06-09-map-annotation-optional-guard.md" \
   "docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md" \
+  "docs/plans/2026-06-10-foursquare-venue-coordinate-validation.md" \
   "docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
@@ -94,6 +96,16 @@ if ! grep -Fq 'configuredValue("FoursquareClientID")' "$view" ||
   grep -Eq '\["(name|location)"\].*\!|\["categories"\]\[0\]' "$view" ||
   grep -Eq 'DDLogDebug\(.*(coordinate|currentLocation|translated location|best location estimate|altitude)' "$view"; then
   printf '%s\n' "ViewController must use local credentials and avoid detailed location logging." >&2
+  exit 1
+fi
+
+if ! grep -Fq "venueLatitude.isFinite" "$view" ||
+  ! grep -Fq "(-90.0...90.0).contains(venueLatitude)" "$view" ||
+  ! grep -Fq "venueLongitude.isFinite" "$view" ||
+  ! grep -Fq "(-180.0...180.0).contains(venueLongitude)" "$view" ||
+  ! grep -Fq "distance.isFinite" "$view" ||
+  ! grep -Fq "distance >= 0" "$view"; then
+  printf '%s\n' "Foursquare venue coordinates and distance must be finite and in range." >&2
   exit 1
 fi
 
@@ -373,6 +385,11 @@ fi
 
 if ! grep -Fq "status: completed" "$VENUE_LOOKUP_RETRY_PLAN"; then
   printf '%s\n' "Venue lookup retry guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$VENUE_COORDINATE_PLAN"; then
+  printf '%s\n' "Foursquare venue coordinate plan must be marked completed." >&2
   exit 1
 fi
 

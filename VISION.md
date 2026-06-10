@@ -49,6 +49,8 @@ Current baseline:
   alert path.
 - Foursquare venue lookup retries use a bounded cooldown when credentials are
   missing, requests fail, or successful responses contain no valid venues.
+- Venue response coordinates and distances are finite and range-checked before
+  AR nodes or map annotations are created.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.

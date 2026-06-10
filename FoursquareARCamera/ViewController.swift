@@ -205,7 +205,13 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                         guard let name = venue.1["name"].string,
                             let venueLatitude = venue.1["location"]["lat"].double,
                             let venueLongitude = venue.1["location"]["lng"].double,
-                            let distance = venue.1["location"]["distance"].double else {
+                            let distance = venue.1["location"]["distance"].double,
+                            venueLatitude.isFinite,
+                            (-90.0...90.0).contains(venueLatitude),
+                            venueLongitude.isFinite,
+                            (-180.0...180.0).contains(venueLongitude),
+                            distance.isFinite,
+                            distance >= 0 else {
                             DDLogWarn("Skipping malformed Foursquare venue response.")
                             continue
                         }

@@ -48,6 +48,8 @@ while displaying user or debug location markers.
 Foursquare venue lookup retries should stay bounded so missing credentials,
 failed requests, or empty/malformed responses do not create immediate request
 loops while location updates continue.
+Foursquare venue coordinates should be finite and geographically bounded, and
+distance values should be finite and nonnegative before AR or map rendering.
 
 Legacy Swift, CocoaPods, Mapbox, ARKit, Core Location, or Foursquare API modernization
 should be reviewed as security- and privacy-sensitive integration work. Keep
