@@ -15,6 +15,8 @@ MAP_ANNOTATION_PLAN="$ROOT_DIR/docs/plans/2026-06-09-map-annotation-optional-gua
 VENUE_LOOKUP_RETRY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md"
 VENUE_COORDINATE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-venue-coordinate-validation.md"
 LEGACY_SDK_PLAN="$ROOT_DIR/docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md"
+CI_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-project-validation.md"
+CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
   path=$1
@@ -25,6 +27,7 @@ require_file() {
 }
 
 for path in \
+  ".github/workflows/check.yml" \
   ".gitignore" \
   "CHANGES.md" \
   "Makefile" \
@@ -45,6 +48,7 @@ for path in \
   "docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md" \
   "docs/plans/2026-06-10-foursquare-venue-coordinate-validation.md" \
   "docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md" \
+  "docs/plans/2026-06-12-hosted-project-validation.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -65,6 +69,20 @@ fi
 
 if git -C "$ROOT_DIR" ls-files | grep -Eq '(^|/)\.DS_Store$|^mapbox_access_token$'; then
   printf '%s\n' "Local Finder artifacts and token placeholder files must not be tracked." >&2
+  exit 1
+fi
+
+if git -C "$ROOT_DIR" ls-files | awk '
+  {
+    folded = tolower($0)
+    if (seen[folded] != "" && seen[folded] != $0) {
+      print seen[folded] " <-> " $0
+    } else {
+      seen[folded] = $0
+    }
+  }
+' | grep -q .; then
+  printf '%s\n' "Tracked paths must not collide on case-insensitive filesystems." >&2
   exit 1
 fi
 
@@ -333,6 +351,90 @@ else
   printf '%s\n' "Skipping xcodebuild project listing: xcodebuild is not installed."
 fi
 
+if ! awk '
+  /^on:$/ { on_count++ }
+  /^  pull_request:$/ { pull_request_count++ }
+  /^  push:$/ { push_count++ }
+  /^  workflow_dispatch:$/ { workflow_dispatch_count++ }
+  /^permissions:$/ { permissions_count++; permissions_state = 1; next }
+  permissions_state == 1 && /^[[:space:]]*(#.*)?$/ { next }
+  permissions_state == 1 {
+    if ($0 == "  contents: read") {
+      contents_read_count++
+    } else {
+      invalid = 1
+    }
+    permissions_state = 0
+    next
+  }
+  /^concurrency:$/ { concurrency_count++ }
+  /^  group: check-\$\{\{ github\.workflow \}\}-\$\{\{ github\.ref \}\}$/ { group_count++ }
+  /^  cancel-in-progress: true$/ { cancellation_count++ }
+  /^jobs:$/ { jobs_count++; jobs_state = 1 }
+  jobs_state == 1 && /^  [A-Za-z0-9_-]+:$/ { job_count++; if ($0 == "  check:") check_job_count++ }
+  /^    runs-on:/ { runner_count++; if ($0 == "    runs-on: macos-15") macos_runner_count++ }
+  /^    timeout-minutes:/ { timeout_count++; if ($0 == "    timeout-minutes: 10") bounded_timeout_count++ }
+  /^[[:space:]]*(-[[:space:]]+)?uses:/ { uses_count++ }
+  /^[[:space:]]*(-[[:space:]]+)?uses:[[:space:]]*actions\/checkout@/ {
+    checkout_count++
+    if ($0 == "        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3") {
+      checkout_state = 1
+    } else {
+      invalid = 1
+    }
+    next
+  }
+  /^[[:space:]]*persist-credentials[[:space:]]*:/ { credential_count++ }
+  /^        with:[[:space:]]*(#.*)?$/ { with_count++ }
+  checkout_state == 1 && /^[[:space:]]*(#.*)?$/ { next }
+  checkout_state == 1 {
+    if ($0 == "        with:") {
+      checkout_state = 2
+    } else {
+      invalid = 1
+      checkout_state = 0
+    }
+    next
+  }
+  checkout_state == 2 && /^[[:space:]]*(#.*)?$/ { next }
+  checkout_state == 2 {
+    if ($0 == "          persist-credentials: false") {
+      credential_contract_count++
+    } else {
+      invalid = 1
+    }
+    checkout_state = 0
+  }
+  /^[[:space:]]*(-[[:space:]]+)?run:/ { run_count++; if ($0 == "        run: make check") make_check_count++ }
+  /(^|[[:space:]])(write-all|[A-Za-z-]+:[[:space:]]*write)([[:space:]]|$)/ { invalid = 1 }
+  END {
+    if (on_count != 1 || pull_request_count != 1 || push_count != 1 ||
+        workflow_dispatch_count != 1 || permissions_count != 1 ||
+        contents_read_count != 1 || concurrency_count != 1 || group_count != 1 ||
+        cancellation_count != 1 || jobs_count != 1 || job_count != 1 ||
+        check_job_count != 1 || runner_count != 1 || macos_runner_count != 1 ||
+        timeout_count != 1 || bounded_timeout_count != 1 || uses_count != 1 || checkout_count != 1 ||
+        with_count != 1 || credential_count != 1 || credential_contract_count != 1 ||
+        run_count != 1 || make_check_count != 1 || invalid != 0) {
+      exit 1
+    }
+  }
+' "$CI_WORKFLOW"; then
+  printf '%s\n' "GitHub Actions must keep one bounded, least-privilege macOS validation job." >&2
+  exit 1
+fi
+
+if ! grep -Fq "GitHub Actions" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "without persisted checkout credentials" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "docs/plans/2026-06-12-hosted-project-validation.md" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "GitHub Actions" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "no persisted checkout credentials" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "GitHub Actions" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "GitHub Actions" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Project docs must record the hosted project validation baseline." >&2
+  exit 1
+fi
+
 if ! grep -Fq "status: completed" "$PLAN"; then
   printf '%s\n' "Plan must be marked completed." >&2
   exit 1
@@ -414,6 +516,14 @@ if ! grep -Fq "status: completed" "$LEGACY_SDK_PLAN" ||
   ! grep -Fq "CocoaPods 1.3.1" "$LEGACY_SDK_PLAN" ||
   ! grep -Fq "make check" "$LEGACY_SDK_PLAN"; then
   printf '%s\n' "Legacy SDK modernization plan must record the current boundary and verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$CI_PLAN" ||
+  ! grep -Fq "make check" "$CI_PLAN" ||
+  ! grep -Fq "macos-15" "$CI_PLAN" ||
+  ! grep -Fq "persisted checkout credentials" "$CI_PLAN"; then
+  printf '%s\n' "Hosted project validation plan must record the completed security and verification contract." >&2
   exit 1
 fi
 
