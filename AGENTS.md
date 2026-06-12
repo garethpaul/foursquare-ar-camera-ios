@@ -2,7 +2,7 @@
 
 ## Repository purpose
 
-`garethpaul/foursquare-ar-camera-ios` is an Apple platform application or Swift sample. AR Camera using Foursquare API.
+`garethpaul/foursquare-ar-camera-ios` is a preserved Swift 4.0 and iOS 11 AR camera sample that combines ARKit, Core Location, Mapbox, and the Foursquare venue API.
 
 ## Project structure
 
@@ -19,6 +19,9 @@
 
 - Install dependencies: `pod install`
 - Full baseline: `make check`
+- Lint/static checks: `make lint`
+- Tests: `make test`
+- Build gate: `make build`
 - Local Apple development: `open FoursquareARCamera.xcworkspace`
 - If a command above skips because a platform toolchain is missing, verify on a machine with that SDK before claiming platform behavior is tested.
 
@@ -30,7 +33,8 @@
 
 ## Testing guidance
 
-- No dedicated test files were detected; treat `make check` as the minimum baseline.
+- No dedicated test files were detected. The `lint`, `test`, and `build` targets delegate to the maintained static `make check` baseline rather than compiling or exercising app behavior.
+- Hosted macOS CI additionally parses the checked-in Xcode project; it does not install Pods, sign or launch the app, call live APIs, or test camera, AR, Mapbox, and location behavior.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
 
@@ -49,6 +53,9 @@
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
 - Keep Core Location updates gated on authorization before starting AR venue lookup behavior.
 - Keep location manager setup and heading forwarding resilient when optional Core Location state is unavailable.
+- Reject non-finite or out-of-range venue coordinates, and reject non-finite or negative distances, before creating AR nodes or map annotations.
+- Keep credential, request, malformed-response, and empty-response retries bounded by the documented cooldown.
+- Treat Swift, CocoaPods, Mapbox, ARKit/Core Location, and Foursquare API modernization as staged, device-verified work; update `Podfile.lock` only with an intentional dependency and CocoaPods toolchain review.
 
 ## Agent workflow
 

@@ -51,6 +51,12 @@ loops while location updates continue.
 Foursquare venue coordinates should be finite and geographically bounded, and
 distance values should be finite and nonnegative before AR or map rendering.
 
+GitHub Actions runs the credential-free static and Xcode project baseline with
+read-only repository permissions, an immutable checkout pin, a bounded macOS
+job, and no persisted checkout credentials. Workflow changes should preserve
+those restrictions and must not introduce secrets, signing material, or live
+Foursquare or Mapbox requests.
+
 Legacy Swift, CocoaPods, Mapbox, ARKit, Core Location, or Foursquare API modernization
 should be reviewed as security- and privacy-sensitive integration work. Keep
 dependency changes reproducible, preserve attribution and permission checks,

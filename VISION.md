@@ -53,6 +53,9 @@ Current baseline:
   AR nodes or map annotations are created.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
+- GitHub Actions runs the same gate on a bounded macOS job with read-only
+  permissions, an immutable checkout pin, and no persisted credentials; hosted
+  Xcode project parsing does not claim device or integration coverage.
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
 - Swift 4.0 and iOS 11 remain the checked-in legacy compiler and deployment
   boundary; this repository does not claim a current production SDK baseline.

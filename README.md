@@ -93,6 +93,15 @@ Foursquare venue lookup retries use a bounded cooldown when credentials are
 missing, requests fail, or successful responses contain no valid venue payloads.
 Venue responses also require finite latitude/longitude within geographic bounds
 and a finite nonnegative distance before rendering.
+
+GitHub Actions runs `make check` on a bounded `macos-15` job for pushes and pull
+requests. The checkout action is immutably pinned with read-only repository
+permissions and runs without persisted checkout credentials. Hosted validation
+also parses the checked-in Xcode project, but it does not install CocoaPods,
+sign the app, exercise credentials, or replace physical-device verification.
+The maintained workflow contract is documented in
+[`docs/plans/2026-06-12-hosted-project-validation.md`](docs/plans/2026-06-12-hosted-project-validation.md).
+
 For functional verification, use Xcode's test action or `xcodebuild test` with
 the appropriate scheme and destination.
 
@@ -157,6 +166,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   lookup retry guardrails.
 - See `docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md` for the
   legacy SDK and dependency modernization sequence.
+- See `docs/plans/2026-06-12-hosted-project-validation.md` for the GitHub
+  Actions and hosted Xcode project validation contract.
 
 ## Contributing
 
