@@ -541,10 +541,31 @@ if ! grep -Fq "status: completed" "$CI_PLAN" ||
   exit 1
 fi
 
-if ! grep -Fq "status: completed" "$POD_TARGET_PLAN" ||
-  ! grep -Fq "make check" "$POD_TARGET_PLAN"; then
-  printf '%s\n' "CocoaPods target alignment plan must be completed and record verification." >&2
-  exit 1
-fi
+python3 - "$POD_TARGET_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "All four Make gates",
+    "push run `27392510844`",
+    "pull-request run `27392514499`",
+    "push run `27392528885`",
+    "CodeQL run `27402320459`",
+)
+
+if (
+    statuses != ["status: completed"]
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "CocoaPods target alignment plan must remain completed with actual verification recorded."
+    )
+PY
 
 printf '%s\n' "foursquare-ar-camera-ios credential baseline checks passed."
