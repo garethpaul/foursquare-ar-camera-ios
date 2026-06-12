@@ -61,6 +61,8 @@ Legacy Swift, CocoaPods, Mapbox, ARKit, Core Location, or Foursquare API moderni
 should be reviewed as security- and privacy-sensitive integration work. Keep
 dependency changes reproducible, preserve attribution and permission checks,
 and verify camera/location behavior on a physical device before release.
+Keep the Podfile target aligned with the checked-in Xcode native target, and
+review any lockfile regeneration as an intentional dependency change.
 
 ## Dependency and Supply Chain Security
 

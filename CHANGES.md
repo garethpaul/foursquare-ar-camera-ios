@@ -9,6 +9,8 @@
   verification.
 - Removed the empty `ReadMe.md` case-variant that overwrote the maintained
   `README.md` on default case-insensitive macOS filesystems.
+- Aligned the Podfile with the checked-in `FoursquareARCamera` native target
+  without changing the legacy dependency lockfile.
 
 ## 2026-06-10
 
