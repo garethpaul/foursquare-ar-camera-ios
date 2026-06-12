@@ -28,6 +28,8 @@ Current baseline:
 - `scripts/check-baseline.sh`, `make lint`, `make test`, `make build`, and
   `make check` verify credential placeholders, local artifact ignores,
   Info.plist XML, and workspace visibility.
+- The Podfile target, Xcode native target, and generated
+  `Pods-FoursquareARCamera` references use the same target name.
 - `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and
   `FOURSQUARE_CLIENT_SECRET` are local build settings.
 - detailed location logs are avoided in the venue lookup and scene-location
@@ -82,6 +84,7 @@ Next priorities:
   dedicated pass
 - Pin CocoaPods dependencies before changing Swift, Mapbox, ARKit/Core
   Location, or Foursquare API behavior
+- Regenerate `Podfile.lock` only in a dedicated compatible CocoaPods/Xcode pass
 - Add safer error handling for API failures and missing credentials
 
 Contribution rules:

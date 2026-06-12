@@ -50,6 +50,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Open `FoursquareARCamera.xcworkspace` in Xcode after `pod install`, choose the app or sample scheme, and run it on a physical device for AR/camera/location behavior.
+- The Podfile targets the checked-in `FoursquareARCamera` native target. The
+  legacy `Podfile.lock` remains unchanged until dependencies are intentionally
+  resolved with a compatible CocoaPods/Xcode toolchain.
 - Configure `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET` as local build settings, for example through an untracked `.xcconfig` file or Xcode scheme environment.
 
 This is a preserved Swift 4.0 and iOS 11-era sample, not a current production
@@ -169,6 +172,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   legacy SDK and dependency modernization sequence.
 - See `docs/plans/2026-06-12-hosted-project-validation.md` for the GitHub
   Actions and hosted Xcode project validation contract.
+- See `docs/plans/2026-06-12-cocoapods-target-alignment.md` for the native
+  target alignment and lockfile boundary.
 
 ## Contributing
 

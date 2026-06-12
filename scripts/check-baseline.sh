@@ -16,6 +16,7 @@ VENUE_LOOKUP_RETRY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-venue-lookup
 VENUE_COORDINATE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-venue-coordinate-validation.md"
 LEGACY_SDK_PLAN="$ROOT_DIR/docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-project-validation.md"
+POD_TARGET_PLAN="$ROOT_DIR/docs/plans/2026-06-12-cocoapods-target-alignment.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -49,6 +50,7 @@ for path in \
   "docs/plans/2026-06-10-foursquare-venue-coordinate-validation.md" \
   "docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md" \
   "docs/plans/2026-06-12-hosted-project-validation.md" \
+  "docs/plans/2026-06-12-cocoapods-target-alignment.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -64,6 +66,18 @@ makefile="$ROOT_DIR/Makefile"
 if ! grep -Eq '^\.PHONY: .*build.*check.*lint.*test|^\.PHONY: .*build.*lint.*test.*check' "$makefile" ||
   ! grep -Fq "lint test build: check" "$makefile"; then
   printf '%s\n' "Makefile must expose lint, test, build, and check gate targets." >&2
+  exit 1
+fi
+
+pod_target_count=$(grep -Ec "^[[:space:]]*target 'FoursquareARCamera' do[[:space:]]*$" "$ROOT_DIR/Podfile" || true)
+project_target_count=$(grep -Fc 'name = FoursquareARCamera;' "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" || true)
+
+if [ "$pod_target_count" -ne 1 ] ||
+  [ "$project_target_count" -ne 1 ] ||
+  grep -Fq "target 'PlacesARCamera'" "$ROOT_DIR/Podfile" ||
+  ! grep -Fq "Pods-FoursquareARCamera.debug.xcconfig" "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" ||
+  ! grep -Fq "Pods-FoursquareARCamera.release.xcconfig" "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj"; then
+  printf '%s\n' "Podfile and generated CocoaPods references must align with the FoursquareARCamera native target." >&2
   exit 1
 fi
 
@@ -524,6 +538,12 @@ if ! grep -Fq "status: completed" "$CI_PLAN" ||
   ! grep -Fq "macos-15" "$CI_PLAN" ||
   ! grep -Fq "persisted checkout credentials" "$CI_PLAN"; then
   printf '%s\n' "Hosted project validation plan must record the completed security and verification contract." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$POD_TARGET_PLAN" ||
+  ! grep -Fq "make check" "$POD_TARGET_PLAN"; then
+  printf '%s\n' "CocoaPods target alignment plan must be completed and record verification." >&2
   exit 1
 fi
 
