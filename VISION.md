@@ -8,8 +8,8 @@ SceneKit, and the Foursquare API to display nearby food venues in augmented
 reality.
 
 The repository is useful as a preserved location-based AR prototype with a
-compass map, venue annotations, and Foursquare attribution. Setup context lives
-in [`ReadMe.md`](ReadMe.md).
+compass map, venue annotations, and Foursquare attribution. Setup and
+verification context lives in [`README.md`](README.md).
 
 The goal is to keep the AR venue lookup flow understandable while making
 location privacy, API credentials, and platform modernization explicit.

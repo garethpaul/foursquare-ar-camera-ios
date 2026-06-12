@@ -20,6 +20,8 @@ are not committed.
   requiring credentials, signing, CocoaPods installation, or a device.
 - Keep workflow structure enforced by the local baseline so duplicate or
   overriding security-sensitive YAML keys fail before push.
+- Keep tracked paths unique under case-folding so the maintained README and
+  other repository inputs are deterministic on default macOS filesystems.
 
 ## Verification
 

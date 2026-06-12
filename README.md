@@ -18,7 +18,6 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 - `FoursquareARCamera.xcodeproj` - Xcode project file
 - `FoursquareARCamera.xcworkspace` - CocoaPods workspace to open after dependency install
 - `Podfile.lock` - Apple platform dependency metadata
-- `ReadMe.md` - project overview and local usage notes
 - `SECURITY.md` - security reporting and disclosure guidance
 - `scripts/check-baseline.sh` - static credential, privacy, and project-shape checks
 - `VISION.md` - project direction and maintenance guardrails
@@ -101,6 +100,8 @@ also parses the checked-in Xcode project, but it does not install CocoaPods,
 sign the app, exercise credentials, or replace physical-device verification.
 The maintained workflow contract is documented in
 [`docs/plans/2026-06-12-hosted-project-validation.md`](docs/plans/2026-06-12-hosted-project-validation.md).
+The obsolete empty `ReadMe.md` case-variant was removed because default macOS
+filesystems cannot safely check it out alongside this maintained `README.md`.
 
 For functional verification, use Xcode's test action or `xcodebuild test` with
 the appropriate scheme and destination.

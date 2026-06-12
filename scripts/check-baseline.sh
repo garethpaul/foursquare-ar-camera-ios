@@ -72,6 +72,20 @@ if git -C "$ROOT_DIR" ls-files | grep -Eq '(^|/)\.DS_Store$|^mapbox_access_token
   exit 1
 fi
 
+if git -C "$ROOT_DIR" ls-files | awk '
+  {
+    folded = tolower($0)
+    if (seen[folded] != "" && seen[folded] != $0) {
+      print seen[folded] " <-> " $0
+    } else {
+      seen[folded] = $0
+    }
+  }
+' | grep -q .; then
+  printf '%s\n' "Tracked paths must not collide on case-insensitive filesystems." >&2
+  exit 1
+fi
+
 if ! grep -Fq '$(MAPBOX_ACCESS_TOKEN)' "$ROOT_DIR/FoursquareARCamera/Info.plist" ||
   ! grep -Fq '$(FOURSQUARE_CLIENT_ID)' "$ROOT_DIR/FoursquareARCamera/Info.plist" ||
   ! grep -Fq '$(FOURSQUARE_CLIENT_SECRET)' "$ROOT_DIR/FoursquareARCamera/Info.plist" ||

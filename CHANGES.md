@@ -7,6 +7,8 @@
 - Enforced the workflow structurally so duplicate jobs, permissions, checkout
   settings, credential overrides, extra actions, or extra run steps fail local
   verification.
+- Removed the empty `ReadMe.md` case-variant that overwrote the maintained
+  `README.md` on default case-insensitive macOS filesystems.
 
 ## 2026-06-10
 
