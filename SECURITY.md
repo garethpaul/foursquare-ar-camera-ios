@@ -34,6 +34,9 @@ Helpful reports include:
 
 ## Mobile Privacy Notes
 
+The dedicated connectivity probe should report success only for its expected
+HTTP 204 response; redirects and other status codes remain offline results.
+
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 
 Core Location updates should stay gated on authorization before AR venue lookup

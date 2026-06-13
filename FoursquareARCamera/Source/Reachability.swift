@@ -1,6 +1,10 @@
 import Foundation
 
 public class Reachability {
+
+    private class func isSuccessfulProbeStatus(_ statusCode: Int) -> Bool {
+        return statusCode == 204
+    }
     
     class func isConnectedToNetwork()->Bool{
 
@@ -18,7 +22,7 @@ public class Reachability {
 
         let task = URLSession.shared.dataTask(with: request) { _, response, _ in
             if let httpResponse = response as? HTTPURLResponse {
-                isConnected = (200..<400).contains(httpResponse.statusCode)
+                isConnected = isSuccessfulProbeStatus(httpResponse.statusCode)
             }
 
             semaphore.signal()

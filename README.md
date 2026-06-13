@@ -91,7 +91,8 @@ Location manager setup and heading forwarding avoid force-unwrapping optional
 state.
 Debug info label updates avoid force-unwrapping optional label text when partial
 AR state is available. Reachability setup avoids force-unwrapping initialization
-before showing offline state. FSQView nib outlet setup is guarded before venue
+before showing offline state, and the dedicated connectivity probe succeeds only
+for its expected HTTP 204 response. FSQView nib outlet setup is guarded before venue
 card subviews are added. Map annotation updates avoid force-unwrapping optional
 annotations while tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are

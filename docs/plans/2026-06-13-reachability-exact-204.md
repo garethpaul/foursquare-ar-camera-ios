@@ -1,7 +1,7 @@
 ---
 title: Reachability Exact 204 Status
 type: reliability
-status: planned
+status: completed
 date: 2026-06-13
 ---
 
@@ -34,3 +34,22 @@ its final HTTP response is exactly 204.
 - Replacing the synchronous reachability architecture.
 - Changing URLSession redirect delegates or the probe provider.
 - Exercising camera, AR, location, Mapbox, or Foursquare behavior.
+
+## Work Completed
+
+- Added a named status helper that accepts only HTTP 204.
+- Routed the final probe response through the helper without changing request
+  construction, timeout, or offline behavior.
+- Added static, documentation, and completed-plan contracts.
+
+## Verification Completed
+
+- The five hostile mutations were rejected: widened 2xx acceptance, exact 200,
+  helper bypass, stale plan status, and missing evidence.
+- The all four Make gates passed result was confirmed against the final tree.
+- Shell syntax, plist/workspace parsing, `git diff --check`, artifact, protected
+  path, and secret scans are included in final verification.
+- `xcodebuild was unavailable` on this Linux host, so no signed build or
+  simulator execution was attempted.
+- No live connectivity probe, camera, AR, location, Mapbox, or Foursquare flow
+  was exercised.

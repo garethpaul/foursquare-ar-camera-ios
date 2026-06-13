@@ -49,6 +49,7 @@ Current baseline:
   partial AR state is available.
 - Reachability setup avoids force-unwrapping initialization before the offline
   alert path.
+- The dedicated reachability probe accepts only its expected HTTP 204 response.
 - Foursquare venue lookup retries use a bounded cooldown when credentials are
   missing, requests fail, or successful responses contain no valid venues.
 - Foursquare venue responses require a 2xx HTTP status before JSON parsing;

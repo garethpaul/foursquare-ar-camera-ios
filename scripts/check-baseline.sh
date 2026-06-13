@@ -20,6 +20,7 @@ POD_TARGET_PLAN="$ROOT_DIR/docs/plans/2026-06-12-cocoapods-target-alignment.md"
 COCOALUMBERJACK_PIN_PLAN="$ROOT_DIR/docs/plans/2026-06-13-cocoalumberjack-commit-pin.md"
 RESPONSE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-status-validation.md"
 RESPONSE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-content-type-validation.md"
+REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -57,6 +58,7 @@ for path in \
   "docs/plans/2026-06-13-cocoalumberjack-commit-pin.md" \
   "docs/plans/2026-06-13-foursquare-response-status-validation.md" \
   "docs/plans/2026-06-13-foursquare-response-content-type-validation.md" \
+  "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -193,6 +195,24 @@ if grep -Fq "Reachability()!" "$view" ||
   printf '%s\n' "ViewController must not force-unwrap Reachability initialization." >&2
   exit 1
 fi
+
+python3 - "$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text()
+helper = source.split("private class func isSuccessfulProbeStatus", 1)[-1].split(
+    "class func isConnectedToNetwork", 1
+)[0]
+probe = source.split("class func isConnectedToNetwork", 1)[-1]
+if helper.count("return statusCode == 204") != 1:
+    raise SystemExit("Reachability must accept only the expected HTTP 204 probe status.")
+if probe.count("isSuccessfulProbeStatus(httpResponse.statusCode)") != 1:
+    raise SystemExit("Reachability must route the probe response through the exact-status helper.")
+for widened in ("200..<300", "200..<400", "statusCode == 200"):
+    if widened in source:
+        raise SystemExit("Reachability must not widen the exact HTTP 204 success boundary.")
+PY
 
 if ! grep -Fq "private let venueLookupRetryDelay: TimeInterval = 30.0" "$view" ||
   ! grep -Fq "private func allowVenueLookupRetryAfterDelay(reason: String)" "$view" ||
@@ -727,5 +747,32 @@ if (
         "Foursquare response content-type plan must remain completed with actual verification recorded."
     )
 PY
+
+python3 - "$REACHABILITY_STATUS_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+required = (
+    "five hostile mutations were rejected",
+    "all four Make gates passed",
+    "xcodebuild was unavailable",
+    "No live connectivity probe",
+)
+if statuses != ["status: completed"] or any(item not in plan for item in required):
+    raise SystemExit("Reachability exact-status plan must record completed local verification.")
+PY
+
+if ! grep -Fq "expected HTTP 204 response" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "HTTP 204 response; redirects" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "accepts only its expected HTTP 204 response" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "return exactly HTTP 204" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "limited to exact HTTP 204 success" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project docs must preserve the exact reachability status boundary." >&2
+  exit 1
+fi
 
 printf '%s\n' "foursquare-ar-camera-ios credential baseline checks passed."

@@ -2,6 +2,7 @@
 
 ## 2026-06-13
 
+- Required the dedicated reachability probe to return exactly HTTP 204.
 - Required the exact application/json response media type before Foursquare
   JSON response handling.
 - Added request-chain ordering, retry, documentation, and evidence contracts for
