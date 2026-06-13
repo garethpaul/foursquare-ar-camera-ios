@@ -79,6 +79,10 @@ make build
 make check
 ```
 
+Use the absolute Makefile path to run the same gates from another working
+directory. Verification resolves the checker relative to the loaded Makefile
+rather than the caller's directory.
+
 The `lint`, `test`, and `build` targets currently delegate to the static
 baseline so the repository has a consistent local gate even when Xcode is not
 installed. The baseline verifies that credentials are build settings, tracked

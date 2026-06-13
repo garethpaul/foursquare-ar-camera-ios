@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Made static verification independent of the caller's working directory by
+  resolving the baseline checker from the loaded Makefile.
 - Required the dedicated reachability probe to return exactly HTTP 204.
 - Required the exact application/json response media type before Foursquare
   JSON response handling.
