@@ -17,6 +17,7 @@ VENUE_COORDINATE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-venue-coordina
 LEGACY_SDK_PLAN="$ROOT_DIR/docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-project-validation.md"
 POD_TARGET_PLAN="$ROOT_DIR/docs/plans/2026-06-12-cocoapods-target-alignment.md"
+COCOALUMBERJACK_PIN_PLAN="$ROOT_DIR/docs/plans/2026-06-13-cocoalumberjack-commit-pin.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -51,6 +52,7 @@ for path in \
   "docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md" \
   "docs/plans/2026-06-12-hosted-project-validation.md" \
   "docs/plans/2026-06-12-cocoapods-target-alignment.md" \
+  "docs/plans/2026-06-13-cocoalumberjack-commit-pin.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -328,15 +330,51 @@ if ! grep -Fq "Foursquare venue lookup retries should stay bounded" "$ROOT_DIR/S
 fi
 
 if ! grep -Fq "Swift 4.0 and iOS 11" "$ROOT_DIR/README.md" ||
-  ! grep -Fq "CocoaLumberjack master branch" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "CocoaLumberjack no longer resolves a mutable branch" "$ROOT_DIR/README.md" ||
   ! grep -Fq "legacy-sdk-modernization-boundary" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document the legacy SDK and dependency boundary." >&2
   exit 1
 fi
 
-if ! grep -Fq ":branch => 'master'" "$ROOT_DIR/Podfile" ||
-  ! grep -Fq "COCOAPODS: 1.3.1" "$ROOT_DIR/Podfile.lock"; then
-  printf '%s\n' "Legacy modernization boundary must track the mutable pod source and lockfile tool version." >&2
+python3 - "$ROOT_DIR/Podfile" "$ROOT_DIR/Podfile.lock" <<'PY'
+import sys
+from pathlib import Path
+
+podfile = Path(sys.argv[1]).read_text()
+lockfile = Path(sys.argv[2]).read_text()
+commit = "f4294a13470d43260569d62aac6e1009fbef491a"
+
+if podfile.count(":commit => '{}'".format(commit)) != 1:
+    raise SystemExit("Podfile must contain one exact CocoaLumberjack commit selector.")
+if ":branch" in podfile or "branch `master`" in lockfile or ":branch:" in lockfile:
+    raise SystemExit("CocoaLumberjack dependency metadata must not use a mutable branch selector.")
+if lockfile.count(commit) != 3:
+    raise SystemExit("Podfile.lock must align dependency, external source, and checkout metadata to one commit.")
+
+required_lock_contracts = (
+    "- Alamofire (4.5.1)",
+    "- AlamofireSwiftyJSON (1.0.0):",
+    "- CocoaLumberjack/Default (3.2.1)",
+    "- CocoaLumberjack/Swift (3.2.1):",
+    "- Mapbox-iOS-SDK (3.6.4)",
+    "- SwiftyJSON (3.1.4)",
+    "Alamofire: 2d95912bf4c34f164fdfc335872e8c312acaea4a",
+    "AlamofireSwiftyJSON: 78908b766483a28aa5cc90fd191a687467042973",
+    "CocoaLumberjack: 520616f8e72226ca2c729b43981b66bc483745ce",
+    "Mapbox-iOS-SDK: 47847dd44285477e0dfffd0130f65c8a52823ada",
+    "SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220",
+    "PODFILE CHECKSUM: de49009947665df59c3e8399b35c779a2ab5c3f2",
+    "COCOAPODS: 1.3.1",
+)
+if any(lockfile.count(item) != 1 for item in required_lock_contracts):
+    raise SystemExit("Legacy resolved pod versions, checksums, and CocoaPods metadata must not drift.")
+PY
+
+if ! grep -Fq "PODFILE CHECKSUM" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "requires CocoaPods 1.3.1 regeneration" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "Regenerate the Podfile checksum with CocoaPods 1.3.1" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "mutable CocoaLumberjack \`master\` selector" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Repository guidance must document the immutable pod source and checksum limitation." >&2
   exit 1
 fi
 
@@ -565,6 +603,33 @@ if (
 ):
     raise SystemExit(
         "CocoaPods target alignment plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$COCOALUMBERJACK_PIN_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "branch mutation failed",
+    "commit drift mutation failed",
+    "resolved graph mutation failed",
+    "hosted pull-request check",
+)
+
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "CocoaLumberjack commit pin plan must remain completed with actual verification recorded."
     )
 PY
 
