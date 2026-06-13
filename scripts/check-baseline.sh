@@ -18,6 +18,7 @@ LEGACY_SDK_PLAN="$ROOT_DIR/docs/plans/2026-06-10-legacy-sdk-modernization-bounda
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-project-validation.md"
 POD_TARGET_PLAN="$ROOT_DIR/docs/plans/2026-06-12-cocoapods-target-alignment.md"
 COCOALUMBERJACK_PIN_PLAN="$ROOT_DIR/docs/plans/2026-06-13-cocoalumberjack-commit-pin.md"
+RESPONSE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-status-validation.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -132,6 +133,27 @@ if ! grep -Fq 'configuredValue("FoursquareClientID")' "$view" ||
   printf '%s\n' "ViewController must use local credentials and avoid detailed location logging." >&2
   exit 1
 fi
+
+python3 - "$view" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text()
+lookup = source.split("func getFoursquareLocations", 1)[-1].split("\n    @objc", 1)[0]
+request = 'Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)'
+validator = ".validate(statusCode: 200..<300)"
+response = ".responseJSON { response in"
+failure = 'self.allowVenueLookupRetryAfterDelay(reason: "Foursquare venue lookup failed.")'
+contract = (request, validator, response)
+positions = [lookup.find(fragment) for fragment in contract]
+
+if any(lookup.count(fragment) != 1 for fragment in contract):
+    raise SystemExit("Foursquare venue lookup must keep one request, 2xx validator, and JSON response handler.")
+if -1 in positions or positions != sorted(positions) or len(set(positions)) != len(positions):
+    raise SystemExit("Foursquare 2xx status validation must run before JSON response handling.")
+if lookup.count("case .failure:") != 1 or lookup.count(failure) != 1:
+    raise SystemExit("Rejected Foursquare responses must retain the bounded generic failure retry.")
+PY
 
 if ! grep -Fq "venueLatitude.isFinite" "$view" ||
   ! grep -Fq "(-90.0...90.0).contains(venueLatitude)" "$view" ||
@@ -630,6 +652,35 @@ if (
 ):
     raise SystemExit(
         "CocoaLumberjack commit pin plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$RESPONSE_STATUS_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "validator removal mutation failed",
+    "status range mutation failed",
+    "validation ordering mutation failed",
+    "duplicate request mutation failed",
+    "failure retry mutation failed",
+    "hosted pull-request check",
+)
+
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Foursquare response status plan must remain completed with actual verification recorded."
     )
 PY
 

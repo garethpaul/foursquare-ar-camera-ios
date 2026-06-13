@@ -51,6 +51,8 @@ Current baseline:
   alert path.
 - Foursquare venue lookup retries use a bounded cooldown when credentials are
   missing, requests fail, or successful responses contain no valid venues.
+- Foursquare venue responses require a 2xx HTTP status before JSON parsing;
+  rejected statuses use the existing generic bounded retry path.
 - Venue response coordinates and distances are finite and range-checked before
   AR nodes or map annotations are created.
 - The local Makefile exposes lint, test, build, and check targets for a stable
@@ -82,6 +84,7 @@ Next priorities:
   overlays
 - Preserve bounded Foursquare venue lookup retries when changing API failure
   handling
+- Preserve 2xx status validation ahead of Foursquare JSON response parsing
 - Keep local verification targets available even while full Xcode testing needs
   a macOS toolchain
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a

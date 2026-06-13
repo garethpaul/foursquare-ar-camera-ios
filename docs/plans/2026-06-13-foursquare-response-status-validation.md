@@ -1,7 +1,7 @@
 ---
 title: Foursquare Response Status Validation
 type: security
-status: planned
+status: completed
 date: 2026-06-13
 ---
 
@@ -86,8 +86,33 @@ Files: `README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`, `AGENTS.md`
 
 ## Work Completed
 
-Pending implementation.
+- Chained Alamofire's exact `200..<300` status validator between the existing
+  venue request and `responseJSON` handler.
+- Preserved the existing request parameters, JSON parsing, coordinate checks,
+  rendering, generic failure message, and bounded retry release.
+- Added a function-scoped static contract for one request, one exact validator,
+  validator-before-body ordering, and one generic failure retry.
+- Documented the response status boundary and continuing legacy platform and
+  live-service validation limits.
 
 ## Verification Completed
 
-Pending implementation and verification.
+- The validator removal mutation failed with the one-request/validator/handler
+  contract error.
+- The status range mutation failed after widening the accepted range to
+  `200..<400`.
+- The validation ordering mutation failed after moving the validator below the
+  JSON response handler.
+- The duplicate request mutation failed after adding a second venue request.
+- The failure retry mutation failed after replacing the bounded retry release
+  with a warning-only branch.
+- `make check`, `make lint`, `make test`, and `make build` passed the maintained
+  static baseline; each correctly reported that local `xcodebuild` is
+  unavailable.
+- `sh -n scripts/check-baseline.sh`, Info.plist and workspace XML parsing,
+  executable-mode verification, and `git diff --check` passed.
+- Intended-path artifact and secret scans found no generated files or embedded
+  credentials.
+- The hosted pull-request check and code-scanning results are recorded against
+  the exact pushed head in the external engineering tracker. Embedding that SHA
+  here would create a new head without exact-head hosted evidence.
