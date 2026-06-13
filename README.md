@@ -96,8 +96,9 @@ card subviews are added. Map annotation updates avoid force-unwrapping optional
 annotations while tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are
 missing, requests fail, or successful responses contain no valid venue payloads.
-Venue lookups validate a 2xx HTTP status before JSON response parsing; rejected
-statuses use the same generic bounded retry path without logging response data.
+Venue lookups validate a 2xx HTTP status and exact application/json response
+media type before JSON response parsing; rejected responses use the same
+generic bounded retry path without logging response data.
 Venue responses also require finite latitude/longitude within geographic bounds
 and a finite nonnegative distance before rendering.
 
@@ -173,6 +174,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   annotation optional-state guardrails.
 - See `docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md` for venue
   lookup retry guardrails.
+- See `docs/plans/2026-06-13-foursquare-response-content-type-validation.md`
+  for the exact JSON response media boundary.
 - See `docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md` for the
   legacy SDK and dependency modernization sequence.
 - See `docs/plans/2026-06-12-hosted-project-validation.md` for the GitHub

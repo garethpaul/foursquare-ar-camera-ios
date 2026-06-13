@@ -195,6 +195,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             // Send HTTP request
             Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)
                 .validate(statusCode: 200..<300)
+                .validate(contentType: ["application/json"])
                 .responseJSON { response in
                 switch response.result {
                 case .success(let value):

@@ -1,7 +1,7 @@
 ---
 title: Foursquare Response Content Type Validation
 type: security
-status: planned
+status: completed
 date: 2026-06-13
 ---
 
@@ -83,8 +83,27 @@ Files: `README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`, `AGENTS.md`
 
 ## Work Completed
 
-Pending implementation.
+- Added the exact Alamofire `application/json` content-type validator between
+  the existing 2xx validator and single JSON response handler.
+- Preserved the generic failure retry so rejected status or media metadata does
+  not log response content or create immediate request loops.
+- Extended the static request-chain contract and repository guidance for exact
+  media validation and continuing platform/live-validation limits.
 
 ## Verification Completed
 
-Pending implementation and verification.
+- All four Make gates passed the maintained static baseline.
+- The validator removal mutation failed the single-chain contract.
+- The media allowlist mutation failed the exact validator contract.
+- The validation ordering mutation failed after a valid status/media line swap.
+- The duplicate handler mutation failed the single-handler contract.
+- The failure retry mutation failed the bounded generic retry contract.
+- The plan evidence mutation failed the completed-evidence contract.
+- Shell syntax, plist/workspace XML parsing, executable-mode verification,
+  `git diff --check`, and intended-file secret and artifact scans are included
+  in final-tree verification.
+- `xcodebuild`, CocoaPods installation, signing, simulator/device execution,
+  camera, AR, location, Mapbox, and live Foursquare behavior are unavailable or
+  intentionally unclaimed on this Linux host.
+- The hosted pull-request check and code-scanning snapshot will be recorded
+  against the exact pushed head in the external engineering tracker.
