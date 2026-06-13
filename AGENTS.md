@@ -51,6 +51,7 @@
 - Required local build settings: `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET`.
 - Do not commit `.xcconfig` files, API credentials, signing material, camera output, or user location data.
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
+- Keep the dedicated connectivity probe limited to exact HTTP 204 success.
 - Keep Core Location updates gated on authorization before starting AR venue lookup behavior.
 - Keep location manager setup and heading forwarding resilient when optional Core Location state is unavailable.
 - Reject non-finite or out-of-range venue coordinates, and reject non-finite or negative distances, before creating AR nodes or map annotations.
