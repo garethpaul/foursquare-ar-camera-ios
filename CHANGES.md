@@ -2,6 +2,10 @@
 
 ## 2026-06-13
 
+- Required the exact application/json response media type before Foursquare
+  JSON response handling.
+- Added request-chain ordering, retry, documentation, and evidence contracts for
+  media validation.
 - Required a 2xx Foursquare venue response before JSON parsing and routed
   rejected statuses through the existing generic bounded retry path.
 - Added a scoped static contract for request count, status range, ordering, and
