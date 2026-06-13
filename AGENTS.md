@@ -55,6 +55,8 @@
 - Keep location manager setup and heading forwarding resilient when optional Core Location state is unavailable.
 - Reject non-finite or out-of-range venue coordinates, and reject non-finite or negative distances, before creating AR nodes or map annotations.
 - Keep credential, request, malformed-response, and empty-response retries bounded by the documented cooldown.
+- Require a 2xx Foursquare response status before JSON parsing, and keep
+  rejected responses on the generic no-body-log retry path.
 - Treat Swift, CocoaPods, Mapbox, ARKit/Core Location, and Foursquare API modernization as staged, device-verified work; update `Podfile.lock` only with an intentional dependency and CocoaPods toolchain review.
 
 ## Agent workflow

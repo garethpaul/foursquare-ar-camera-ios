@@ -2,6 +2,10 @@
 
 ## 2026-06-13
 
+- Required a 2xx Foursquare venue response before JSON parsing and routed
+  rejected statuses through the existing generic bounded retry path.
+- Added a scoped static contract for request count, status range, ordering, and
+  failure handling.
 - Replaced the mutable CocoaLumberjack `master` selector with the exact Swift 4
   commit already recorded in `Podfile.lock`.
 - Aligned lockfile source metadata without changing resolved pod versions and
