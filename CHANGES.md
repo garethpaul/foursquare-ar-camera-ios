@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-13
+
+- Replaced the mutable CocoaLumberjack `master` selector with the exact Swift 4
+  commit already recorded in `Podfile.lock`.
+- Aligned lockfile source metadata without changing resolved pod versions and
+  documented the remaining legacy Podfile-checksum regeneration requirement.
+
 ## 2026-06-12
 
 - Added a bounded, least-privilege macOS GitHub Actions workflow that runs the

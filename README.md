@@ -51,17 +51,20 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Open `FoursquareARCamera.xcworkspace` in Xcode after `pod install`, choose the app or sample scheme, and run it on a physical device for AR/camera/location behavior.
 - The Podfile targets the checked-in `FoursquareARCamera` native target. The
-  legacy `Podfile.lock` remains unchanged until dependencies are intentionally
-  resolved with a compatible CocoaPods/Xcode toolchain.
+  CocoaLumberjack source selector is pinned to the exact Swift 4 commit already
+  recorded by `Podfile.lock`.
 - Configure `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET` as local build settings, for example through an untracked `.xcconfig` file or Xcode scheme environment.
 
 This is a preserved Swift 4.0 and iOS 11-era sample, not a current production
-SDK baseline. The CocoaPods graph includes legacy dependencies, including a
-CocoaLumberjack master branch reference, and the checked-in Mapbox, ARKit/Core
+SDK baseline. The CocoaPods graph includes legacy dependencies, but
+CocoaLumberjack no longer resolves a mutable branch: it uses commit
+`f4294a13470d43260569d62aac6e1009fbef491a`. The checked-in Mapbox, ARKit/Core
 Location, and Foursquare venue integration should be modernized in isolated,
 device-verified changes rather than through an unreviewed bulk update.
 The current lockfile records CocoaPods 1.3.1; any regenerated lockfile should
 document the replacement CocoaPods version and dependency review.
+The checked-in `PODFILE CHECKSUM` predates the commit-selector update and must
+be regenerated with the legacy toolchain before claiming a fresh install.
 `make check` parses the checked-in Xcode project when Xcode is available. Use
 the workspace for functional builds only after generating Pods locally.
 
@@ -174,6 +177,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Actions and hosted Xcode project validation contract.
 - See `docs/plans/2026-06-12-cocoapods-target-alignment.md` for the native
   target alignment and lockfile boundary.
+- See `docs/plans/2026-06-13-cocoalumberjack-commit-pin.md` for the immutable
+  CocoaLumberjack source boundary and Podfile-checksum limitation.
 
 ## Contributing
 

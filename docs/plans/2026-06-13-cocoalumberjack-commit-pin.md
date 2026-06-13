@@ -1,7 +1,7 @@
 ---
 title: CocoaLumberjack Commit Pin
 type: security
-status: in_progress
+status: completed
 date: 2026-06-13
 ---
 
@@ -73,3 +73,24 @@ Files: `README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`
   secret scans.
 - Take one bounded exact-head pull-request and CodeQL snapshot after push; do
   not poll.
+
+## Work Completed
+
+- Replaced the CocoaLumberjack `master` selector with commit
+  `f4294a13470d43260569d62aac6e1009fbef491a` in the Podfile.
+- Aligned the dependency and external-source lockfile metadata to the same
+  commit while preserving the resolved versions, spec checksums, checkout
+  option, Podfile checksum, and CocoaPods 1.3.1 record.
+- Added static source, graph, documentation, and completed-plan contracts.
+- Documented that the historical Podfile checksum requires regeneration with
+  CocoaPods 1.3.1 before claiming a fresh dependency installation.
+
+## Verification Completed
+
+- A pristine copied tree passed `make check` with the completed-plan evidence
+  supplied in the copy.
+- The branch mutation failed after restoring `:branch => 'master'`.
+- The commit drift mutation failed after changing the external-source commit.
+- The resolved graph mutation failed after changing Mapbox 3.6.4 to 3.6.5.
+- The hosted pull-request check is a post-push evidence step; its bounded
+  exact-head result is recorded after the implementation commit is pushed.

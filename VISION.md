@@ -61,10 +61,14 @@ Current baseline:
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
 - Swift 4.0 and iOS 11 remain the checked-in legacy compiler and deployment
   boundary; this repository does not claim a current production SDK baseline.
+- CocoaLumberjack source resolution is pinned to the existing reviewed Swift 4
+  commit while the remaining legacy pod graph stays unchanged.
 
 Next priorities:
 
 - Verify AR, camera, location, Mapbox, and Foursquare behavior on a physical device
+- Regenerate the Podfile checksum with CocoaPods 1.3.1 before claiming a fresh
+  dependency installation
 - Add tests or manual checklists for missing credentials and API failure states
 - Keep venue tap handling resilient when SceneKit node shapes change
 - Keep debug overlays resilient when AR position, heading, and time values

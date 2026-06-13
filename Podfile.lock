@@ -11,12 +11,12 @@ PODS:
 
 DEPENDENCIES:
   - AlamofireSwiftyJSON
-  - CocoaLumberjack/Swift (from `https://github.com/CocoaLumberjack/CocoaLumberjack`, branch `master`)
+  - CocoaLumberjack/Swift (from `https://github.com/CocoaLumberjack/CocoaLumberjack`, commit `f4294a13470d43260569d62aac6e1009fbef491a`)
   - Mapbox-iOS-SDK
 
 EXTERNAL SOURCES:
   CocoaLumberjack:
-    :branch: master
+    :commit: f4294a13470d43260569d62aac6e1009fbef491a
     :git: https://github.com/CocoaLumberjack/CocoaLumberjack
 
 CHECKOUT OPTIONS:

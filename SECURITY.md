@@ -63,6 +63,10 @@ dependency changes reproducible, preserve attribution and permission checks,
 and verify camera/location behavior on a physical device before release.
 Keep the Podfile target aligned with the checked-in Xcode native target, and
 review any lockfile regeneration as an intentional dependency change.
+The CocoaLumberjack Git source is pinned to the exact Swift 4 commit already
+recorded by the lockfile; do not restore a mutable branch selector. The legacy
+Podfile checksum still requires CocoaPods 1.3.1 regeneration before dependency
+installation can be claimed current.
 
 ## Dependency and Supply Chain Security
 
