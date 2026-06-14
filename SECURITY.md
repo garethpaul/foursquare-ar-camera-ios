@@ -51,10 +51,11 @@ while displaying user or debug location markers.
 Foursquare venue lookup retries should stay bounded so missing credentials,
 failed requests, or empty/malformed responses do not create immediate request
 loops while location updates continue.
-Foursquare venue responses should require a 2xx HTTP status and exact
-`application/json` response media type before JSON parsing; rejected responses
-must use the generic retry path without logging bodies, credentials, request
-URLs, or location details.
+Foursquare venue responses should require a 2xx HTTP status, an exact final
+response URL at the HTTPS `api.foursquare.com/v2/venues/search` endpoint, and
+the exact `application/json` response media type before JSON parsing; rejected
+responses must use the generic retry path without logging bodies, credentials,
+request URLs, redirect targets, or location details.
 Foursquare venue coordinates should be finite and geographically bounded, and
 distance values should be finite and nonnegative before AR or map rendering.
 

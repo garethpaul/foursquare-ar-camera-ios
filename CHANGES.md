@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-14
+
+- Required the exact final HTTPS Foursquare API endpoint before response media
+  validation or JSON handling.
+- Added scheme, host, userinfo, port, path, fragment, ordering, retry,
+  documentation, and completed-evidence contracts for response provenance.
+
 ## 2026-06-13
 
 - Made static verification independent of the caller's working directory by

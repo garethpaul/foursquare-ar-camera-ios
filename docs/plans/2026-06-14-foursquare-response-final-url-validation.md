@@ -1,7 +1,7 @@
 ---
 title: Foursquare Response Final URL Validation
 type: security
-status: planned
+status: completed
 date: 2026-06-14
 ---
 
@@ -87,8 +87,32 @@ Files: `README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`, `AGENTS.md`
 
 ## Work Completed
 
-- Not yet implemented.
+- Added an Alamofire validator that requires the final response URL to use the
+  exact HTTPS Foursquare API host and path without userinfo, an explicit port,
+  or a fragment.
+- Kept final URL validation between the existing status and media validators so
+  rejected redirects reach the generic bounded retry before JSON handling.
+- Extended the static request-chain contract and repository guidance for final
+  URL provenance and continuing platform/live-validation limits.
 
 ## Verification Completed
 
-- Not yet run.
+- All four Make gates passed the maintained static baseline from the repository
+  root, and the absolute-Makefile check passed from an external directory.
+- The validator removal mutation failed the single-chain contract.
+- The scheme mutation failed the exact HTTPS endpoint contract.
+- The host mutation failed the exact Foursquare host contract.
+- The path mutation failed the exact venue-search path contract.
+- The port mutation failed the no-explicit-port contract.
+- The validation ordering mutation failed after moving final URL validation
+  behind media validation.
+- The failure retry mutation failed the bounded generic retry contract.
+- The plan evidence mutation failed the completed-evidence contract.
+- Shell syntax, plist/workspace XML parsing, executable-mode verification,
+  `git diff --check`, and intended-file secret and artifact scans are included
+  in final-tree verification.
+- `xcodebuild`, CocoaPods installation, signing, simulator/device execution,
+  camera, AR, location, Mapbox, and live Foursquare behavior are unavailable or
+  intentionally unclaimed on this Linux host.
+- The hosted pull-request check and code-scanning snapshot will be recorded
+  against the exact pushed head in the external engineering tracker.
