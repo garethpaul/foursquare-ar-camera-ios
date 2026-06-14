@@ -54,6 +54,8 @@ Current baseline:
   missing, requests fail, or successful responses contain no valid venues.
 - Foursquare venue responses require a 2xx HTTP status before JSON parsing;
   rejected statuses use the existing generic bounded retry path.
+- Successful venue responses require the exact final HTTPS endpoint before
+  media validation or response handling.
 - Successful venue responses require the exact JSON response media type before
   response handling.
 - Venue response coordinates and distances are finite and range-checked before
@@ -88,6 +90,7 @@ Next priorities:
 - Preserve bounded Foursquare venue lookup retries when changing API failure
   handling
 - Preserve 2xx status validation ahead of Foursquare JSON response parsing
+- Preserve exact final HTTPS endpoint validation ahead of media validation
 - Preserve exact JSON response media type validation ahead of response handling
 - Keep local verification targets available even while full Xcode testing needs
   a macOS toolchain

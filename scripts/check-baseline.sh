@@ -20,6 +20,7 @@ POD_TARGET_PLAN="$ROOT_DIR/docs/plans/2026-06-12-cocoapods-target-alignment.md"
 COCOALUMBERJACK_PIN_PLAN="$ROOT_DIR/docs/plans/2026-06-13-cocoalumberjack-commit-pin.md"
 RESPONSE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-status-validation.md"
 RESPONSE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-content-type-validation.md"
+RESPONSE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-14-foursquare-response-final-url-validation.md"
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
@@ -59,6 +60,7 @@ for path in \
   "docs/plans/2026-06-13-cocoalumberjack-commit-pin.md" \
   "docs/plans/2026-06-13-foursquare-response-status-validation.md" \
   "docs/plans/2026-06-13-foursquare-response-content-type-validation.md" \
+  "docs/plans/2026-06-14-foursquare-response-final-url-validation.md" \
   "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
@@ -163,19 +165,41 @@ source = Path(sys.argv[1]).read_text()
 lookup = source.split("func getFoursquareLocations", 1)[-1].split("\n    @objc", 1)[0]
 request = 'Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)'
 status_validator = ".validate(statusCode: 200..<300)"
+final_url_validator = ".validate { _, response, _ in"
 content_type_validator = '.validate(contentType: ["application/json"])'
 response = ".responseJSON { response in"
 failure = 'self.allowVenueLookupRetryAfterDelay(reason: "Foursquare venue lookup failed.")'
-contract = (request, status_validator, content_type_validator, response)
+contract = (request, status_validator, final_url_validator, content_type_validator, response)
 positions = [lookup.find(fragment) for fragment in contract]
 
 if any(lookup.count(fragment) != 1 for fragment in contract):
-    raise SystemExit("Foursquare venue lookup must keep one request, status validator, JSON media validator, and response handler.")
+    raise SystemExit("Foursquare venue lookup must keep one request, status validator, final URL validator, JSON media validator, and response handler.")
 if -1 in positions or positions != sorted(positions) or len(set(positions)) != len(positions):
-    raise SystemExit("Foursquare status and JSON media validation must run before response handling.")
+    raise SystemExit("Foursquare status, final URL, and JSON media validation must run before response handling.")
+final_url_contract = (
+    'components.scheme == "https"',
+    'components.host == "api.foursquare.com"',
+    "components.user == nil",
+    "components.password == nil",
+    "components.port == nil",
+    'components.percentEncodedPath == "/v2/venues/search"',
+    "components.fragment == nil",
+    'NSError(domain: "FoursquareResponseValidation", code: 1, userInfo: nil)',
+)
+if any(lookup.count(fragment) != 1 for fragment in final_url_contract):
+    raise SystemExit("Foursquare final response URL validation must preserve the exact HTTPS endpoint boundary.")
 if lookup.count("case .failure:") != 1 or lookup.count(failure) != 1:
     raise SystemExit("Rejected Foursquare responses must retain the bounded generic failure retry.")
 PY
+
+if ! grep -Fq "api.foursquare.com endpoint and exact path" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "response URL at the HTTPS" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "exact final HTTPS endpoint" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "exact final HTTPS Foursquare API endpoint" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "exact final HTTPS Foursquare API endpoint" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Repository guidance must document Foursquare final response URL validation." >&2
+  exit 1
+fi
 
 if ! grep -Fq "application/json" "$ROOT_DIR/README.md" ||
   ! grep -Fq "media type before JSON response parsing" "$ROOT_DIR/README.md" ||
@@ -761,6 +785,37 @@ if (
 ):
     raise SystemExit(
         "Foursquare response content-type plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$RESPONSE_FINAL_URL_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "validator removal mutation failed",
+    "scheme mutation failed",
+    "host mutation failed",
+    "path mutation failed",
+    "port mutation failed",
+    "validation ordering mutation failed",
+    "failure retry mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Foursquare response final URL plan must remain completed with actual verification recorded."
     )
 PY
 

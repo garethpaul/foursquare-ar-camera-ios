@@ -58,6 +58,8 @@
 - Keep credential, request, malformed-response, and empty-response retries bounded by the documented cooldown.
 - Require a 2xx Foursquare response status before JSON parsing, and keep
   rejected responses on the generic no-body-log retry path.
+- Require the exact final HTTPS Foursquare API endpoint after status validation
+  and before response media validation.
 - Require the exact JSON response media type after status validation and before
   response handling.
 - Treat Swift, CocoaPods, Mapbox, ARKit/Core Location, and Foursquare API modernization as staged, device-verified work; update `Podfile.lock` only with an intentional dependency and CocoaPods toolchain review.
