@@ -54,6 +54,7 @@ Current baseline:
   missing, requests fail, or successful responses contain no valid venues.
 - Venue lookup refuses redirects before credentials can be forwarded to a
   redirect destination.
+- Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
 - Foursquare venue responses require a 2xx HTTP status before JSON parsing;
   rejected statuses use the existing generic bounded retry path.
 - Successful venue responses require the exact final HTTPS endpoint before

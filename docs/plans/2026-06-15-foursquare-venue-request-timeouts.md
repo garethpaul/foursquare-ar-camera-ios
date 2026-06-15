@@ -2,7 +2,7 @@
 title: Foursquare Venue Request Timeouts
 type: reliability
 date: 2026-06-15
-status: in_progress
+status: completed
 execution: code
 ---
 
@@ -94,4 +94,28 @@ Files:
 - Xcode, simulator/device, and live Foursquare behavior cannot be established
   on this Linux host.
 
-## Status: In Progress
+## Work Completed
+
+- Configured a 15-second per-request timeout and a 30-second total resource
+  timeout on the dedicated Foursquare `URLSessionConfiguration`.
+- Applied both values before constructing the Alamofire `SessionManager` and
+  preserved the existing redirect-refusal delegate.
+- Added a function-scoped static checker, baseline integration, completed plan
+  contract, and synchronized project guidance.
+
+## Verification Completed
+
+- The focused venue-timeout checker and shell syntax passed.
+- Repository and external-directory `make check`, plus `make lint`, `make test`,
+  and `make build`, passed the maintained portable baseline; each truthfully
+  reported that `xcodebuild` is unavailable on Linux.
+- Seven isolated hostile mutations were rejected: request-timeout removal,
+  resource-timeout removal, widened request timeout, widened resource timeout,
+  assignment after manager construction, guidance removal, and reopened plan
+  completion evidence.
+- Exact diff, Xcode project, workspace, generated artifact, conflict marker,
+  executable mode, and changed-line secret audits passed before delivery.
+- No simulator, physical device, signed build, or live Foursquare request was
+  executed.
+
+## Status: Completed

@@ -57,6 +57,7 @@
 - Reject non-finite or out-of-range venue coordinates, and reject non-finite or negative distances, before creating AR nodes or map annotations.
 - Keep credential, request, malformed-response, and empty-response retries bounded by the documented cooldown.
 - Require Foursquare venue requests to refuse redirects before forwarding credential-bearing query parameters.
+- Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
 - Require a 2xx Foursquare response status before JSON parsing, and keep
   rejected responses on the generic no-body-log retry path.
 - Require the exact final HTTPS Foursquare API endpoint after status validation

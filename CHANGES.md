@@ -2,6 +2,7 @@
 
 ## 2026-06-15
 
+- Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
 - Refused redirects for credential-bearing Foursquare venue requests before
   URLSession can forward their query parameters.
 - Added dedicated-session, redirect-policy, request-routing, documentation, and

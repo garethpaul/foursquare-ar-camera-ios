@@ -22,6 +22,8 @@ RESPONSE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-status
 RESPONSE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-content-type-validation.md"
 RESPONSE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-14-foursquare-response-final-url-validation.md"
 RESPONSE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-redirect-refusal.md"
+VENUE_TIMEOUT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-request-timeouts.md"
+VENUE_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-venue-request-timeouts.py"
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
@@ -63,6 +65,8 @@ for path in \
   "docs/plans/2026-06-13-foursquare-response-content-type-validation.md" \
   "docs/plans/2026-06-14-foursquare-response-final-url-validation.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
+  "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
+  "scripts/check-venue-request-timeouts.py" \
   "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
@@ -74,6 +78,27 @@ for path in \
   "docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md" \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
   require_file "$path"
+done
+
+python3 "$VENUE_TIMEOUT_CHECK" "$ROOT_DIR/FoursquareARCamera/ViewController.swift"
+
+for venue_timeout_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
+  if ! grep -Fq "Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout." "$ROOT_DIR/$venue_timeout_doc"; then
+    printf '%s\n' "$venue_timeout_doc must document bounded Foursquare venue timeouts." >&2
+    exit 1
+  fi
+done
+
+for venue_timeout_plan_contract in \
+  "status: completed" \
+  "## Status: Completed" \
+  "## Work Completed" \
+  "## Verification Completed" \
+  "hostile mutations were rejected"; do
+  if ! grep -Fq "$venue_timeout_plan_contract" "$VENUE_TIMEOUT_PLAN"; then
+    printf '%s\n' "Venue timeout plan must record completed evidence: $venue_timeout_plan_contract" >&2
+    exit 1
+  fi
 done
 
 if ! grep -Fq 'ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))' "$ROOT_DIR/Makefile" ||

@@ -48,6 +48,8 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     private let foursquareSessionManager: SessionManager = {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = SessionManager.defaultHTTPHeaders
+        configuration.timeoutIntervalForRequest = 15.0
+        configuration.timeoutIntervalForResource = 30.0
         let manager = SessionManager(configuration: configuration)
         manager.delegate.taskWillPerformHTTPRedirection = { _, _, _, _ in nil }
         return manager

@@ -186,6 +186,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   for the exact JSON response media boundary.
 - See `docs/plans/2026-06-14-foursquare-response-final-url-validation.md` for
   the final Foursquare response URL boundary.
+- Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
 - See `docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md` for the
   legacy SDK and dependency modernization sequence.
 - See `docs/plans/2026-06-12-hosted-project-validation.md` for the GitHub
