@@ -21,6 +21,7 @@ COCOALUMBERJACK_PIN_PLAN="$ROOT_DIR/docs/plans/2026-06-13-cocoalumberjack-commit
 RESPONSE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-status-validation.md"
 RESPONSE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-content-type-validation.md"
 RESPONSE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-14-foursquare-response-final-url-validation.md"
+RESPONSE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-redirect-refusal.md"
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
@@ -61,6 +62,7 @@ for path in \
   "docs/plans/2026-06-13-foursquare-response-status-validation.md" \
   "docs/plans/2026-06-13-foursquare-response-content-type-validation.md" \
   "docs/plans/2026-06-14-foursquare-response-final-url-validation.md" \
+  "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
@@ -149,7 +151,8 @@ view="$ROOT_DIR/FoursquareARCamera/ViewController.swift"
 if ! grep -Fq 'configuredValue("FoursquareClientID")' "$view" ||
   ! grep -Fq 'configuredValue("FoursquareClientSecret")' "$view" ||
   ! grep -Fq "Skipping malformed Foursquare venue response" "$view" ||
-  ! grep -Fq 'Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)' "$view" ||
+  ! grep -Fq 'self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)' "$view" ||
+  grep -Fq 'Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)' "$view" ||
   grep -Eq 'let client_(id|secret) = ""|client_secret=|client_id=' "$view" ||
   grep -Eq '\["(name|location)"\].*\!|\["categories"\]\[0\]' "$view" ||
   grep -Eq 'DDLogDebug\(.*(coordinate|currentLocation|translated location|best location estimate|altitude)' "$view"; then
@@ -163,7 +166,17 @@ from pathlib import Path
 
 source = Path(sys.argv[1]).read_text()
 lookup = source.split("func getFoursquareLocations", 1)[-1].split("\n    @objc", 1)[0]
-request = 'Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)'
+manager_contract = (
+    "private let foursquareSessionManager: SessionManager = {",
+    "let configuration = URLSessionConfiguration.default",
+    "configuration.httpAdditionalHeaders = SessionManager.defaultHTTPHeaders",
+    "let manager = SessionManager(configuration: configuration)",
+    "manager.delegate.taskWillPerformHTTPRedirection = { _, _, _, _ in nil }",
+    "return manager",
+)
+if any(source.count(fragment) != 1 for fragment in manager_contract):
+    raise SystemExit("Foursquare venue lookup must use one dedicated redirect-refusing Alamofire session manager.")
+request = 'self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)'
 status_validator = ".validate(statusCode: 200..<300)"
 final_url_validator = ".validate { _, response, _ in"
 content_type_validator = '.validate(contentType: ["application/json"])'
@@ -191,6 +204,15 @@ if any(lookup.count(fragment) != 1 for fragment in final_url_contract):
 if lookup.count("case .failure:") != 1 or lookup.count(failure) != 1:
     raise SystemExit("Rejected Foursquare responses must retain the bounded generic failure retry.")
 PY
+
+if ! grep -Fq "refuses redirects before sending venue query credentials" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Credential-bearing Foursquare venue requests must refuse redirects" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "Venue lookup refuses redirects before credentials can be forwarded" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Refused redirects for credential-bearing Foursquare venue requests" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "refuse redirects before forwarding credential-bearing query parameters" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Repository guidance must document Foursquare redirect refusal." >&2
+  exit 1
+fi
 
 if ! grep -Fq "api.foursquare.com endpoint and exact path" "$ROOT_DIR/README.md" ||
   ! grep -Fq "response URL at the HTTPS" "$ROOT_DIR/SECURITY.md" ||
@@ -816,6 +838,36 @@ if (
 ):
     raise SystemExit(
         "Foursquare response final URL plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$RESPONSE_REDIRECT_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "manager removal mutation failed",
+    "redirect policy mutation failed",
+    "global request helper mutation failed",
+    "duplicate request mutation failed",
+    "final URL validator mutation failed",
+    "failure retry mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Foursquare redirect refusal plan must remain completed with actual verification recorded."
     )
 PY
 

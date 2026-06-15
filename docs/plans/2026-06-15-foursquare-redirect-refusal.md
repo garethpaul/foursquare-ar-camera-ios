@@ -1,7 +1,7 @@
 ---
 title: Foursquare Redirect Refusal
 type: security
-status: in_progress
+status: completed
 date: 2026-06-15
 ---
 
@@ -84,8 +84,31 @@ Files: `README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`, `AGENTS.md`
 
 ## Work Completed
 
-Pending implementation.
+- Added a dedicated Alamofire `SessionManager` for Foursquare venue lookup with
+  the standard Alamofire headers and a redirect delegate that always returns
+  `nil`.
+- Routed the existing single credential-bearing venue request through that
+  manager while retaining status, final URL, media-type, JSON, and bounded
+  retry behavior.
+- Extended static contracts and maintained guidance for redirect refusal and
+  the continuing legacy platform/live-validation limits.
 
 ## Verification Completed
 
-Pending implementation and validation.
+- All four Make gates passed the maintained static baseline from an isolated
+  copy of the exact source tree, and the absolute-Makefile check passed from an
+  external directory.
+- The manager removal mutation failed the dedicated-session contract.
+- The redirect policy mutation failed after permitting the redirected request.
+- The global request helper mutation failed after bypassing the dedicated
+  session manager.
+- The duplicate request mutation failed the single-chain contract.
+- The final URL validator mutation failed the response-provenance contract.
+- The failure retry mutation failed the bounded generic retry contract.
+- The plan evidence mutation failed the completed-evidence contract.
+- Shell syntax and `git diff --check` passed before final-tree verification.
+- `xcodebuild`, CocoaPods installation, signing, simulator/device execution,
+  camera, AR, location, Mapbox, and live Foursquare behavior are unavailable or
+  intentionally excluded on this Linux host.
+- The hosted pull-request check is captured after push and recorded in the
+  exact-head tracker evidence rather than claimed by this pre-push plan.

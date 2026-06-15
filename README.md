@@ -101,8 +101,9 @@ card subviews are added. Map annotation updates avoid force-unwrapping optional
 annotations while tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are
 missing, requests fail, or successful responses contain no valid venue payloads.
-Venue lookups validate a 2xx HTTP status and the final HTTPS
-api.foursquare.com endpoint and exact path. They also require the exact
+Venue lookup refuses redirects before sending venue query credentials, then
+validates a 2xx HTTP status and the final HTTPS
+api.foursquare.com endpoint and exact path. It also requires the exact
 application/json response media type before JSON response parsing; rejected
 responses use the same generic bounded retry path without logging response
 data.

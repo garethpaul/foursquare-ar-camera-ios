@@ -52,6 +52,8 @@ Current baseline:
 - The dedicated reachability probe accepts only its expected HTTP 204 response.
 - Foursquare venue lookup retries use a bounded cooldown when credentials are
   missing, requests fail, or successful responses contain no valid venues.
+- Venue lookup refuses redirects before credentials can be forwarded to a
+  redirect destination.
 - Foursquare venue responses require a 2xx HTTP status before JSON parsing;
   rejected statuses use the existing generic bounded retry path.
 - Successful venue responses require the exact final HTTPS endpoint before

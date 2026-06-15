@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-15
+
+- Refused redirects for credential-bearing Foursquare venue requests before
+  URLSession can forward their query parameters.
+- Added dedicated-session, redirect-policy, request-routing, documentation, and
+  completed-evidence contracts.
+
 ## 2026-06-14
 
 - Required the exact final HTTPS Foursquare API endpoint before response media

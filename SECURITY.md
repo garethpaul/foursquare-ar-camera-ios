@@ -51,6 +51,8 @@ while displaying user or debug location markers.
 Foursquare venue lookup retries should stay bounded so missing credentials,
 failed requests, or empty/malformed responses do not create immediate request
 loops while location updates continue.
+Credential-bearing Foursquare venue requests must refuse redirects before a
+redirect destination can receive their query parameters.
 Foursquare venue responses should require a 2xx HTTP status, an exact final
 response URL at the HTTPS `api.foursquare.com/v2/venues/search` endpoint, and
 the exact `application/json` response media type before JSON parsing; rejected

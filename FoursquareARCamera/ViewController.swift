@@ -45,6 +45,13 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     var loaded: Bool = false
     private let venueLookupRetryDelay: TimeInterval = 30.0
     private var hasVenueTapGesture = false
+    private let foursquareSessionManager: SessionManager = {
+        let configuration = URLSessionConfiguration.default
+        configuration.httpAdditionalHeaders = SessionManager.defaultHTTPHeaders
+        let manager = SessionManager(configuration: configuration)
+        manager.delegate.taskWillPerformHTTPRedirection = { _, _, _, _ in nil }
+        return manager
+    }()
     
     var adjustNorthByTappingSidesOfScreen = false
 
@@ -193,7 +200,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             ]
             
             // Send HTTP request
-            Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)
+            self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)
                 .validate(statusCode: 200..<300)
                 .validate { _, response, _ in
                     guard let finalURL = response.url,
