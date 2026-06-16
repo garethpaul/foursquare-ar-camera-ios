@@ -59,6 +59,8 @@ Current baseline:
   rejected statuses use the existing generic bounded retry path.
 - Successful venue responses require the exact final HTTPS endpoint before
   media validation or response handling.
+- The exact endpoint predicate is shared by the app target and an executable
+  standalone Swift behavioral harness.
 - Successful venue responses require the exact JSON response media type before
   response handling.
 - Venue response coordinates and distances are finite and range-checked before

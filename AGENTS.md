@@ -27,13 +27,13 @@
 
 ## Coding conventions
 
-- Language mix noted in the README: Swift (16).
+- Language mix noted in the README: Swift (18).
 - Use the CocoaPods workspace when present; update `Podfile.lock` only with an intentional dependency change.
 - Preserve legacy Xcode project settings and signing assumptions unless the change is explicitly about modernization.
 
 ## Testing guidance
 
-- No dedicated test files were detected. The `lint`, `test`, and `build` targets delegate to the maintained static `make check` baseline rather than compiling or exercising app behavior.
+- `Tests/FoursquareResponseURLPolicyTests/main.swift` is a standalone behavioral harness. When `swiftc` is available, every Make gate compiles it with the production policy before running the static baseline.
 - Hosted macOS CI additionally parses the checked-in Xcode project; it does not install Pods, sign or launch the app, call live APIs, or test camera, AR, Mapbox, and location behavior.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
@@ -62,6 +62,8 @@
   rejected responses on the generic no-body-log retry path.
 - Require the exact final HTTPS Foursquare API endpoint after status validation
   and before response media validation.
+- Keep that endpoint policy in the app target and execute the same production
+  source from the standalone Swift harness.
 - Require the exact JSON response media type after status validation and before
   response handling.
 - Treat Swift, CocoaPods, Mapbox, ARKit/Core Location, and Foursquare API modernization as staged, device-verified work; update `Podfile.lock` only with an intentional dependency and CocoaPods toolchain review.

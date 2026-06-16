@@ -7,7 +7,7 @@
 
 `garethpaul/foursquare-ar-camera-ios` is an Apple platform application or Swift sample. AR Camera using Foursquare API. 
 
-This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift (16).
+This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift (18).
 
 ## Repository Contents
 
@@ -27,7 +27,7 @@ Additional scan context:
 - Source directories: FoursquareARCamera
 - Dependency and build manifests: Podfile, Podfile.lock
 - Entry points or build surfaces: FoursquareARCamera.xcworkspace, FoursquareARCamera.xcodeproj
-- Test-looking files: no obvious test files detected
+- Test-looking files: one standalone Swift behavioral harness under `Tests/`
 
 ## Getting Started
 
@@ -70,7 +70,7 @@ the workspace for functional builds only after generating Pods locally.
 
 ## Testing and Verification
 
-Run the static baseline:
+Run the maintained baseline:
 
 ```bash
 make lint
@@ -83,9 +83,10 @@ Use the absolute Makefile path to run the same gates from another working
 directory. Verification resolves the checker relative to the loaded Makefile
 rather than the caller's directory.
 
-The `lint`, `test`, and `build` targets currently delegate to the static
-baseline so the repository has a consistent local gate even when Xcode is not
-installed. The baseline verifies that credentials are build settings, tracked
+The `lint`, `test`, and `build` targets delegate to the same baseline. When
+`swiftc` is available, each gate compiles and runs the production Foursquare
+response URL policy against accepted and hostile endpoints before the static
+contracts. The baseline also verifies that credentials are build settings, tracked
 machine artifacts are absent, location logs avoid detailed coordinates, and the
 venue mask asset is not force-unwrapped. The workspace can be listed when
 `xcodebuild` is installed. The venue tap interaction guard keeps one tap
@@ -106,7 +107,8 @@ validates a 2xx HTTP status and the final HTTPS
 api.foursquare.com endpoint and exact path. It also requires the exact
 application/json response media type before JSON response parsing; rejected
 responses use the same generic bounded retry path without logging response
-data.
+data. The final URL decision is shared with the standalone executable harness,
+so the tested predicate is the same source compiled into the app target.
 Venue responses also require finite latitude/longitude within geographic bounds
 and a finite nonnegative distance before rendering.
 

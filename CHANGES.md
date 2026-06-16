@@ -1,5 +1,13 @@
 # Changes
 
+## 2026-06-16
+
+- Extracted the exact Foursquare final-response endpoint predicate into app
+  production source and added a standalone Swift harness that executes the same
+  policy against accepted and hostile URLs when `swiftc` is available.
+- Extended the static baseline to require app-target membership, production
+  delegation, harness wiring, and complete endpoint-case coverage.
+
 ## 2026-06-15
 
 - Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.

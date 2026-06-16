@@ -205,15 +205,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)
                 .validate(statusCode: 200..<300)
                 .validate { _, response, _ in
-                    guard let finalURL = response.url,
-                        let components = URLComponents(url: finalURL, resolvingAgainstBaseURL: false),
-                        components.scheme == "https",
-                        components.host == "api.foursquare.com",
-                        components.user == nil,
-                        components.password == nil,
-                        components.port == nil,
-                        components.percentEncodedPath == "/v2/venues/search",
-                        components.fragment == nil else {
+                    guard FoursquareResponseURLPolicy.accepts(response.url) else {
                         return .failure(NSError(domain: "FoursquareResponseValidation", code: 1, userInfo: nil))
                     }
 

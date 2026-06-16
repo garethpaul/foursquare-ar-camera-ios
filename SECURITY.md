@@ -59,6 +59,9 @@ response URL at the HTTPS `api.foursquare.com/v2/venues/search` endpoint, and
 the exact `application/json` response media type before JSON parsing; rejected
 responses must use the generic retry path without logging bodies, credentials,
 request URLs, redirect targets, or location details.
+The final-response URL predicate is compiled into the app target and is also
+executed by the standalone Swift harness, keeping security checks tied to the
+production decision rather than a duplicated test implementation.
 Foursquare venue coordinates should be finite and geographically bounded, and
 distance values should be finite and nonnegative before AR or map rendering.
 

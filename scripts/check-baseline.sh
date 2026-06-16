@@ -21,6 +21,7 @@ COCOALUMBERJACK_PIN_PLAN="$ROOT_DIR/docs/plans/2026-06-13-cocoalumberjack-commit
 RESPONSE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-status-validation.md"
 RESPONSE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-content-type-validation.md"
 RESPONSE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-14-foursquare-response-final-url-validation.md"
+RESPONSE_URL_TEST_PLAN="$ROOT_DIR/docs/plans/2026-06-16-executable-foursquare-response-url-tests.md"
 RESPONSE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-redirect-refusal.md"
 VENUE_TIMEOUT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-request-timeouts.md"
 VENUE_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-venue-request-timeouts.py"
@@ -50,6 +51,7 @@ for path in \
   "FoursquareARCamera.xcodeproj/project.pbxproj" \
   "FoursquareARCamera/Info.plist" \
   "FoursquareARCamera/ViewController.swift" \
+  "FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift" \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
@@ -64,9 +66,12 @@ for path in \
   "docs/plans/2026-06-13-foursquare-response-status-validation.md" \
   "docs/plans/2026-06-13-foursquare-response-content-type-validation.md" \
   "docs/plans/2026-06-14-foursquare-response-final-url-validation.md" \
+  "docs/plans/2026-06-16-executable-foursquare-response-url-tests.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
+  "scripts/run-foursquare-response-url-tests.sh" \
+  "Tests/FoursquareResponseURLPolicyTests/main.swift" \
   "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
@@ -185,11 +190,12 @@ if ! grep -Fq 'configuredValue("FoursquareClientID")' "$view" ||
   exit 1
 fi
 
-python3 - "$view" <<'PY'
+python3 - "$view" "$ROOT_DIR/FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift" <<'PY'
 import sys
 from pathlib import Path
 
 source = Path(sys.argv[1]).read_text()
+policy = Path(sys.argv[2]).read_text()
 lookup = source.split("func getFoursquareLocations", 1)[-1].split("\n    @objc", 1)[0]
 manager_contract = (
     "private let foursquareSessionManager: SessionManager = {",
@@ -215,6 +221,11 @@ if any(lookup.count(fragment) != 1 for fragment in contract):
 if -1 in positions or positions != sorted(positions) or len(set(positions)) != len(positions):
     raise SystemExit("Foursquare status, final URL, and JSON media validation must run before response handling.")
 final_url_contract = (
+    "FoursquareResponseURLPolicy.accepts(response.url)",
+    'NSError(domain: "FoursquareResponseValidation", code: 1, userInfo: nil)',
+)
+policy_contract = (
+    "static func accepts(_ url: URL?) -> Bool",
     'components.scheme == "https"',
     'components.host == "api.foursquare.com"',
     "components.user == nil",
@@ -222,12 +233,53 @@ final_url_contract = (
     "components.port == nil",
     'components.percentEncodedPath == "/v2/venues/search"',
     "components.fragment == nil",
-    'NSError(domain: "FoursquareResponseValidation", code: 1, userInfo: nil)',
 )
 if any(lookup.count(fragment) != 1 for fragment in final_url_contract):
+    raise SystemExit("Foursquare final response validation must delegate once to the executable endpoint policy.")
+if any(policy.count(fragment) != 1 for fragment in policy_contract):
     raise SystemExit("Foursquare final response URL validation must preserve the exact HTTPS endpoint boundary.")
 if lookup.count("case .failure:") != 1 or lookup.count(failure) != 1:
     raise SystemExit("Rejected Foursquare responses must retain the bounded generic failure retry.")
+PY
+
+python3 - "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/scripts/run-foursquare-response-url-tests.sh" \
+  "$ROOT_DIR/Tests/FoursquareResponseURLPolicyTests/main.swift" <<'PY'
+import sys
+from pathlib import Path
+
+project, makefile, runner, tests = (Path(path).read_text() for path in sys.argv[1:])
+if project.count("FoursquareResponseURLPolicy.swift in Sources") != 2:
+    raise SystemExit("The executable Foursquare response URL policy must belong to the app target once.")
+if project.count("/* FoursquareResponseURLPolicy.swift */") != 3:
+    raise SystemExit("The Foursquare response URL policy project reference must remain complete and unique.")
+if makefile.count('scripts/run-foursquare-response-url-tests.sh') != 1:
+    raise SystemExit("Every Make gate must invoke the executable Foursquare response URL tests once.")
+runner_contract = (
+    "FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift",
+    "Tests/FoursquareResponseURLPolicyTests/main.swift",
+    'mktemp -d "${TMPDIR:-/tmp}/foursquare-response-url-tests.XXXXXX"',
+    "trap cleanup 0",
+)
+if any(runner.count(fragment) != 1 for fragment in runner_contract):
+    raise SystemExit("The Foursquare response URL test runner must compile production policy with bounded cleanup.")
+test_contract = (
+    'accepted: true, "exact endpoint"',
+    'accepted: true, "query parameters"',
+    'accepted: false, "missing URL"',
+    'accepted: false, "non-HTTPS scheme"',
+    'accepted: false, "wrong host"',
+    'accepted: false, "host suffix"',
+    'accepted: false, "userinfo"',
+    'accepted: false, "password"',
+    'accepted: false, "explicit port"',
+    'accepted: false, "trailing slash"',
+    'accepted: false, "encoded path"',
+    'accepted: false, "fragment"',
+)
+if any(tests.count(fragment) != 1 for fragment in test_contract):
+    raise SystemExit("Executable response URL tests must preserve every accepted and hostile endpoint case.")
 PY
 
 if ! grep -Fq "refuses redirects before sending venue query credentials" "$ROOT_DIR/README.md" ||
@@ -863,6 +915,37 @@ if (
 ):
     raise SystemExit(
         "Foursquare response final URL plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$RESPONSE_URL_TEST_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "all four Make gates passed",
+    "absolute Makefile path passed",
+    "production policy mutation failed",
+    "app delegation mutation failed",
+    "Xcode target membership mutation failed",
+    "accepted endpoint mutation failed",
+    "hostile endpoint mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Executable Foursquare response URL test plan must remain completed with actual verification recorded."
     )
 PY
 
