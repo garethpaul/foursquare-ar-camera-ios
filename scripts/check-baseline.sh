@@ -987,8 +987,13 @@ required_tests = (
     "-Double.infinity",
 )
 required_plan = (
+    "status: completed",
     "Repository-root and external-directory `make check` passed",
     "Eight isolated mutations were rejected",
+    "Both exact-head push and pull-request checks passed",
+    "`0b540e158042063e06b4a7a822aee7d2b53497c3`",
+    "Push run `27673872489`",
+    "pull-request run `27673883985`",
     "no live Foursquare request was made",
     "historical Mapbox secret-scanning alert remains an external rotation or revocation boundary",
 )
@@ -1003,13 +1008,7 @@ if project.count("FoursquareVenueDistancePolicy.swift in Sources") != 2 or proje
     raise SystemExit("Venue distance policy must remain a member of the app target.")
 if "run-foursquare-venue-distance-tests.sh" not in makefile:
     raise SystemExit("The canonical Make gate must execute the venue distance policy harness.")
-if "status: pending_hosted_verification" in plan:
-    plan_status_valid = "Exact-head hosted checks remain pending." in plan
-elif "status: completed" in plan:
-    plan_status_valid = "Both exact-head push and pull-request checks passed." in plan
-else:
-    plan_status_valid = False
-if not plan_status_valid or any(item not in plan for item in required_plan):
+if any(item not in plan for item in required_plan):
     raise SystemExit("Venue distance plan must record completed verification and external secret boundary.")
 PY
 

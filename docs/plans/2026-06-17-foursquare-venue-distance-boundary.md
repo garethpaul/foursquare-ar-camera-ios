@@ -1,7 +1,7 @@
 ---
 title: Foursquare Venue Distance Boundary
 type: bugfix
-status: pending_hosted_verification
+status: completed
 date: 2026-06-17
 ---
 
@@ -109,4 +109,7 @@ The validation was offline and no live Foursquare request was made. The
 historical Mapbox secret-scanning alert remains an external rotation or
 revocation boundary; no secret value was read, copied, or recorded.
 
-Exact-head hosted checks remain pending.
+Both exact-head push and pull-request checks passed at implementation commit
+`0b540e158042063e06b4a7a822aee7d2b53497c3`. Push run `27673872489` and
+pull-request run `27673883985` executed the production venue-distance policy
+successfully on hosted macOS.
