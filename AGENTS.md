@@ -55,6 +55,7 @@
 - Keep Core Location updates gated on authorization before starting AR venue lookup behavior.
 - Keep location manager setup and heading forwarding resilient when optional Core Location state is unavailable.
 - Reject non-finite or out-of-range venue coordinates, and reject non-finite or negative distances, before creating AR nodes or map annotations.
+- Keep venue distance-to-feet conversion within Int bounds before rendering.
 - Keep credential, request, malformed-response, and empty-response retries bounded by the documented cooldown.
 - Require Foursquare venue requests to refuse redirects before forwarding credential-bearing query parameters.
 - Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.

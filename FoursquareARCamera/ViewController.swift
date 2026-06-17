@@ -230,19 +230,21 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                             venueLongitude.isFinite,
                             (-180.0...180.0).contains(venueLongitude),
                             distance.isFinite,
-                            distance >= 0 else {
+                            distance >= 0,
+                            let distanceFeet = FoursquareVenueDistancePolicy.feet(
+                                fromMeters: distance
+                            ) else {
                             DDLogWarn("Skipping malformed Foursquare venue response.")
                             continue
                         }
 
                         let categoryName = venue.1["categories"].array?.first?["name"].string ?? "Venue"
-                        let ratingStr = Int(distance * 3.28084)
                         
                         let frameSize = CGRect(x: 0, y: 0, width: 362, height: 291)
                         let fsview = FSQView(frame: frameSize)
                         fsview.venueName.text = name
                         fsview.categoryName.text = categoryName
-                        fsview.ratingStr.text = "\(ratingStr)ft"
+                        fsview.ratingStr.text = "\(distanceFeet)ft"
                         
                         var image = UIImage.imageWithView(view: fsview)
                         

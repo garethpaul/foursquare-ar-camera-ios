@@ -1,7 +1,7 @@
 ---
 title: Foursquare Venue Distance Boundary
 type: bugfix
-status: planned
+status: pending_hosted_verification
 date: 2026-06-17
 ---
 
@@ -91,4 +91,22 @@ Mapbox rotation boundary without exposing its value.
 
 ## Verification Results
 
-Implementation and verification are pending.
+Implementation is complete. The production parser delegates meters-to-feet
+conversion to the new Foundation-only policy, and the helper is a member of the
+app target. The standalone harness covers zero, ordinary values, the maximum
+accepted value, overflow, negative values, NaN, and both infinities.
+
+Repository-root and external-directory `make check` passed on Linux. The gate
+truthfully skipped executable Swift tests and Xcode project parsing because
+`swiftc` and `xcodebuild` are unavailable; shell syntax, static source wiring,
+project membership, workflow wiring, and maintained guidance passed.
+
+Eight isolated mutations were rejected across the conversion bound,
+production delegation, boundary cases, Xcode membership, Make wiring,
+maintained guidance, and plan status.
+
+The validation was offline and no live Foursquare request was made. The
+historical Mapbox secret-scanning alert remains an external rotation or
+revocation boundary; no secret value was read, copied, or recorded.
+
+Exact-head hosted checks remain pending.

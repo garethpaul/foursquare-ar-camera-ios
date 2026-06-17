@@ -63,7 +63,8 @@ The final-response URL predicate is compiled into the app target and is also
 executed by the standalone Swift harness, keeping security checks tied to the
 production decision rather than a duplicated test implementation.
 Foursquare venue coordinates should be finite and geographically bounded, and
-distance values should be finite and nonnegative before AR or map rendering.
+distance values should be finite and nonnegative before AR or map rendering;
+their integer conversion must remain bounded to avoid malformed-response traps.
 
 GitHub Actions runs the credential-free static and Xcode project baseline with
 read-only repository permissions, an immutable checkout pin, a bounded macOS

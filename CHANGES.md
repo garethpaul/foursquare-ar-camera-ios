@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-17
+
+- Bound venue distance conversion before integer rendering and added an
+  executable Swift policy harness for normal and hostile values.
+
 ## 2026-06-16
 
 - Extracted the exact Foursquare final-response endpoint predicate into app

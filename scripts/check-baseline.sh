@@ -52,6 +52,7 @@ for path in \
   "FoursquareARCamera/Info.plist" \
   "FoursquareARCamera/ViewController.swift" \
   "FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift" \
+  "FoursquareARCamera/Source/FoursquareVenueDistancePolicy.swift" \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
@@ -67,11 +68,14 @@ for path in \
   "docs/plans/2026-06-13-foursquare-response-content-type-validation.md" \
   "docs/plans/2026-06-14-foursquare-response-final-url-validation.md" \
   "docs/plans/2026-06-16-executable-foursquare-response-url-tests.md" \
+  "docs/plans/2026-06-17-foursquare-venue-distance-boundary.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
   "scripts/run-foursquare-response-url-tests.sh" \
+  "scripts/run-foursquare-venue-distance-tests.sh" \
   "Tests/FoursquareResponseURLPolicyTests/main.swift" \
+  "Tests/FoursquareVenueDistancePolicyTests/main.swift" \
   "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
@@ -948,6 +952,75 @@ if (
         "Executable Foursquare response URL test plan must remain completed with actual verification recorded."
     )
 PY
+
+python3 - \
+  "$ROOT_DIR/FoursquareARCamera/ViewController.swift" \
+  "$ROOT_DIR/FoursquareARCamera/Source/FoursquareVenueDistancePolicy.swift" \
+  "$ROOT_DIR/Tests/FoursquareVenueDistancePolicyTests/main.swift" \
+  "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/docs/plans/2026-06-17-foursquare-venue-distance-boundary.md" <<'PY'
+import sys
+from pathlib import Path
+
+view = Path(sys.argv[1]).read_text()
+policy = Path(sys.argv[2]).read_text()
+tests = Path(sys.argv[3]).read_text()
+project = Path(sys.argv[4]).read_text()
+makefile = Path(sys.argv[5]).read_text()
+plan = " ".join(Path(sys.argv[6]).read_text().split())
+
+required_policy = (
+    "Double(Int.max).nextDown",
+    "maximumConvertibleMeters",
+    "distance.isFinite",
+    "distance >= 0",
+    "distance <= maximumConvertibleMeters",
+    "return Int(distance * feetPerMeter)",
+)
+required_tests = (
+    'expect(0, feet: 0, "zero")',
+    'expect(200, feet: 656, "ordinary venue radius")',
+    "maximumMeters.nextUp",
+    "Double.nan",
+    "Double.infinity",
+    "-Double.infinity",
+)
+required_plan = (
+    "Repository-root and external-directory `make check` passed",
+    "Eight isolated mutations were rejected",
+    "no live Foursquare request was made",
+    "historical Mapbox secret-scanning alert remains an external rotation or revocation boundary",
+)
+
+if any(item not in policy for item in required_policy):
+    raise SystemExit("Venue distance conversion must remain finite, nonnegative, and Int-bounded.")
+if "FoursquareVenueDistancePolicy.feet(" not in view or "let distanceFeet" not in view:
+    raise SystemExit("Venue rendering must delegate distance conversion to the production policy.")
+if any(item not in tests for item in required_tests):
+    raise SystemExit("Executable venue distance boundary cases must remain registered.")
+if project.count("FoursquareVenueDistancePolicy.swift in Sources") != 2 or project.count("/* FoursquareVenueDistancePolicy.swift */") != 3:
+    raise SystemExit("Venue distance policy must remain a member of the app target.")
+if "run-foursquare-venue-distance-tests.sh" not in makefile:
+    raise SystemExit("The canonical Make gate must execute the venue distance policy harness.")
+if "status: pending_hosted_verification" in plan:
+    plan_status_valid = "Exact-head hosted checks remain pending." in plan
+elif "status: completed" in plan:
+    plan_status_valid = "Both exact-head push and pull-request checks passed." in plan
+else:
+    plan_status_valid = False
+if not plan_status_valid or any(item not in plan for item in required_plan):
+    raise SystemExit("Venue distance plan must record completed verification and external secret boundary.")
+PY
+
+if ! grep -Fq 'integer-foot conversion is bounded' "$ROOT_DIR/README.md" || \
+  ! grep -Fq 'integer conversion must remain bounded' "$ROOT_DIR/SECURITY.md" || \
+  ! grep -Fq 'Bound venue distance conversion before integer rendering' "$ROOT_DIR/VISION.md" || \
+  ! grep -Fq 'Bound venue distance conversion before integer rendering' "$ROOT_DIR/CHANGES.md" || \
+  ! grep -Fq 'Keep venue distance-to-feet conversion within Int bounds' "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must preserve the venue distance conversion boundary." >&2
+  exit 1
+fi
 
 python3 - "$RESPONSE_REDIRECT_PLAN" <<'PY'
 import re

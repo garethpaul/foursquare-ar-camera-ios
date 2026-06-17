@@ -8,7 +8,8 @@ lint test build: check
 check:
 	@if command -v "$(SWIFTC)" >/dev/null 2>&1; then \
 		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-response-url-tests.sh"; \
+		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-distance-tests.sh"; \
 	else \
-		echo "swiftc unavailable; executable Foursquare response URL tests skipped"; \
+		echo "swiftc unavailable; executable Foursquare policy tests skipped"; \
 	fi
 	@"$(ROOT)/scripts/check-baseline.sh"
