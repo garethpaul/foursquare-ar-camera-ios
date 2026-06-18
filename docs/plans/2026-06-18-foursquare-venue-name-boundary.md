@@ -161,5 +161,7 @@ credential-shaped addition checks passed. No live Foursquare request was made.
 The historical Mapbox secret-scanning alert remains an external rotation or
 revocation boundary; no secret value was retrieved, copied, or recorded.
 
-Hosted macOS evidence will be recorded in a follow-up exact-head evidence commit
-after both canonical events complete.
+Both canonical hosted macOS events passed at implementation head
+`c9d1e609bba2ba3a00696b33d9755d2dbc455b92`. Push run `27739491989` and
+pull-request run `27739513527` executed the production venue-text harness and
+the full credential baseline successfully.
