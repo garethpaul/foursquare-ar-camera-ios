@@ -221,7 +221,8 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                     var validVenueCount = 0
                     // Iterate through the venues
                     for venue in venues {
-                        guard let name = venue.1["name"].string,
+                        guard let rawName = venue.1["name"].string,
+                            let name = FoursquareVenueTextPolicy.venueName(rawName),
                             let venueLatitude = venue.1["location"]["lat"].double,
                             let venueLongitude = venue.1["location"]["lng"].double,
                             let distance = venue.1["location"]["distance"].double,
@@ -238,7 +239,9 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                             continue
                         }
 
-                        let categoryName = venue.1["categories"].array?.first?["name"].string ?? "Venue"
+                        let categoryName = FoursquareVenueTextPolicy.categoryName(
+                            venue.1["categories"].array?.first?["name"].string
+                        )
                         
                         let frameSize = CGRect(x: 0, y: 0, width: 362, height: 291)
                         let fsview = FSQView(frame: frameSize)

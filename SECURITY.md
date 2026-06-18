@@ -65,6 +65,8 @@ production decision rather than a duplicated test implementation.
 Foursquare venue coordinates should be finite and geographically bounded, and
 distance values should be finite and nonnegative before AR or map rendering;
 their integer conversion must remain bounded to avoid malformed-response traps.
+Trim required venue names and reject blank venue names before UI publication;
+missing or blank category labels must use the neutral `Venue` fallback.
 
 GitHub Actions runs the credential-free static and Xcode project baseline with
 read-only repository permissions, an immutable checkout pin, a bounded macOS

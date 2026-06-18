@@ -1,7 +1,7 @@
 ---
 title: Foursquare Venue Name Boundary
 type: bugfix
-status: planned
+status: completed
 date: 2026-06-18
 execution: code
 ---
@@ -137,3 +137,29 @@ the external Mapbox rotation boundary without reading or recording a secret.
   malformed labels.
 - Linux cannot execute Swift or parse the Xcode project; hosted macOS remains
   authoritative for those gates.
+
+## Verification Completed
+
+The production policy trims required venue names, rejects empty and
+whitespace-only names, preserves valid Unicode, trims category labels, and
+uses the existing `Venue` fallback for missing or blank categories. The app
+delegates both decisions before constructing `FSQView`, and the policy is a
+member of the application target.
+
+Repository-root and external-directory `make check` passed on Linux. The gate
+truthfully skipped executable Swift tests and Xcode project parsing because
+`swiftc` and `xcodebuild` are unavailable. A fake compiler exercised runner
+success, compiler exit-7 propagation, and temporary-build cleanup.
+
+Ten isolated mutations were rejected across both production normalization
+paths, required blank-name and Unicode cases, app delegation for names and
+categories, Xcode target membership, Make wiring, maintained guidance, and
+completed plan status.
+
+Shell syntax, exact-diff whitespace, executable mode, generated-artifact, and
+credential-shaped addition checks passed. No live Foursquare request was made.
+The historical Mapbox secret-scanning alert remains an external rotation or
+revocation boundary; no secret value was retrieved, copied, or recorded.
+
+Hosted macOS evidence is recorded in a follow-up exact-head evidence commit
+after both canonical events complete.

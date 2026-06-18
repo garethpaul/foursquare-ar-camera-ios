@@ -66,6 +66,8 @@ Current baseline:
 - Venue response coordinates and distances are finite and range-checked before
   AR nodes or map annotations are created.
 - Bound venue distance conversion before integer rendering.
+- Normalize venue text before rendering, rejecting blank required names and
+  retaining the neutral category fallback.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
 - GitHub Actions runs the same gate on a bounded macOS job with read-only

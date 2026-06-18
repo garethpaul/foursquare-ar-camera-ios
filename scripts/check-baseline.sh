@@ -25,6 +25,7 @@ RESPONSE_URL_TEST_PLAN="$ROOT_DIR/docs/plans/2026-06-16-executable-foursquare-re
 RESPONSE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-redirect-refusal.md"
 VENUE_TIMEOUT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-request-timeouts.md"
 VENUE_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-venue-request-timeouts.py"
+VENUE_TEXT_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-venue-name-boundary.md"
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
@@ -53,6 +54,7 @@ for path in \
   "FoursquareARCamera/ViewController.swift" \
   "FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift" \
   "FoursquareARCamera/Source/FoursquareVenueDistancePolicy.swift" \
+  "FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift" \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
@@ -69,13 +71,16 @@ for path in \
   "docs/plans/2026-06-14-foursquare-response-final-url-validation.md" \
   "docs/plans/2026-06-16-executable-foursquare-response-url-tests.md" \
   "docs/plans/2026-06-17-foursquare-venue-distance-boundary.md" \
+  "docs/plans/2026-06-18-foursquare-venue-name-boundary.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
   "scripts/run-foursquare-response-url-tests.sh" \
   "scripts/run-foursquare-venue-distance-tests.sh" \
+  "scripts/run-foursquare-venue-text-tests.sh" \
   "Tests/FoursquareResponseURLPolicyTests/main.swift" \
   "Tests/FoursquareVenueDistancePolicyTests/main.swift" \
+  "Tests/FoursquareVenueTextPolicyTests/main.swift" \
   "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
@@ -1018,6 +1023,78 @@ if ! grep -Fq 'integer-foot conversion is bounded' "$ROOT_DIR/README.md" || \
   ! grep -Fq 'Bound venue distance conversion before integer rendering' "$ROOT_DIR/CHANGES.md" || \
   ! grep -Fq 'Keep venue distance-to-feet conversion within Int bounds' "$ROOT_DIR/AGENTS.md"; then
   printf '%s\n' "Project guidance must preserve the venue distance conversion boundary." >&2
+  exit 1
+fi
+
+python3 - \
+  "$ROOT_DIR/FoursquareARCamera/ViewController.swift" \
+  "$ROOT_DIR/FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift" \
+  "$ROOT_DIR/Tests/FoursquareVenueTextPolicyTests/main.swift" \
+  "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$VENUE_TEXT_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+view = Path(sys.argv[1]).read_text()
+policy = Path(sys.argv[2]).read_text()
+tests = Path(sys.argv[3]).read_text()
+project = Path(sys.argv[4]).read_text()
+makefile = Path(sys.argv[5]).read_text()
+plan = Path(sys.argv[6]).read_text()
+frontmatter = plan.split("---", 2)[1]
+
+required_policy = (
+    "return normalized.isEmpty ? nil : normalized",
+    'static let fallbackCategoryName = "Venue"',
+    "return normalized.isEmpty ? fallbackCategoryName : normalized",
+)
+required_tests = (
+    'expectVenueName("  Corner Cafe\\n", "Corner Cafe", "trimmed venue name")',
+    'expectVenueName("", nil, "empty venue name")',
+    'expectVenueName(" \\t\\n", nil, "whitespace-only venue name")',
+    'expectVenueName("Café 東京", "Café 東京", "Unicode-safe venue name")',
+    'expectCategoryName(nil, "Venue", "missing category fallback")',
+    'expectCategoryName(" \\t\\n", "Venue", "whitespace-only category fallback")',
+)
+required_plan = (
+    "## Verification Completed",
+    "Repository-root and external-directory `make check` passed",
+    "isolated mutations were rejected",
+    "No live Foursquare request was made",
+    "historical Mapbox secret-scanning alert remains",
+)
+
+if policy.count("trimmingCharacters(in: .whitespacesAndNewlines)") != 2 or any(
+    item not in policy for item in required_policy
+):
+    raise SystemExit("Venue text policy must trim required names and preserve the category fallback.")
+if any(item not in tests for item in required_tests):
+    raise SystemExit("Executable venue text normalization cases must remain registered.")
+name_policy = view.find("FoursquareVenueTextPolicy.venueName(rawName)")
+category_policy = view.find("FoursquareVenueTextPolicy.categoryName(")
+view_creation = view.find("let fsview = FSQView")
+if min(name_policy, category_policy, view_creation) < 0 or not (
+    name_policy < view_creation and category_policy < view_creation
+):
+    raise SystemExit("Venue text decisions must occur before FSQView construction.")
+if project.count("FoursquareVenueTextPolicy.swift in Sources") != 2 or project.count("/* FoursquareVenueTextPolicy.swift */") != 3:
+    raise SystemExit("Venue text policy must remain a member of the app target.")
+if "run-foursquare-venue-text-tests.sh" not in makefile:
+    raise SystemExit("The canonical Make gate must execute the venue text policy harness.")
+if re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE) != ["status: completed"] or any(
+    item not in plan for item in required_plan
+):
+    raise SystemExit("Venue text plan must record completed verification and external secret boundary.")
+PY
+
+if ! grep -Fq 'blank venue names are rejected' "$ROOT_DIR/README.md" || \
+  ! grep -Fq 'blank venue names before UI publication' "$ROOT_DIR/SECURITY.md" || \
+  ! grep -Fq 'Normalize venue text before rendering' "$ROOT_DIR/VISION.md" || \
+  ! grep -Fq 'Normalize venue text before rendering' "$ROOT_DIR/CHANGES.md" || \
+  ! grep -Fq 'Reject blank venue names before creating AR or map UI' "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must preserve the venue text normalization boundary." >&2
   exit 1
 fi
 

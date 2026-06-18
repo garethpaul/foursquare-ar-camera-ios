@@ -111,7 +111,8 @@ data. The final URL decision is shared with the standalone executable harness,
 so the tested predicate is the same source compiled into the app target.
 Venue responses also require finite latitude/longitude within geographic bounds
 and a finite nonnegative distance whose integer-foot conversion is bounded
-before rendering.
+before rendering. Required venue names are trimmed; blank venue names are rejected,
+while missing or blank category labels use the existing `Venue` fallback.
 
 GitHub Actions runs `make check` on a bounded `macos-15` job for pushes and pull
 requests. The checkout action is immutably pinned with read-only repository

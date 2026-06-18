@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-18
+
+- Normalize venue text before rendering, rejecting blank required names and
+  retaining the neutral category fallback through an executable Swift policy.
+
 ## 2026-06-17
 
 - Bound venue distance conversion before integer rendering and added an
