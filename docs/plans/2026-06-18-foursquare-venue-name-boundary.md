@@ -151,15 +151,15 @@ truthfully skipped executable Swift tests and Xcode project parsing because
 `swiftc` and `xcodebuild` are unavailable. A fake compiler exercised runner
 success, compiler exit-7 propagation, and temporary-build cleanup.
 
-Ten isolated mutations were rejected across both production normalization
+Thirteen isolated mutations were rejected across both production normalization
 paths, required blank-name and Unicode cases, app delegation for names and
-categories, Xcode target membership, Make wiring, maintained guidance, and
-completed plan status.
+categories, category Unicode preservation, Xcode target membership, Make and
+runner wiring, executable mode, maintained guidance, and completed plan status.
 
 Shell syntax, exact-diff whitespace, executable mode, generated-artifact, and
 credential-shaped addition checks passed. No live Foursquare request was made.
 The historical Mapbox secret-scanning alert remains an external rotation or
 revocation boundary; no secret value was retrieved, copied, or recorded.
 
-Hosted macOS evidence is recorded in a follow-up exact-head evidence commit
+Hosted macOS evidence will be recorded in a follow-up exact-head evidence commit
 after both canonical events complete.

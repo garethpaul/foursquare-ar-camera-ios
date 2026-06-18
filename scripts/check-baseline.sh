@@ -1032,6 +1032,7 @@ python3 - \
   "$ROOT_DIR/Tests/FoursquareVenueTextPolicyTests/main.swift" \
   "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
   "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" \
   "$VENUE_TEXT_PLAN" <<'PY'
 import re
 import sys
@@ -1042,7 +1043,8 @@ policy = Path(sys.argv[2]).read_text()
 tests = Path(sys.argv[3]).read_text()
 project = Path(sys.argv[4]).read_text()
 makefile = Path(sys.argv[5]).read_text()
-plan = Path(sys.argv[6]).read_text()
+runner = Path(sys.argv[6]).read_text()
+plan = Path(sys.argv[7]).read_text()
 frontmatter = plan.split("---", 2)[1]
 
 required_policy = (
@@ -1055,6 +1057,7 @@ required_tests = (
     'expectVenueName("", nil, "empty venue name")',
     'expectVenueName(" \\t\\n", nil, "whitespace-only venue name")',
     'expectVenueName("Café 東京", "Café 東京", "Unicode-safe venue name")',
+    'expectCategoryName("Café 東京", "Café 東京", "Unicode-safe category name")',
     'expectCategoryName(nil, "Venue", "missing category fallback")',
     'expectCategoryName(" \\t\\n", "Venue", "whitespace-only category fallback")',
 )
@@ -1081,13 +1084,26 @@ if min(name_policy, category_policy, view_creation) < 0 or not (
     raise SystemExit("Venue text decisions must occur before FSQView construction.")
 if project.count("FoursquareVenueTextPolicy.swift in Sources") != 2 or project.count("/* FoursquareVenueTextPolicy.swift */") != 3:
     raise SystemExit("Venue text policy must remain a member of the app target.")
-if "run-foursquare-venue-text-tests.sh" not in makefile:
+if makefile.count("run-foursquare-venue-text-tests.sh") != 1:
     raise SystemExit("The canonical Make gate must execute the venue text policy harness.")
+runner_contract = (
+    "FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift",
+    "Tests/FoursquareVenueTextPolicyTests/main.swift",
+    'mktemp -d "${TMPDIR:-/tmp}/foursquare-venue-text-tests.XXXXXX"',
+    "trap cleanup 0",
+)
+if any(runner.count(item) != 1 for item in runner_contract):
+    raise SystemExit("The venue text runner must compile production policy with bounded cleanup.")
 if re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE) != ["status: completed"] or any(
     item not in plan for item in required_plan
 ):
     raise SystemExit("Venue text plan must record completed verification and external secret boundary.")
 PY
+
+if [ ! -x "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" ]; then
+  printf '%s\n' "The venue text test runner must remain executable." >&2
+  exit 1
+fi
 
 if ! grep -Fq 'blank venue names are rejected' "$ROOT_DIR/README.md" || \
   ! grep -Fq 'blank venue names before UI publication' "$ROOT_DIR/SECURITY.md" || \

@@ -26,6 +26,7 @@ expectVenueName("Café 東京", "Café 東京", "Unicode-safe venue name")
 
 expectCategoryName("Coffee Shop", "Coffee Shop", "ordinary category name")
 expectCategoryName("  Coffee Shop\n", "Coffee Shop", "trimmed category name")
+expectCategoryName("Café 東京", "Café 東京", "Unicode-safe category name")
 expectCategoryName(nil, "Venue", "missing category fallback")
 expectCategoryName("", "Venue", "empty category fallback")
 expectCategoryName(" \t\n", "Venue", "whitespace-only category fallback")
