@@ -2,13 +2,13 @@
 title: Foursquare Swift Runner Signal Cleanup
 type: reliability
 date: 2026-06-18
-status: planned
+status: completed
 execution: code
 ---
 
 # Foursquare Swift Runner Signal Cleanup
 
-## Status: Planned
+## Status: Completed
 
 ## Summary
 
@@ -36,8 +36,8 @@ policy gates without changing app, AR, location, camera, or network behavior.
   `HUP`, `INT`, or `TERM` bindings in every runner.
 - Verify success, compiler failure, and bounded termination independently for
   all three runners using isolated fake compilers and temporary directories.
-- Keep this plan planned until exact implementation-head hosted checks pass;
-  then record completed local and hosted evidence in a separate commit.
+- Keep completed evidence pinned to the exact implementation head and canonical
+  hosted run identifiers.
 
 ## Implementation Units
 
@@ -60,6 +60,29 @@ Run repository/external Make gates, isolated fake-compiler probes, hostile
 mutations, artifact/secret audits, and exact-head hosted checks. Only after the
 implementation head is terminal-green, change this plan to completed and pin
 the implementation SHA and canonical run identifiers.
+
+## Verification Completed
+
+- `sh -n` passed for all three runners and the baseline gate.
+- `make check`, `make lint`, `make test`, and `make build` passed from the
+  repository, and absolute-Makefile `make check` passed from `/tmp`.
+- Isolated fake compilers proved success cleanup, compiler-failure cleanup with
+  status 42, and bounded `TERM` cleanup independently for the response-URL,
+  venue-distance, and venue-text runners, with no residual temporary output.
+- Mutations removing direct cleanup, restoring an exit-only `TERM` binding,
+  and prematurely completing the plan were rejected.
+- Review found no actionable correctness, maintainability, testing, or
+  plan-completeness issues.
+- Diff, executable-mode, worktree, generated-artifact, and high-confidence
+  credential-pattern audits passed.
+- The implementation was committed and pushed as
+  `ae7cd17b9db57728f2aa4714be130582e03f71e6`.
+- Push run `27747566549` and pull-request run `27747567053` completed
+  successfully on that exact head, including all three Swift policy harnesses,
+  the Xcode project check, and the credential baseline. PR #19 remained open
+  and mergeable, with zero open branch code-scanning or Dependabot alerts.
+- The historical Mapbox secret-scanning alert remains an external provider-side
+  rotation or revocation boundary; no secret value was retrieved or recorded.
 
 ## Scope Boundaries
 

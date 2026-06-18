@@ -128,10 +128,14 @@ for runner_path in map(Path, sys.argv[1:]):
 PY
 
 for runner_signal_plan_contract in \
-  "status: planned" \
+  "status: completed" \
   "response-URL, venue-distance, and venue-text runners" \
   "leave runner-specific temporary directories behind" \
-  "success, compiler failure, and bounded termination independently"; do
+  "## Verification Completed" \
+  "ae7cd17b9db57728f2aa4714be130582e03f71e6" \
+  'Push run `27747566549` and pull-request run `27747567053` completed' \
+  "status 42" \
+  "historical Mapbox secret-scanning alert remains"; do
   if ! grep -Fq "$runner_signal_plan_contract" "$RUNNER_SIGNAL_PLAN"; then
     printf '%s\n' "Foursquare runner signal-cleanup plan must retain evidence: $runner_signal_plan_contract" >&2
     exit 1
