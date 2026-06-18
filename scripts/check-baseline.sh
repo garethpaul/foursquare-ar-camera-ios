@@ -26,6 +26,7 @@ RESPONSE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-redirect-refu
 VENUE_TIMEOUT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-request-timeouts.md"
 VENUE_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-venue-request-timeouts.py"
 VENUE_TEXT_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-venue-name-boundary.md"
+RUNNER_SIGNAL_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md"
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
@@ -72,6 +73,7 @@ for path in \
   "docs/plans/2026-06-16-executable-foursquare-response-url-tests.md" \
   "docs/plans/2026-06-17-foursquare-venue-distance-boundary.md" \
   "docs/plans/2026-06-18-foursquare-venue-name-boundary.md" \
+  "docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
@@ -92,6 +94,48 @@ for path in \
   "docs/plans/2026-06-09-foursquare-ar-mask-asset-guard.md" \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
   require_file "$path"
+done
+
+python3 - \
+  "$ROOT_DIR/scripts/run-foursquare-response-url-tests.sh" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-distance-tests.sh" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+handler = re.compile(
+    r'''handle_signal\(\) \{\s*'''
+    r'''status=\$1\s*'''
+    r'''trap - 0 1 2 15\s*'''
+    r'''cleanup\s*'''
+    r'''exit "\$status"\s*'''
+    r'''\}'''
+)
+
+for runner_path in map(Path, sys.argv[1:]):
+    runner = runner_path.read_text(encoding="utf-8")
+    if not handler.search(runner):
+        raise SystemExit(
+            f"{runner_path.name} signals must clean temporary output before exiting."
+        )
+    for signal, status in ((1, 129), (2, 130), (15, 143)):
+        binding = f"trap 'handle_signal {status}' {signal}"
+        if runner.count(binding) != 1:
+            raise SystemExit(
+                f"{runner_path.name} must retain signal binding: {binding}"
+            )
+PY
+
+for runner_signal_plan_contract in \
+  "status: planned" \
+  "response-URL, venue-distance, and venue-text runners" \
+  "leave runner-specific temporary directories behind" \
+  "success, compiler failure, and bounded termination independently"; do
+  if ! grep -Fq "$runner_signal_plan_contract" "$RUNNER_SIGNAL_PLAN"; then
+    printf '%s\n' "Foursquare runner signal-cleanup plan must retain evidence: $runner_signal_plan_contract" >&2
+    exit 1
+  fi
 done
 
 python3 "$VENUE_TIMEOUT_CHECK" "$ROOT_DIR/FoursquareARCamera/ViewController.swift"
