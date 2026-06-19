@@ -1,6 +1,20 @@
 import Foundation
 
 public class Reachability {
+
+    private final class RedirectRefusingDelegate: NSObject, URLSessionTaskDelegate {
+        func urlSession(_ session: URLSession,
+                        task: URLSessionTask,
+                        willPerformHTTPRedirection response: HTTPURLResponse,
+                        newRequest request: URLRequest,
+                        completionHandler: @escaping (URLRequest?) -> Void) {
+            completionHandler(nil)
+        }
+    }
+
+    private class func isSuccessfulProbeStatus(_ statusCode: Int) -> Bool {
+        return statusCode == 204
+    }
     
     class func isConnectedToNetwork()->Bool{
 
@@ -15,18 +29,30 @@ public class Reachability {
 
         let semaphore = DispatchSemaphore(value: 0)
         var isConnected = false
+        let configuration = URLSessionConfiguration.ephemeral
+        let redirectRefusingDelegate = RedirectRefusingDelegate()
+        let session = URLSession(
+            configuration: configuration,
+            delegate: redirectRefusingDelegate,
+            delegateQueue: nil
+        )
 
-        let task = URLSession.shared.dataTask(with: request) { _, response, _ in
+        let task = session.dataTask(with: request) { _, response, _ in
             if let httpResponse = response as? HTTPURLResponse {
-                isConnected = (200..<400).contains(httpResponse.statusCode)
+                isConnected = isSuccessfulProbeStatus(httpResponse.statusCode)
             }
 
             semaphore.signal()
         }
 
         task.resume()
-        _ = semaphore.wait(timeout: .now() + 10)
+        if semaphore.wait(timeout: .now() + 10) == .timedOut {
+            task.cancel()
+            session.invalidateAndCancel()
+            return false
+        }
 
+        session.finishTasksAndInvalidate()
         return isConnected
     }
 }

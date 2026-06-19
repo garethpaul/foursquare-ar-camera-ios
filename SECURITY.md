@@ -34,6 +34,9 @@ Helpful reports include:
 
 ## Mobile Privacy Notes
 
+The dedicated connectivity probe should report success only for its expected
+HTTP 204 response; redirects and other status codes remain offline results.
+
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 
 Core Location updates should stay gated on authorization before AR venue lookup
@@ -48,8 +51,23 @@ while displaying user or debug location markers.
 Foursquare venue lookup retries should stay bounded so missing credentials,
 failed requests, or empty/malformed responses do not create immediate request
 loops while location updates continue.
+Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
+Credential-bearing Foursquare venue requests must refuse redirects before a
+redirect destination can receive their query parameters.
+Foursquare venue responses should require a 2xx HTTP status, an exact final
+response URL at the HTTPS `api.foursquare.com/v2/venues/search` endpoint, and
+the exact `application/json` response media type before JSON parsing; rejected
+responses must use the generic retry path without logging bodies, credentials,
+request URLs, redirect targets, or location details.
+The final-response URL predicate is compiled into the app target and is also
+executed by the standalone Swift harness, keeping security checks tied to the
+production decision rather than a duplicated test implementation.
 Foursquare venue coordinates should be finite and geographically bounded, and
-distance values should be finite and nonnegative before AR or map rendering.
+distance values should be finite and nonnegative before AR or map rendering;
+their integer conversion must remain bounded to avoid malformed-response traps.
+Trim required venue names and reject blank or invisible-only venue names before
+UI publication; missing, blank, or invisible-only category labels must use the
+neutral `Venue` fallback.
 
 GitHub Actions runs the credential-free static and Xcode project baseline with
 read-only repository permissions, an immutable checkout pin, a bounded macOS
@@ -63,6 +81,10 @@ dependency changes reproducible, preserve attribution and permission checks,
 and verify camera/location behavior on a physical device before release.
 Keep the Podfile target aligned with the checked-in Xcode native target, and
 review any lockfile regeneration as an intentional dependency change.
+The CocoaLumberjack Git source is pinned to the exact Swift 4 commit already
+recorded by the lockfile; do not restore a mutable branch selector. The legacy
+Podfile checksum must match the checked-in Podfile contents before dependency
+installation can be claimed current.
 
 ## Dependency and Supply Chain Security
 

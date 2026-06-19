@@ -17,6 +17,18 @@ VENUE_COORDINATE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-venue-coordina
 LEGACY_SDK_PLAN="$ROOT_DIR/docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-project-validation.md"
 POD_TARGET_PLAN="$ROOT_DIR/docs/plans/2026-06-12-cocoapods-target-alignment.md"
+COCOALUMBERJACK_PIN_PLAN="$ROOT_DIR/docs/plans/2026-06-13-cocoalumberjack-commit-pin.md"
+RESPONSE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-status-validation.md"
+RESPONSE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-response-content-type-validation.md"
+RESPONSE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-14-foursquare-response-final-url-validation.md"
+RESPONSE_URL_TEST_PLAN="$ROOT_DIR/docs/plans/2026-06-16-executable-foursquare-response-url-tests.md"
+RESPONSE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-redirect-refusal.md"
+VENUE_TIMEOUT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-request-timeouts.md"
+VENUE_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-venue-request-timeouts.py"
+VENUE_TEXT_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-venue-name-boundary.md"
+RUNNER_SIGNAL_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md"
+REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
+LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -41,6 +53,9 @@ for path in \
   "FoursquareARCamera.xcodeproj/project.pbxproj" \
   "FoursquareARCamera/Info.plist" \
   "FoursquareARCamera/ViewController.swift" \
+  "FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift" \
+  "FoursquareARCamera/Source/FoursquareVenueDistancePolicy.swift" \
+  "FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift" \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
@@ -51,6 +66,25 @@ for path in \
   "docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md" \
   "docs/plans/2026-06-12-hosted-project-validation.md" \
   "docs/plans/2026-06-12-cocoapods-target-alignment.md" \
+  "docs/plans/2026-06-13-cocoalumberjack-commit-pin.md" \
+  "docs/plans/2026-06-13-foursquare-response-status-validation.md" \
+  "docs/plans/2026-06-13-foursquare-response-content-type-validation.md" \
+  "docs/plans/2026-06-14-foursquare-response-final-url-validation.md" \
+  "docs/plans/2026-06-16-executable-foursquare-response-url-tests.md" \
+  "docs/plans/2026-06-17-foursquare-venue-distance-boundary.md" \
+  "docs/plans/2026-06-18-foursquare-venue-name-boundary.md" \
+  "docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md" \
+  "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
+  "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
+  "scripts/check-venue-request-timeouts.py" \
+  "scripts/run-foursquare-response-url-tests.sh" \
+  "scripts/run-foursquare-venue-distance-tests.sh" \
+  "scripts/run-foursquare-venue-text-tests.sh" \
+  "Tests/FoursquareResponseURLPolicyTests/main.swift" \
+  "Tests/FoursquareVenueDistancePolicyTests/main.swift" \
+  "Tests/FoursquareVenueTextPolicyTests/main.swift" \
+  "docs/plans/2026-06-13-reachability-exact-204.md" \
+  "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
   "docs/plans/2026-06-09-location-authorization-start-guard.md" \
   "docs/plans/2026-06-09-info-label-text-guard.md" \
@@ -61,6 +95,104 @@ for path in \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
   require_file "$path"
 done
+
+python3 - "$ROOT_DIR/Makefile" <<'PY'
+import sys
+from pathlib import Path
+
+makefile = Path(sys.argv[1]).read_text()
+fail_fast_contract = (
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-response-url-tests.sh" && \\',
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-distance-tests.sh" && \\',
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-text-tests.sh"; \\',
+)
+
+if any(fragment not in makefile for fragment in fail_fast_contract):
+    raise SystemExit(
+        "Make check must stop immediately when any executable Foursquare policy runner fails."
+    )
+PY
+
+python3 - \
+  "$ROOT_DIR/scripts/run-foursquare-response-url-tests.sh" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-distance-tests.sh" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+handler = re.compile(
+    r'''handle_signal\(\) \{\s*'''
+    r'''status=\$1\s*'''
+    r'''trap - 0 1 2 15\s*'''
+    r'''cleanup\s*'''
+    r'''exit "\$status"\s*'''
+    r'''\}'''
+)
+
+for runner_path in map(Path, sys.argv[1:]):
+    runner = runner_path.read_text(encoding="utf-8")
+    if not handler.search(runner):
+        raise SystemExit(
+            f"{runner_path.name} signals must clean temporary output before exiting."
+        )
+    for signal, status in ((1, 129), (2, 130), (15, 143)):
+        binding = f"trap 'handle_signal {status}' {signal}"
+        if runner.count(binding) != 1:
+            raise SystemExit(
+                f"{runner_path.name} must retain signal binding: {binding}"
+            )
+PY
+
+for runner_signal_plan_contract in \
+  "status: completed" \
+  "response-URL, venue-distance, and venue-text runners" \
+  "leave runner-specific temporary directories behind" \
+  "## Verification Completed" \
+  "ae7cd17b9db57728f2aa4714be130582e03f71e6" \
+  'Push run `27747566549` and pull-request run `27747567053` completed' \
+  "status 42" \
+  "historical Mapbox secret-scanning alert remains"; do
+  if ! grep -Fq "$runner_signal_plan_contract" "$RUNNER_SIGNAL_PLAN"; then
+    printf '%s\n' "Foursquare runner signal-cleanup plan must retain evidence: $runner_signal_plan_contract" >&2
+    exit 1
+  fi
+done
+
+python3 "$VENUE_TIMEOUT_CHECK" "$ROOT_DIR/FoursquareARCamera/ViewController.swift"
+
+for venue_timeout_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
+  if ! grep -Fq "Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout." "$ROOT_DIR/$venue_timeout_doc"; then
+    printf '%s\n' "$venue_timeout_doc must document bounded Foursquare venue timeouts." >&2
+    exit 1
+  fi
+done
+
+for venue_timeout_plan_contract in \
+  "status: completed" \
+  "## Status: Completed" \
+  "## Work Completed" \
+  "## Verification Completed" \
+  "hostile mutations were rejected"; do
+  if ! grep -Fq "$venue_timeout_plan_contract" "$VENUE_TIMEOUT_PLAN"; then
+    printf '%s\n' "Venue timeout plan must record completed evidence: $venue_timeout_plan_contract" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq 'ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq '"$(ROOT)/scripts/check-baseline.sh"' "$ROOT_DIR/Makefile"; then
+  printf '%s\n' "Makefile verification must resolve the checker from the loaded Makefile." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "from /tmp" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "absolute Makefile path" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Made static verification independent" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Location-independent Make plan and guidance must record completed external verification." >&2
+  exit 1
+fi
 
 makefile="$ROOT_DIR/Makefile"
 if ! grep -Eq '^\.PHONY: .*build.*check.*lint.*test|^\.PHONY: .*build.*lint.*test.*check' "$makefile" ||
@@ -123,11 +255,133 @@ view="$ROOT_DIR/FoursquareARCamera/ViewController.swift"
 if ! grep -Fq 'configuredValue("FoursquareClientID")' "$view" ||
   ! grep -Fq 'configuredValue("FoursquareClientSecret")' "$view" ||
   ! grep -Fq "Skipping malformed Foursquare venue response" "$view" ||
-  ! grep -Fq 'Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)' "$view" ||
+  ! grep -Fq 'self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)' "$view" ||
+  grep -Fq 'Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)' "$view" ||
   grep -Eq 'let client_(id|secret) = ""|client_secret=|client_id=' "$view" ||
   grep -Eq '\["(name|location)"\].*\!|\["categories"\]\[0\]' "$view" ||
   grep -Eq 'DDLogDebug\(.*(coordinate|currentLocation|translated location|best location estimate|altitude)' "$view"; then
   printf '%s\n' "ViewController must use local credentials and avoid detailed location logging." >&2
+  exit 1
+fi
+
+python3 - "$view" "$ROOT_DIR/FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text()
+policy = Path(sys.argv[2]).read_text()
+lookup = source.split("func getFoursquareLocations", 1)[-1].split("\n    @objc", 1)[0]
+manager_contract = (
+    "private let foursquareSessionManager: SessionManager = {",
+    "let configuration = URLSessionConfiguration.default",
+    "configuration.httpAdditionalHeaders = SessionManager.defaultHTTPHeaders",
+    "let manager = SessionManager(configuration: configuration)",
+    "manager.delegate.taskWillPerformHTTPRedirection = { _, _, _, _ in nil }",
+    "return manager",
+)
+if any(source.count(fragment) != 1 for fragment in manager_contract):
+    raise SystemExit("Foursquare venue lookup must use one dedicated redirect-refusing Alamofire session manager.")
+request = 'self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)'
+status_validator = ".validate(statusCode: 200..<300)"
+final_url_validator = ".validate { _, response, _ in"
+content_type_validator = '.validate(contentType: ["application/json"])'
+response = ".responseJSON { response in"
+failure = 'self.allowVenueLookupRetryAfterDelay(reason: "Foursquare venue lookup failed.")'
+contract = (request, status_validator, final_url_validator, content_type_validator, response)
+positions = [lookup.find(fragment) for fragment in contract]
+
+if any(lookup.count(fragment) != 1 for fragment in contract):
+    raise SystemExit("Foursquare venue lookup must keep one request, status validator, final URL validator, JSON media validator, and response handler.")
+if -1 in positions or positions != sorted(positions) or len(set(positions)) != len(positions):
+    raise SystemExit("Foursquare status, final URL, and JSON media validation must run before response handling.")
+final_url_contract = (
+    "FoursquareResponseURLPolicy.accepts(response.url)",
+    'NSError(domain: "FoursquareResponseValidation", code: 1, userInfo: nil)',
+)
+policy_contract = (
+    "static func accepts(_ url: URL?) -> Bool",
+    'components.scheme == "https"',
+    'components.host == "api.foursquare.com"',
+    "components.user == nil",
+    "components.password == nil",
+    "components.port == nil",
+    'components.percentEncodedPath == "/v2/venues/search"',
+    "components.fragment == nil",
+)
+if any(lookup.count(fragment) != 1 for fragment in final_url_contract):
+    raise SystemExit("Foursquare final response validation must delegate once to the executable endpoint policy.")
+if any(policy.count(fragment) != 1 for fragment in policy_contract):
+    raise SystemExit("Foursquare final response URL validation must preserve the exact HTTPS endpoint boundary.")
+if lookup.count("case .failure:") != 1 or lookup.count(failure) != 1:
+    raise SystemExit("Rejected Foursquare responses must retain the bounded generic failure retry.")
+PY
+
+python3 - "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/scripts/run-foursquare-response-url-tests.sh" \
+  "$ROOT_DIR/Tests/FoursquareResponseURLPolicyTests/main.swift" <<'PY'
+import sys
+from pathlib import Path
+
+project, makefile, runner, tests = (Path(path).read_text() for path in sys.argv[1:])
+if project.count("FoursquareResponseURLPolicy.swift in Sources") != 2:
+    raise SystemExit("The executable Foursquare response URL policy must belong to the app target once.")
+if project.count("/* FoursquareResponseURLPolicy.swift */") != 3:
+    raise SystemExit("The Foursquare response URL policy project reference must remain complete and unique.")
+if makefile.count('scripts/run-foursquare-response-url-tests.sh') != 1:
+    raise SystemExit("Every Make gate must invoke the executable Foursquare response URL tests once.")
+runner_contract = (
+    "FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift",
+    "Tests/FoursquareResponseURLPolicyTests/main.swift",
+    'mktemp -d "${TMPDIR:-/tmp}/foursquare-response-url-tests.XXXXXX"',
+    "trap cleanup 0",
+)
+if any(runner.count(fragment) != 1 for fragment in runner_contract):
+    raise SystemExit("The Foursquare response URL test runner must compile production policy with bounded cleanup.")
+test_contract = (
+    'accepted: true, "exact endpoint"',
+    'accepted: true, "query parameters"',
+    'accepted: false, "missing URL"',
+    'accepted: false, "non-HTTPS scheme"',
+    'accepted: false, "wrong host"',
+    'accepted: false, "host suffix"',
+    'accepted: false, "userinfo"',
+    'accepted: false, "password"',
+    'accepted: false, "explicit port"',
+    'accepted: false, "trailing slash"',
+    'accepted: false, "encoded path"',
+    'accepted: false, "fragment"',
+)
+if any(tests.count(fragment) != 1 for fragment in test_contract):
+    raise SystemExit("Executable response URL tests must preserve every accepted and hostile endpoint case.")
+PY
+
+if ! grep -Fq "refuses redirects before sending venue query credentials" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Credential-bearing Foursquare venue requests must refuse redirects" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "Venue lookup refuses redirects before credentials can be forwarded" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Refused redirects for credential-bearing Foursquare venue requests" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "refuse redirects before forwarding credential-bearing query parameters" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Repository guidance must document Foursquare redirect refusal." >&2
+  exit 1
+fi
+
+if ! grep -Fq "api.foursquare.com endpoint and exact path" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "response URL at the HTTPS" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "exact final HTTPS endpoint" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "exact final HTTPS Foursquare API endpoint" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "exact final HTTPS Foursquare API endpoint" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Repository guidance must document Foursquare final response URL validation." >&2
+  exit 1
+fi
+
+if ! grep -Fq "application/json" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "media type before JSON response parsing" "$ROOT_DIR/README.md" ||
+  ! grep -Fq '`application/json`' "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "response media type" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "exact JSON response media type" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "exact application/json response media type" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "exact JSON response media type" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Repository guidance must document Foursquare JSON media validation." >&2
   exit 1
 fi
 
@@ -149,11 +403,55 @@ if grep -Fq 'UIImage(named: "fsqMask")!' "$view" ||
 fi
 
 if grep -Fq "Reachability()!" "$view" ||
-  ! grep -Fq "if let reach = Reachability()" "$view" ||
-  ! grep -Fq "Reachability could not be created" "$view"; then
-  printf '%s\n' "ViewController must not force-unwrap Reachability initialization." >&2
+  grep -Fq "import ReachabilitySwift" "$view" ||
+  grep -Fq "currentReachabilityString" "$view" ||
+  ! grep -Fq "DispatchQueue.global(qos: .utility).async" "$view" ||
+  ! grep -Fq "if !Reachability.isConnectedToNetwork()" "$view" ||
+  ! grep -Fq "guard let strongSelf = self" "$view"; then
+  printf '%s\n' "ViewController must use the maintained exact-status Reachability probe." >&2
   exit 1
 fi
+
+python3 - "$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift" "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text()
+project = Path(sys.argv[2]).read_text()
+helper = source.split("private class func isSuccessfulProbeStatus", 1)[-1].split(
+    "class func isConnectedToNetwork", 1
+)[0]
+probe = source.split("class func isConnectedToNetwork", 1)[-1]
+if project.count("Reachability.swift in Sources") != 2 or project.count("/* Reachability.swift */") != 3:
+    raise SystemExit("Reachability.swift must remain a member of the app target.")
+if helper.count("return statusCode == 204") != 1:
+    raise SystemExit("Reachability must accept only the expected HTTP 204 probe status.")
+if probe.count("isSuccessfulProbeStatus(httpResponse.statusCode)") != 1:
+    raise SystemExit("Reachability must route the probe response through the exact-status helper.")
+redirect_contract = (
+    "private final class RedirectRefusingDelegate: NSObject, URLSessionTaskDelegate",
+    "willPerformHTTPRedirection",
+    "completionHandler(nil)",
+    "let redirectRefusingDelegate = RedirectRefusingDelegate()",
+    "let session = URLSession(",
+    "configuration: configuration",
+    "delegate: redirectRefusingDelegate",
+    "delegateQueue: nil",
+)
+if any(source.count(fragment) != 1 for fragment in redirect_contract) or "URLSession.shared" in source:
+    raise SystemExit("Reachability probe must use a redirect-refusing URLSession before accepting HTTP 204.")
+timeout_contract = (
+    "if semaphore.wait(timeout: .now() + 10) == .timedOut {",
+    "task.cancel()",
+    "session.invalidateAndCancel()",
+    "task.cancel()\n            session.invalidateAndCancel()\n            return false\n        }\n\n        session.finishTasksAndInvalidate()\n        return isConnected",
+)
+if any(probe.count(fragment) != 1 for fragment in timeout_contract):
+    raise SystemExit("Reachability probe timeout must cancel the URLSession task before returning.")
+for widened in ("200..<300", "200..<400", "statusCode == 200"):
+    if widened in source:
+        raise SystemExit("Reachability must not widen the exact HTTP 204 success boundary.")
+PY
 
 if ! grep -Fq "private let venueLookupRetryDelay: TimeInterval = 30.0" "$view" ||
   ! grep -Fq "private func allowVenueLookupRetryAfterDelay(reason: String)" "$view" ||
@@ -270,7 +568,7 @@ if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Core Location authorization" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FSQView nib outlet" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Map annotation updates avoid force-unwrapping optional" "$ROOT_DIR/README.md" ||
-  ! grep -Fq "annotations while tracking the user and debug location estimate" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "tracking the user and debug location estimate" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Foursquare venue lookup retries use a bounded cooldown" "$ROOT_DIR/README.md" ||
   ! grep -Fq "location-authorization-start-guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/README.md" ||
@@ -328,15 +626,54 @@ if ! grep -Fq "Foursquare venue lookup retries should stay bounded" "$ROOT_DIR/S
 fi
 
 if ! grep -Fq "Swift 4.0 and iOS 11" "$ROOT_DIR/README.md" ||
-  ! grep -Fq "CocoaLumberjack master branch" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "CocoaLumberjack no longer resolves a mutable branch" "$ROOT_DIR/README.md" ||
   ! grep -Fq "legacy-sdk-modernization-boundary" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document the legacy SDK and dependency boundary." >&2
   exit 1
 fi
 
-if ! grep -Fq ":branch => 'master'" "$ROOT_DIR/Podfile" ||
-  ! grep -Fq "COCOAPODS: 1.3.1" "$ROOT_DIR/Podfile.lock"; then
-  printf '%s\n' "Legacy modernization boundary must track the mutable pod source and lockfile tool version." >&2
+podfile_checksum=$(shasum -a 1 "$ROOT_DIR/Podfile" | awk '{print $1}')
+python3 - "$ROOT_DIR/Podfile" "$ROOT_DIR/Podfile.lock" "$podfile_checksum" <<'PY'
+import sys
+from pathlib import Path
+
+podfile = Path(sys.argv[1]).read_text()
+lockfile = Path(sys.argv[2]).read_text()
+podfile_checksum = sys.argv[3]
+commit = "f4294a13470d43260569d62aac6e1009fbef491a"
+
+if podfile.count(":commit => '{}'".format(commit)) != 1:
+    raise SystemExit("Podfile must contain one exact CocoaLumberjack commit selector.")
+if ":branch" in podfile or "branch `master`" in lockfile or ":branch:" in lockfile:
+    raise SystemExit("CocoaLumberjack dependency metadata must not use a mutable branch selector.")
+if lockfile.count(commit) != 3:
+    raise SystemExit("Podfile.lock must align dependency, external source, and checkout metadata to one commit.")
+
+required_lock_contracts = (
+    "- Alamofire (4.5.1)",
+    "- AlamofireSwiftyJSON (1.0.0):",
+    "- CocoaLumberjack/Default (3.2.1)",
+    "- CocoaLumberjack/Swift (3.2.1):",
+    "- Mapbox-iOS-SDK (3.6.4)",
+    "- SwiftyJSON (3.1.4)",
+    "Alamofire: 2d95912bf4c34f164fdfc335872e8c312acaea4a",
+    "AlamofireSwiftyJSON: 78908b766483a28aa5cc90fd191a687467042973",
+    "CocoaLumberjack: 520616f8e72226ca2c729b43981b66bc483745ce",
+    "Mapbox-iOS-SDK: 47847dd44285477e0dfffd0130f65c8a52823ada",
+    "SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220",
+    "COCOAPODS: 1.3.1",
+)
+if any(lockfile.count(item) != 1 for item in required_lock_contracts):
+    raise SystemExit("Legacy resolved pod versions, checksums, and CocoaPods metadata must not drift.")
+if lockfile.count(f"PODFILE CHECKSUM: {podfile_checksum}") != 1:
+    raise SystemExit("Podfile.lock checksum must match the checked-in Podfile contents.")
+PY
+
+if ! grep -Fq "PODFILE CHECKSUM" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Podfile checksum must match" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "Keep the Podfile checksum aligned" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "mutable CocoaLumberjack \`master\` selector" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Repository guidance must document the immutable pod source and checksum integrity boundary." >&2
   exit 1
 fi
 
@@ -541,9 +878,405 @@ if ! grep -Fq "status: completed" "$CI_PLAN" ||
   exit 1
 fi
 
-if ! grep -Fq "status: completed" "$POD_TARGET_PLAN" ||
-  ! grep -Fq "make check" "$POD_TARGET_PLAN"; then
-  printf '%s\n' "CocoaPods target alignment plan must be completed and record verification." >&2
+python3 - "$POD_TARGET_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "All four Make gates",
+    "push run `27392510844`",
+    "pull-request run `27392514499`",
+    "push run `27392528885`",
+    "CodeQL run `27402320459`",
+)
+
+if (
+    statuses != ["status: completed"]
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "CocoaPods target alignment plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$COCOALUMBERJACK_PIN_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "branch mutation failed",
+    "commit drift mutation failed",
+    "resolved graph mutation failed",
+    "hosted pull-request check",
+)
+
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "CocoaLumberjack commit pin plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$RESPONSE_STATUS_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "validator removal mutation failed",
+    "status range mutation failed",
+    "validation ordering mutation failed",
+    "duplicate request mutation failed",
+    "failure retry mutation failed",
+    "hosted pull-request check",
+)
+
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Foursquare response status plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$RESPONSE_CONTENT_TYPE_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "validator removal mutation failed",
+    "media allowlist mutation failed",
+    "validation ordering mutation failed",
+    "duplicate handler mutation failed",
+    "failure retry mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Foursquare response content-type plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$RESPONSE_FINAL_URL_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "validator removal mutation failed",
+    "scheme mutation failed",
+    "host mutation failed",
+    "path mutation failed",
+    "port mutation failed",
+    "validation ordering mutation failed",
+    "failure retry mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Foursquare response final URL plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$RESPONSE_URL_TEST_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "all four Make gates passed",
+    "absolute Makefile path passed",
+    "production policy mutation failed",
+    "app delegation mutation failed",
+    "Xcode target membership mutation failed",
+    "accepted endpoint mutation failed",
+    "hostile endpoint mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Executable Foursquare response URL test plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - \
+  "$ROOT_DIR/FoursquareARCamera/ViewController.swift" \
+  "$ROOT_DIR/FoursquareARCamera/Source/FoursquareVenueDistancePolicy.swift" \
+  "$ROOT_DIR/Tests/FoursquareVenueDistancePolicyTests/main.swift" \
+  "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/docs/plans/2026-06-17-foursquare-venue-distance-boundary.md" <<'PY'
+import sys
+from pathlib import Path
+
+view = Path(sys.argv[1]).read_text()
+policy = Path(sys.argv[2]).read_text()
+tests = Path(sys.argv[3]).read_text()
+project = Path(sys.argv[4]).read_text()
+makefile = Path(sys.argv[5]).read_text()
+plan = " ".join(Path(sys.argv[6]).read_text().split())
+
+required_policy = (
+    "Double(Int.max).nextDown",
+    "maximumConvertibleMeters",
+    "distance.isFinite",
+    "distance >= 0",
+    "distance <= maximumConvertibleMeters",
+    "return Int(distance * feetPerMeter)",
+)
+required_tests = (
+    'expect(0, feet: 0, "zero")',
+    'expect(200, feet: 656, "ordinary venue radius")',
+    "maximumMeters.nextUp",
+    "Double.nan",
+    "Double.infinity",
+    "-Double.infinity",
+)
+required_plan = (
+    "status: completed",
+    "Repository-root and external-directory `make check` passed",
+    "Eight isolated mutations were rejected",
+    "Both exact-head push and pull-request checks passed",
+    "`0b540e158042063e06b4a7a822aee7d2b53497c3`",
+    "Push run `27673872489`",
+    "pull-request run `27673883985`",
+    "no live Foursquare request was made",
+    "historical Mapbox secret-scanning alert remains an external rotation or revocation boundary",
+)
+
+if any(item not in policy for item in required_policy):
+    raise SystemExit("Venue distance conversion must remain finite, nonnegative, and Int-bounded.")
+if "FoursquareVenueDistancePolicy.feet(" not in view or "let distanceFeet" not in view:
+    raise SystemExit("Venue rendering must delegate distance conversion to the production policy.")
+if any(item not in tests for item in required_tests):
+    raise SystemExit("Executable venue distance boundary cases must remain registered.")
+if project.count("FoursquareVenueDistancePolicy.swift in Sources") != 2 or project.count("/* FoursquareVenueDistancePolicy.swift */") != 3:
+    raise SystemExit("Venue distance policy must remain a member of the app target.")
+if "run-foursquare-venue-distance-tests.sh" not in makefile:
+    raise SystemExit("The canonical Make gate must execute the venue distance policy harness.")
+if any(item not in plan for item in required_plan):
+    raise SystemExit("Venue distance plan must record completed verification and external secret boundary.")
+PY
+
+if ! grep -Fq 'integer-foot conversion is bounded' "$ROOT_DIR/README.md" || \
+  ! grep -Fq 'integer conversion must remain bounded' "$ROOT_DIR/SECURITY.md" || \
+  ! grep -Fq 'Bound venue distance conversion before integer rendering' "$ROOT_DIR/VISION.md" || \
+  ! grep -Fq 'Bound venue distance conversion before integer rendering' "$ROOT_DIR/CHANGES.md" || \
+  ! grep -Fq 'Keep venue distance-to-feet conversion within Int bounds' "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must preserve the venue distance conversion boundary." >&2
+  exit 1
+fi
+
+python3 - \
+  "$ROOT_DIR/FoursquareARCamera/ViewController.swift" \
+  "$ROOT_DIR/FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift" \
+  "$ROOT_DIR/Tests/FoursquareVenueTextPolicyTests/main.swift" \
+  "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" \
+  "$VENUE_TEXT_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+view = Path(sys.argv[1]).read_text()
+policy = Path(sys.argv[2]).read_text()
+tests = Path(sys.argv[3]).read_text()
+project = Path(sys.argv[4]).read_text()
+makefile = Path(sys.argv[5]).read_text()
+runner = Path(sys.argv[6]).read_text()
+plan = Path(sys.argv[7]).read_text()
+frontmatter = plan.split("---", 2)[1]
+
+required_policy = (
+    "labelBoundaryCharacters",
+    "invisibleLabelCharacters",
+    "CharacterSet.nonBaseCharacters",
+    "containsVisibleContent",
+    "trimmingCharacters(in: labelBoundaryCharacters)",
+    'static let fallbackCategoryName = "Venue"',
+    "return containsVisibleContent(normalized) ? normalized : nil",
+    "return containsVisibleContent(normalized) ? normalized : fallbackCategoryName",
+)
+required_tests = (
+    'expectVenueName("  Corner Cafe\\n", "Corner Cafe", "trimmed venue name")',
+    'expectVenueName("", nil, "empty venue name")',
+    'expectVenueName(" \\t\\n", nil, "whitespace-only venue name")',
+    'expectVenueName("\\u{200B}\\u{FEFF}", nil, "invisible-only venue name")',
+    'expectVenueName("\\u{2060}", nil, "format-only venue name")',
+    'expectVenueName("\\u{034F}", nil, "mark-only venue name")',
+    'expectVenueName(" \\u{200B}Corner Cafe\\u{FEFF}\\n", "Corner Cafe", "invisible-boundary venue name")',
+    'expectVenueName("Café 東京", "Café 東京", "Unicode-safe venue name")',
+    'expectVenueName("Cafe\\u{301}", "Cafe\\u{301}", "decomposed Unicode venue name")',
+    'expectCategoryName("Café 東京", "Café 東京", "Unicode-safe category name")',
+    'expectCategoryName("Cafe\\u{301}", "Cafe\\u{301}", "decomposed Unicode category name")',
+    'expectCategoryName(nil, "Venue", "missing category fallback")',
+    'expectCategoryName(" \\t\\n", "Venue", "whitespace-only category fallback")',
+    'expectCategoryName("\\u{200B}\\u{FEFF}", "Venue", "invisible-only category fallback")',
+    'expectCategoryName("\\u{2060}", "Venue", "format-only category fallback")',
+    'expectCategoryName("\\u{034F}", "Venue", "mark-only category fallback")',
+    'expectCategoryName(" \\u{200B}Coffee Shop\\u{FEFF}\\n", "Coffee Shop", "invisible-boundary category name")',
+)
+required_plan = (
+    "## Verification Completed",
+    "Repository-root and external-directory `make check` passed",
+    "isolated mutations were rejected",
+    "No live Foursquare request was made",
+    "historical Mapbox secret-scanning alert remains",
+)
+
+if policy.count("trimmingCharacters(in: labelBoundaryCharacters)") != 2 or any(
+    item not in policy for item in required_policy
+):
+    raise SystemExit("Venue text policy must trim required names and preserve the category fallback.")
+if any(item not in tests for item in required_tests):
+    raise SystemExit("Executable venue text normalization cases must remain registered.")
+name_policy = view.find("FoursquareVenueTextPolicy.venueName(rawName)")
+category_policy = view.find("FoursquareVenueTextPolicy.categoryName(")
+view_creation = view.find("let fsview = FSQView")
+if min(name_policy, category_policy, view_creation) < 0 or not (
+    name_policy < view_creation and category_policy < view_creation
+):
+    raise SystemExit("Venue text decisions must occur before FSQView construction.")
+if project.count("FoursquareVenueTextPolicy.swift in Sources") != 2 or project.count("/* FoursquareVenueTextPolicy.swift */") != 3:
+    raise SystemExit("Venue text policy must remain a member of the app target.")
+if makefile.count("run-foursquare-venue-text-tests.sh") != 1:
+    raise SystemExit("The canonical Make gate must execute the venue text policy harness.")
+runner_contract = (
+    "FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift",
+    "Tests/FoursquareVenueTextPolicyTests/main.swift",
+    'mktemp -d "${TMPDIR:-/tmp}/foursquare-venue-text-tests.XXXXXX"',
+    "trap cleanup 0",
+)
+if any(runner.count(item) != 1 for item in runner_contract):
+    raise SystemExit("The venue text runner must compile production policy with bounded cleanup.")
+if re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE) != ["status: completed"] or any(
+    item not in plan for item in required_plan
+):
+    raise SystemExit("Venue text plan must record completed verification and external secret boundary.")
+PY
+
+if [ ! -x "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" ]; then
+  printf '%s\n' "The venue text test runner must remain executable." >&2
+  exit 1
+fi
+
+if ! grep -Fq 'blank or invisible-only venue' "$ROOT_DIR/README.md" || \
+  ! grep -Fq 'blank or invisible-only venue names before' "$ROOT_DIR/SECURITY.md" || \
+  ! grep -Fq 'Normalize venue text before rendering' "$ROOT_DIR/VISION.md" || \
+  ! grep -Fq 'Normalize venue text before rendering' "$ROOT_DIR/CHANGES.md" || \
+  ! grep -Fq 'Reject blank venue names before creating AR or map UI' "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must preserve the venue text normalization boundary." >&2
+  exit 1
+fi
+
+python3 - "$RESPONSE_REDIRECT_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "manager removal mutation failed",
+    "redirect policy mutation failed",
+    "global request helper mutation failed",
+    "duplicate request mutation failed",
+    "final URL validator mutation failed",
+    "failure retry mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Foursquare redirect refusal plan must remain completed with actual verification recorded."
+    )
+PY
+
+python3 - "$REACHABILITY_STATUS_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+required = (
+    "five hostile mutations were rejected",
+    "all four Make gates passed",
+    "xcodebuild was unavailable",
+    "No live connectivity probe",
+)
+if statuses != ["status: completed"] or any(item not in plan for item in required):
+    raise SystemExit("Reachability exact-status plan must record completed local verification.")
+PY
+
+if ! grep -Fq "succeeds only for its expected HTTP 204" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "HTTP 204 response; redirects" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "accepts only its expected HTTP 204 response" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "return exactly HTTP 204" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "limited to exact HTTP 204 success" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project docs must preserve the exact reachability status boundary." >&2
   exit 1
 fi
 

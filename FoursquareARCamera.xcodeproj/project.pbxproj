@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		4901EF051F1B7D560067870D /* SceneLocationEstimate+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4901EF041F1B7D560067870D /* SceneLocationEstimate+Extensions.swift */; };
 		49099E391F24BAE5007B76FD /* SCNVector3+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49099E381F24BAE5007B76FD /* SCNVector3+Extensions.swift */; };
+		A16061611F24BAE5007B76FD /* FoursquareResponseURLPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16061621F24BAE5007B76FD /* FoursquareResponseURLPolicy.swift */; };
+		A17061711F24BAE5007B76FD /* FoursquareVenueDistancePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17061721F24BAE5007B76FD /* FoursquareVenueDistancePolicy.swift */; };
+		A18061811F24BAE5007B76FD /* FoursquareVenueTextPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18061821F24BAE5007B76FD /* FoursquareVenueTextPolicy.swift */; };
+		A19061911F24BAE5007B76FD /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19061921F24BAE5007B76FD /* Reachability.swift */; };
 		49A3FBDC1F09988100AA59C8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBDB1F09988100AA59C8 /* AppDelegate.swift */; };
 		49A3FBE01F09988100AA59C8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A3FBDF1F09988100AA59C8 /* ViewController.swift */; };
 		49A3FBE81F09988100AA59C8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 49A3FBE61F09988100AA59C8 /* LaunchScreen.storyboard */; };
@@ -32,6 +36,10 @@
 		359749B04AFDD68C056A44D3 /* Pods-FoursquareARCamera.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FoursquareARCamera.debug.xcconfig"; path = "Pods/Target Support Files/Pods-FoursquareARCamera/Pods-FoursquareARCamera.debug.xcconfig"; sourceTree = "<group>"; };
 		4901EF041F1B7D560067870D /* SceneLocationEstimate+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SceneLocationEstimate+Extensions.swift"; sourceTree = "<group>"; };
 		49099E381F24BAE5007B76FD /* SCNVector3+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SCNVector3+Extensions.swift"; sourceTree = "<group>"; };
+		A16061621F24BAE5007B76FD /* FoursquareResponseURLPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoursquareResponseURLPolicy.swift; sourceTree = "<group>"; };
+		A17061721F24BAE5007B76FD /* FoursquareVenueDistancePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoursquareVenueDistancePolicy.swift; sourceTree = "<group>"; };
+		A18061821F24BAE5007B76FD /* FoursquareVenueTextPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoursquareVenueTextPolicy.swift; sourceTree = "<group>"; };
+		A19061921F24BAE5007B76FD /* Reachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		49A3FBD81F09988100AA59C8 /* FoursquareARCamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FoursquareARCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		49A3FBDB1F09988100AA59C8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		49A3FBDF1F09988100AA59C8 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -102,7 +110,11 @@
 		49A3FBF31F099A4A00AA59C8 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				C3452AED1F30E8F300389E0A /* Assets.xcassets */,
+					A16061621F24BAE5007B76FD /* FoursquareResponseURLPolicy.swift */,
+					A17061721F24BAE5007B76FD /* FoursquareVenueDistancePolicy.swift */,
+					A18061821F24BAE5007B76FD /* FoursquareVenueTextPolicy.swift */,
+					A19061921F24BAE5007B76FD /* Reachability.swift */,
+					C3452AED1F30E8F300389E0A /* Assets.xcassets */,
 				C3452AE91F2FBD3700389E0A /* Views */,
 				49A3FBF61F099C8100AA59C8 /* SceneLocationView.swift */,
 				49A3FBFE1F09B1D200AA59C8 /* LocationNode.swift */,
@@ -287,7 +299,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49099E391F24BAE5007B76FD /* SCNVector3+Extensions.swift in Sources */,
+					A16061611F24BAE5007B76FD /* FoursquareResponseURLPolicy.swift in Sources */,
+					A17061711F24BAE5007B76FD /* FoursquareVenueDistancePolicy.swift in Sources */,
+					A18061811F24BAE5007B76FD /* FoursquareVenueTextPolicy.swift in Sources */,
+					A19061911F24BAE5007B76FD /* Reachability.swift in Sources */,
+					49099E391F24BAE5007B76FD /* SCNVector3+Extensions.swift in Sources */,
 				C3452AE81F2FBD2600389E0A /* FSQView.swift in Sources */,
 				49A3FBF71F099C8100AA59C8 /* SceneLocationView.swift in Sources */,
 				49A3FC031F09BADB00AA59C8 /* FloatingPoint+Radians.swift in Sources */,

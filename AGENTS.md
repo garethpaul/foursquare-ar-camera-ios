@@ -27,13 +27,13 @@
 
 ## Coding conventions
 
-- Language mix noted in the README: Swift (16).
+- Language mix noted in the README: Swift (18).
 - Use the CocoaPods workspace when present; update `Podfile.lock` only with an intentional dependency change.
 - Preserve legacy Xcode project settings and signing assumptions unless the change is explicitly about modernization.
 
 ## Testing guidance
 
-- No dedicated test files were detected. The `lint`, `test`, and `build` targets delegate to the maintained static `make check` baseline rather than compiling or exercising app behavior.
+- `Tests/FoursquareResponseURLPolicyTests/main.swift` is a standalone behavioral harness. When `swiftc` is available, every Make gate compiles it with the production policy before running the static baseline.
 - Hosted macOS CI additionally parses the checked-in Xcode project; it does not install Pods, sign or launch the app, call live APIs, or test camera, AR, Mapbox, and location behavior.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
@@ -51,10 +51,24 @@
 - Required local build settings: `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET`.
 - Do not commit `.xcconfig` files, API credentials, signing material, camera output, or user location data.
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
+- Keep the dedicated connectivity probe limited to exact HTTP 204 success.
 - Keep Core Location updates gated on authorization before starting AR venue lookup behavior.
 - Keep location manager setup and heading forwarding resilient when optional Core Location state is unavailable.
 - Reject non-finite or out-of-range venue coordinates, and reject non-finite or negative distances, before creating AR nodes or map annotations.
+- Keep venue distance-to-feet conversion within Int bounds before rendering.
+- Reject blank venue names before creating AR or map UI, trim accepted venue
+  text, and preserve the neutral fallback for missing or blank categories.
 - Keep credential, request, malformed-response, and empty-response retries bounded by the documented cooldown.
+- Require Foursquare venue requests to refuse redirects before forwarding credential-bearing query parameters.
+- Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
+- Require a 2xx Foursquare response status before JSON parsing, and keep
+  rejected responses on the generic no-body-log retry path.
+- Require the exact final HTTPS Foursquare API endpoint after status validation
+  and before response media validation.
+- Keep that endpoint policy in the app target and execute the same production
+  source from the standalone Swift harness.
+- Require the exact JSON response media type after status validation and before
+  response handling.
 - Treat Swift, CocoaPods, Mapbox, ARKit/Core Location, and Foursquare API modernization as staged, device-verified work; update `Podfile.lock` only with an intentional dependency and CocoaPods toolchain review.
 
 ## Agent workflow

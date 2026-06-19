@@ -42,3 +42,21 @@ with the app target described by the repository.
 
 `pod install` is intentionally not claimed here because CocoaPods and the
 legacy dependency toolchain are unavailable in this environment.
+
+## Work Completed
+
+- Aligned the Podfile with the checked-in `FoursquareARCamera` native target.
+- Added source contracts for the single Podfile target, project target, and
+  generated `Pods-FoursquareARCamera` support references.
+- Preserved the legacy pod declarations, lockfile, Swift, deployment, and
+  generated project settings outside the target-name repair.
+
+## Verification Completed
+
+- All four Make gates, shell syntax, and `git diff --check` passed locally;
+  Xcode project listing was truthfully skipped because Xcode is unavailable.
+- Implementation push run `27392510844` and pull-request run `27392514499`
+  passed at commit `8c7f86f1e375cc3208925b2e4cdd2bf8c2600413`, including hosted
+  `xcodebuild -list`.
+- Post-merge push run `27392528885` and CodeQL run `27402320459` passed at
+  default-branch merge commit `51938faf4329223b48bcf1583ab652c7f05a0f42`.

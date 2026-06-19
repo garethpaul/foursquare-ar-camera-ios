@@ -13,7 +13,6 @@ import CocoaLumberjack
 import Alamofire
 import SwiftyJSON
 import Mapbox
-import ReachabilitySwift
 
 class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, SceneLocationViewDelegate {
     let sceneLocationView = SceneLocationView()
@@ -45,6 +44,15 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     var loaded: Bool = false
     private let venueLookupRetryDelay: TimeInterval = 30.0
     private var hasVenueTapGesture = false
+    private let foursquareSessionManager: SessionManager = {
+        let configuration = URLSessionConfiguration.default
+        configuration.httpAdditionalHeaders = SessionManager.defaultHTTPHeaders
+        configuration.timeoutIntervalForRequest = 15.0
+        configuration.timeoutIntervalForResource = 30.0
+        let manager = SessionManager(configuration: configuration)
+        manager.delegate.taskWillPerformHTTPRedirection = { _, _, _, _ in nil }
+        return manager
+    }()
     
     var adjustNorthByTappingSidesOfScreen = false
 
@@ -72,18 +80,20 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     override func viewDidLoad() {
         super.viewDidLoad()
   
-        if let reach = Reachability() {
-            if reach.currentReachabilityString == "No Connection" {
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            if !Reachability.isConnectedToNetwork() {
                 DispatchQueue.main.async {
+                    guard let strongSelf = self else {
+                        return
+                    }
+
                     let alert = UIAlertController(title: "Oops", message: "We are currently struggling to access to the internet. This app requires access to the internet in order to find locations around you.", preferredStyle: UIAlertControllerStyle.alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default) { action in
                         // perhaps use action.title here
                     })
-                    self.present(alert, animated: true)
+                    strongSelf.present(alert, animated: true)
                 }
             }
-        } else {
-            DDLogWarn("Skipping reachability check because Reachability could not be created.")
         }
     
         
@@ -193,7 +203,17 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             ]
             
             // Send HTTP request
-            Alamofire.request("https://api.foursquare.com/v2/venues/search", parameters: parameters).responseJSON { response in
+            self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)
+                .validate(statusCode: 200..<300)
+                .validate { _, response, _ in
+                    guard FoursquareResponseURLPolicy.accepts(response.url) else {
+                        return .failure(NSError(domain: "FoursquareResponseValidation", code: 1, userInfo: nil))
+                    }
+
+                    return .success
+                }
+                .validate(contentType: ["application/json"])
+                .responseJSON { response in
                 switch response.result {
                 case .success(let value):
                     let json = JSON(value)
@@ -202,7 +222,8 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                     var validVenueCount = 0
                     // Iterate through the venues
                     for venue in venues {
-                        guard let name = venue.1["name"].string,
+                        guard let rawName = venue.1["name"].string,
+                            let name = FoursquareVenueTextPolicy.venueName(rawName),
                             let venueLatitude = venue.1["location"]["lat"].double,
                             let venueLongitude = venue.1["location"]["lng"].double,
                             let distance = venue.1["location"]["distance"].double,
@@ -211,19 +232,23 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                             venueLongitude.isFinite,
                             (-180.0...180.0).contains(venueLongitude),
                             distance.isFinite,
-                            distance >= 0 else {
+                            distance >= 0,
+                            let distanceFeet = FoursquareVenueDistancePolicy.feet(
+                                fromMeters: distance
+                            ) else {
                             DDLogWarn("Skipping malformed Foursquare venue response.")
                             continue
                         }
 
-                        let categoryName = venue.1["categories"].array?.first?["name"].string ?? "Venue"
-                        let ratingStr = Int(distance * 3.28084)
+                        let categoryName = FoursquareVenueTextPolicy.categoryName(
+                            venue.1["categories"].array?.first?["name"].string
+                        )
                         
                         let frameSize = CGRect(x: 0, y: 0, width: 362, height: 291)
                         let fsview = FSQView(frame: frameSize)
                         fsview.venueName.text = name
                         fsview.categoryName.text = categoryName
-                        fsview.ratingStr.text = "\(ratingStr)ft"
+                        fsview.ratingStr.text = "\(distanceFeet)ft"
                         
                         var image = UIImage.imageWithView(view: fsview)
                         

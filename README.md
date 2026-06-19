@@ -7,7 +7,7 @@
 
 `garethpaul/foursquare-ar-camera-ios` is an Apple platform application or Swift sample. AR Camera using Foursquare API. 
 
-This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift (16).
+This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift (18).
 
 ## Repository Contents
 
@@ -27,7 +27,7 @@ Additional scan context:
 - Source directories: FoursquareARCamera
 - Dependency and build manifests: Podfile, Podfile.lock
 - Entry points or build surfaces: FoursquareARCamera.xcworkspace, FoursquareARCamera.xcodeproj
-- Test-looking files: no obvious test files detected
+- Test-looking files: one standalone Swift behavioral harness under `Tests/`
 
 ## Getting Started
 
@@ -51,23 +51,26 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Open `FoursquareARCamera.xcworkspace` in Xcode after `pod install`, choose the app or sample scheme, and run it on a physical device for AR/camera/location behavior.
 - The Podfile targets the checked-in `FoursquareARCamera` native target. The
-  legacy `Podfile.lock` remains unchanged until dependencies are intentionally
-  resolved with a compatible CocoaPods/Xcode toolchain.
+  CocoaLumberjack source selector is pinned to the exact Swift 4 commit already
+  recorded by `Podfile.lock`.
 - Configure `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET` as local build settings, for example through an untracked `.xcconfig` file or Xcode scheme environment.
 
 This is a preserved Swift 4.0 and iOS 11-era sample, not a current production
-SDK baseline. The CocoaPods graph includes legacy dependencies, including a
-CocoaLumberjack master branch reference, and the checked-in Mapbox, ARKit/Core
+SDK baseline. The CocoaPods graph includes legacy dependencies, but
+CocoaLumberjack no longer resolves a mutable branch: it uses commit
+`f4294a13470d43260569d62aac6e1009fbef491a`. The checked-in Mapbox, ARKit/Core
 Location, and Foursquare venue integration should be modernized in isolated,
 device-verified changes rather than through an unreviewed bulk update.
 The current lockfile records CocoaPods 1.3.1; any regenerated lockfile should
 document the replacement CocoaPods version and dependency review.
+The checked-in `PODFILE CHECKSUM` matches the reviewed Podfile contents; do not
+claim a fresh install unless `pod install` has run on a compatible toolchain.
 `make check` parses the checked-in Xcode project when Xcode is available. Use
 the workspace for functional builds only after generating Pods locally.
 
 ## Testing and Verification
 
-Run the static baseline:
+Run the maintained baseline:
 
 ```bash
 make lint
@@ -76,9 +79,14 @@ make build
 make check
 ```
 
-The `lint`, `test`, and `build` targets currently delegate to the static
-baseline so the repository has a consistent local gate even when Xcode is not
-installed. The baseline verifies that credentials are build settings, tracked
+Use the absolute Makefile path to run the same gates from another working
+directory. Verification resolves the checker relative to the loaded Makefile
+rather than the caller's directory.
+
+The `lint`, `test`, and `build` targets delegate to the same baseline. When
+`swiftc` is available, each gate compiles and runs the production Foursquare
+response URL policy against accepted and hostile endpoints before the static
+contracts. The baseline also verifies that credentials are build settings, tracked
 machine artifacts are absent, location logs avoid detailed coordinates, and the
 venue mask asset is not force-unwrapped. The workspace can be listed when
 `xcodebuild` is installed. The venue tap interaction guard keeps one tap
@@ -87,14 +95,25 @@ and heading updates start only after Core Location authorization is available.
 Location manager setup and heading forwarding avoid force-unwrapping optional
 state.
 Debug info label updates avoid force-unwrapping optional label text when partial
-AR state is available. Reachability setup avoids force-unwrapping initialization
-before showing offline state. FSQView nib outlet setup is guarded before venue
-card subviews are added. Map annotation updates avoid force-unwrapping optional
-annotations while tracking the user and debug location estimate.
+AR state is available. The offline alert uses the maintained reachability probe
+off the main queue, and that probe succeeds only for its expected HTTP 204
+response. FSQView nib outlet setup is guarded before venue card subviews are
+added. Map annotation updates avoid force-unwrapping optional annotations while
+tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are
 missing, requests fail, or successful responses contain no valid venue payloads.
+Venue lookup refuses redirects before sending venue query credentials, then
+validates a 2xx HTTP status and the final HTTPS
+api.foursquare.com endpoint and exact path. It also requires the exact
+application/json response media type before JSON response parsing; rejected
+responses use the same generic bounded retry path without logging response
+data. The final URL decision is shared with the standalone executable harness,
+so the tested predicate is the same source compiled into the app target.
 Venue responses also require finite latitude/longitude within geographic bounds
-and a finite nonnegative distance before rendering.
+and a finite nonnegative distance whose integer-foot conversion is bounded
+before rendering. Required venue names are trimmed; blank or invisible-only venue
+names are rejected, while missing, blank, or invisible-only category labels use
+the existing `Venue` fallback.
 
 GitHub Actions runs `make check` on a bounded `macos-15` job for pushes and pull
 requests. The checkout action is immutably pinned with read-only repository
@@ -168,12 +187,19 @@ When the required SDK or runtime is unavailable, use static checks and source re
   annotation optional-state guardrails.
 - See `docs/plans/2026-06-09-foursquare-venue-lookup-retry-guard.md` for venue
   lookup retry guardrails.
+- See `docs/plans/2026-06-13-foursquare-response-content-type-validation.md`
+  for the exact JSON response media boundary.
+- See `docs/plans/2026-06-14-foursquare-response-final-url-validation.md` for
+  the final Foursquare response URL boundary.
+- Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
 - See `docs/plans/2026-06-10-legacy-sdk-modernization-boundary.md` for the
   legacy SDK and dependency modernization sequence.
 - See `docs/plans/2026-06-12-hosted-project-validation.md` for the GitHub
   Actions and hosted Xcode project validation contract.
 - See `docs/plans/2026-06-12-cocoapods-target-alignment.md` for the native
   target alignment and lockfile boundary.
+- See `docs/plans/2026-06-13-cocoalumberjack-commit-pin.md` for the immutable
+  CocoaLumberjack source boundary and Podfile-checksum integrity check.
 
 ## Contributing
 

@@ -47,12 +47,27 @@ Current baseline:
   state while forwarding delegate updates.
 - Debug info label updates avoid force-unwrapping optional label text when
   partial AR state is available.
-- Reachability setup avoids force-unwrapping initialization before the offline
-  alert path.
+- The offline alert uses the maintained reachability probe off the main queue.
+- The dedicated reachability probe accepts only its expected HTTP 204 response
+  without following redirects.
 - Foursquare venue lookup retries use a bounded cooldown when credentials are
   missing, requests fail, or successful responses contain no valid venues.
+- Venue lookup refuses redirects before credentials can be forwarded to a
+  redirect destination.
+- Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
+- Foursquare venue responses require a 2xx HTTP status before JSON parsing;
+  rejected statuses use the existing generic bounded retry path.
+- Successful venue responses require the exact final HTTPS endpoint before
+  media validation or response handling.
+- The exact endpoint predicate is shared by the app target and an executable
+  standalone Swift behavioral harness.
+- Successful venue responses require the exact JSON response media type before
+  response handling.
 - Venue response coordinates and distances are finite and range-checked before
   AR nodes or map annotations are created.
+- Bound venue distance conversion before integer rendering.
+- Normalize venue text before rendering, rejecting blank required names and
+  retaining the neutral category fallback.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
 - GitHub Actions runs the same gate on a bounded macOS job with read-only
@@ -61,10 +76,14 @@ Current baseline:
 - `.DS_Store` and `mapbox_access_token` are ignored and not tracked.
 - Swift 4.0 and iOS 11 remain the checked-in legacy compiler and deployment
   boundary; this repository does not claim a current production SDK baseline.
+- CocoaLumberjack source resolution is pinned to the existing reviewed Swift 4
+  commit while the remaining legacy pod graph stays unchanged.
 
 Next priorities:
 
 - Verify AR, camera, location, Mapbox, and Foursquare behavior on a physical device
+- Keep the Podfile checksum aligned with reviewed Podfile changes before
+  claiming a fresh dependency installation
 - Add tests or manual checklists for missing credentials and API failure states
 - Keep venue tap handling resilient when SceneKit node shapes change
 - Keep debug overlays resilient when AR position, heading, and time values
@@ -78,6 +97,9 @@ Next priorities:
   overlays
 - Preserve bounded Foursquare venue lookup retries when changing API failure
   handling
+- Preserve 2xx status validation ahead of Foursquare JSON response parsing
+- Preserve exact final HTTPS endpoint validation ahead of media validation
+- Preserve exact JSON response media type validation ahead of response handling
 - Keep local verification targets available even while full Xcode testing needs
   a macOS toolchain
 - Modernize Swift, dependencies, AR/location APIs, and project settings in a
