@@ -4,6 +4,12 @@
 
 - Normalize venue text before rendering, rejecting blank required names and
   retaining the neutral category fallback through an executable Swift policy.
+- Treat zero-width or BOM-only venue labels as blank, and trim those invisible
+  boundary characters before publishing names or categories.
+- Cancel the reachability URLSession probe when its semaphore wait times out.
+- Wire the maintained exact-204 reachability probe into the app target and run
+  it off the main queue before presenting offline state.
+- Correct the CocoaPods lockfile checksum to match the reviewed Podfile.
 
 ## 2026-06-17
 
@@ -49,7 +55,7 @@
 - Replaced the mutable CocoaLumberjack `master` selector with the exact Swift 4
   commit already recorded in `Podfile.lock`.
 - Aligned lockfile source metadata without changing resolved pod versions and
-  documented the remaining legacy Podfile-checksum regeneration requirement.
+  kept the Podfile checksum matched to the reviewed Podfile contents.
 
 ## 2026-06-12
 

@@ -63,8 +63,8 @@ Location, and Foursquare venue integration should be modernized in isolated,
 device-verified changes rather than through an unreviewed bulk update.
 The current lockfile records CocoaPods 1.3.1; any regenerated lockfile should
 document the replacement CocoaPods version and dependency review.
-The checked-in `PODFILE CHECKSUM` predates the commit-selector update and must
-be regenerated with the legacy toolchain before claiming a fresh install.
+The checked-in `PODFILE CHECKSUM` matches the reviewed Podfile contents; do not
+claim a fresh install unless `pod install` has run on a compatible toolchain.
 `make check` parses the checked-in Xcode project when Xcode is available. Use
 the workspace for functional builds only after generating Pods locally.
 
@@ -95,11 +95,11 @@ and heading updates start only after Core Location authorization is available.
 Location manager setup and heading forwarding avoid force-unwrapping optional
 state.
 Debug info label updates avoid force-unwrapping optional label text when partial
-AR state is available. Reachability setup avoids force-unwrapping initialization
-before showing offline state, and the dedicated connectivity probe succeeds only
-for its expected HTTP 204 response. FSQView nib outlet setup is guarded before venue
-card subviews are added. Map annotation updates avoid force-unwrapping optional
-annotations while tracking the user and debug location estimate.
+AR state is available. The offline alert uses the maintained reachability probe
+off the main queue, and that probe succeeds only for its expected HTTP 204
+response. FSQView nib outlet setup is guarded before venue card subviews are
+added. Map annotation updates avoid force-unwrapping optional annotations while
+tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are
 missing, requests fail, or successful responses contain no valid venue payloads.
 Venue lookup refuses redirects before sending venue query credentials, then
@@ -111,8 +111,9 @@ data. The final URL decision is shared with the standalone executable harness,
 so the tested predicate is the same source compiled into the app target.
 Venue responses also require finite latitude/longitude within geographic bounds
 and a finite nonnegative distance whose integer-foot conversion is bounded
-before rendering. Required venue names are trimmed; blank venue names are rejected,
-while missing or blank category labels use the existing `Venue` fallback.
+before rendering. Required venue names are trimmed; blank or invisible-only venue
+names are rejected, while missing, blank, or invisible-only category labels use
+the existing `Venue` fallback.
 
 GitHub Actions runs `make check` on a bounded `macos-15` job for pushes and pull
 requests. The checkout action is immutably pinned with read-only repository
@@ -198,7 +199,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-12-cocoapods-target-alignment.md` for the native
   target alignment and lockfile boundary.
 - See `docs/plans/2026-06-13-cocoalumberjack-commit-pin.md` for the immutable
-  CocoaLumberjack source boundary and Podfile-checksum limitation.
+  CocoaLumberjack source boundary and Podfile-checksum integrity check.
 
 ## Contributing
 

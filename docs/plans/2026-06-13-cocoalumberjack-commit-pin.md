@@ -31,8 +31,8 @@ Swift 4 commit already recorded in the checked-in lockfile.
   commit selectors, and lockfile graph drift.
 - R6. Documentation must state that the pin removes moving-branch resolution
   but does not modernize or authenticate the legacy dependency graph.
-- R7. The Podfile checksum limitation must be explicit because CocoaPods 1.3.1
-  regeneration is unavailable on this host.
+- R7. The Podfile checksum must stay aligned with the reviewed Podfile contents
+  without claiming a fresh dependency installation on this host.
 
 ## Non-Goals
 
@@ -56,7 +56,8 @@ Files: `Podfile`, `Podfile.lock`
 Files: `scripts/check-baseline.sh`
 
 - Require three aligned commit references and zero mutable branch selectors.
-- Preserve exact pod versions, checksums, CocoaPods version, and checksum caveat.
+- Preserve exact pod versions, checksums, CocoaPods version, and Podfile
+  checksum alignment.
 
 ### 3. Repository Guidance
 
@@ -80,10 +81,10 @@ Files: `README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`
   `f4294a13470d43260569d62aac6e1009fbef491a` in the Podfile.
 - Aligned the dependency and external-source lockfile metadata to the same
   commit while preserving the resolved versions, spec checksums, checkout
-  option, Podfile checksum, and CocoaPods 1.3.1 record.
+  option, aligned Podfile checksum, and CocoaPods 1.3.1 record.
 - Added static source, graph, documentation, and completed-plan contracts.
-- Documented that the historical Podfile checksum requires regeneration with
-  CocoaPods 1.3.1 before claiming a fresh dependency installation.
+- Documented that dependency installation is still unclaimed until it runs on a
+  compatible CocoaPods toolchain.
 
 ## Verification Completed
 

@@ -65,8 +65,9 @@ production decision rather than a duplicated test implementation.
 Foursquare venue coordinates should be finite and geographically bounded, and
 distance values should be finite and nonnegative before AR or map rendering;
 their integer conversion must remain bounded to avoid malformed-response traps.
-Trim required venue names and reject blank venue names before UI publication;
-missing or blank category labels must use the neutral `Venue` fallback.
+Trim required venue names and reject blank or invisible-only venue names before
+UI publication; missing, blank, or invisible-only category labels must use the
+neutral `Venue` fallback.
 
 GitHub Actions runs the credential-free static and Xcode project baseline with
 read-only repository permissions, an immutable checkout pin, a bounded macOS
@@ -82,7 +83,7 @@ Keep the Podfile target aligned with the checked-in Xcode native target, and
 review any lockfile regeneration as an intentional dependency change.
 The CocoaLumberjack Git source is pinned to the exact Swift 4 commit already
 recorded by the lockfile; do not restore a mutable branch selector. The legacy
-Podfile checksum still requires CocoaPods 1.3.1 regeneration before dependency
+Podfile checksum must match the checked-in Podfile contents before dependency
 installation can be claimed current.
 
 ## Dependency and Supply Chain Security

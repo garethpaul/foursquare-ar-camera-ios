@@ -10,7 +10,7 @@ date: 2026-06-13
 ## Summary
 
 Treat the dedicated `generate_204` connectivity probe as successful only when
-its final HTTP response is exactly 204.
+the probe response is exactly 204 without following redirects.
 
 ## Requirements
 
@@ -38,6 +38,7 @@ its final HTTP response is exactly 204.
 ## Work Completed
 
 - Added a named status helper that accepts only HTTP 204.
+- Wired the maintained probe into the app target and offline-alert path.
 - Routed the final probe response through the helper without changing request
   construction, timeout, or offline behavior.
 - Added static, documentation, and completed-plan contracts.

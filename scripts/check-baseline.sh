@@ -96,6 +96,23 @@ for path in \
   require_file "$path"
 done
 
+python3 - "$ROOT_DIR/Makefile" <<'PY'
+import sys
+from pathlib import Path
+
+makefile = Path(sys.argv[1]).read_text()
+fail_fast_contract = (
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-response-url-tests.sh" && \\',
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-distance-tests.sh" && \\',
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-text-tests.sh"; \\',
+)
+
+if any(fragment not in makefile for fragment in fail_fast_contract):
+    raise SystemExit(
+        "Make check must stop immediately when any executable Foursquare policy runner fails."
+    )
+PY
+
 python3 - \
   "$ROOT_DIR/scripts/run-foursquare-response-url-tests.sh" \
   "$ROOT_DIR/scripts/run-foursquare-venue-distance-tests.sh" \
@@ -386,25 +403,51 @@ if grep -Fq 'UIImage(named: "fsqMask")!' "$view" ||
 fi
 
 if grep -Fq "Reachability()!" "$view" ||
-  ! grep -Fq "if let reach = Reachability()" "$view" ||
-  ! grep -Fq "Reachability could not be created" "$view"; then
-  printf '%s\n' "ViewController must not force-unwrap Reachability initialization." >&2
+  grep -Fq "import ReachabilitySwift" "$view" ||
+  grep -Fq "currentReachabilityString" "$view" ||
+  ! grep -Fq "DispatchQueue.global(qos: .utility).async" "$view" ||
+  ! grep -Fq "if !Reachability.isConnectedToNetwork()" "$view" ||
+  ! grep -Fq "guard let strongSelf = self" "$view"; then
+  printf '%s\n' "ViewController must use the maintained exact-status Reachability probe." >&2
   exit 1
 fi
 
-python3 - "$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift" <<'PY'
+python3 - "$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift" "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" <<'PY'
 import sys
 from pathlib import Path
 
 source = Path(sys.argv[1]).read_text()
+project = Path(sys.argv[2]).read_text()
 helper = source.split("private class func isSuccessfulProbeStatus", 1)[-1].split(
     "class func isConnectedToNetwork", 1
 )[0]
 probe = source.split("class func isConnectedToNetwork", 1)[-1]
+if project.count("Reachability.swift in Sources") != 2 or project.count("/* Reachability.swift */") != 3:
+    raise SystemExit("Reachability.swift must remain a member of the app target.")
 if helper.count("return statusCode == 204") != 1:
     raise SystemExit("Reachability must accept only the expected HTTP 204 probe status.")
 if probe.count("isSuccessfulProbeStatus(httpResponse.statusCode)") != 1:
     raise SystemExit("Reachability must route the probe response through the exact-status helper.")
+redirect_contract = (
+    "private final class RedirectRefusingDelegate: NSObject, URLSessionTaskDelegate",
+    "willPerformHTTPRedirection",
+    "completionHandler(nil)",
+    "let redirectRefusingDelegate = RedirectRefusingDelegate()",
+    "let session = URLSession(",
+    "configuration: configuration",
+    "delegate: redirectRefusingDelegate",
+    "delegateQueue: nil",
+)
+if any(source.count(fragment) != 1 for fragment in redirect_contract) or "URLSession.shared" in source:
+    raise SystemExit("Reachability probe must use a redirect-refusing URLSession before accepting HTTP 204.")
+timeout_contract = (
+    "if semaphore.wait(timeout: .now() + 10) == .timedOut {",
+    "task.cancel()",
+    "session.invalidateAndCancel()",
+    "task.cancel()\n            session.invalidateAndCancel()\n            return false\n        }\n\n        session.finishTasksAndInvalidate()\n        return isConnected",
+)
+if any(probe.count(fragment) != 1 for fragment in timeout_contract):
+    raise SystemExit("Reachability probe timeout must cancel the URLSession task before returning.")
 for widened in ("200..<300", "200..<400", "statusCode == 200"):
     if widened in source:
         raise SystemExit("Reachability must not widen the exact HTTP 204 success boundary.")
@@ -525,7 +568,7 @@ if ! grep -Fq "FoursquareARCamera.xcworkspace" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Core Location authorization" "$ROOT_DIR/README.md" ||
   ! grep -Fq "FSQView nib outlet" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Map annotation updates avoid force-unwrapping optional" "$ROOT_DIR/README.md" ||
-  ! grep -Fq "annotations while tracking the user and debug location estimate" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "tracking the user and debug location estimate" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Foursquare venue lookup retries use a bounded cooldown" "$ROOT_DIR/README.md" ||
   ! grep -Fq "location-authorization-start-guard" "$ROOT_DIR/README.md" ||
   ! grep -Fq "MAPBOX_ACCESS_TOKEN" "$ROOT_DIR/README.md" ||
@@ -589,12 +632,14 @@ if ! grep -Fq "Swift 4.0 and iOS 11" "$ROOT_DIR/README.md" ||
   exit 1
 fi
 
-python3 - "$ROOT_DIR/Podfile" "$ROOT_DIR/Podfile.lock" <<'PY'
+podfile_checksum=$(shasum -a 1 "$ROOT_DIR/Podfile" | awk '{print $1}')
+python3 - "$ROOT_DIR/Podfile" "$ROOT_DIR/Podfile.lock" "$podfile_checksum" <<'PY'
 import sys
 from pathlib import Path
 
 podfile = Path(sys.argv[1]).read_text()
 lockfile = Path(sys.argv[2]).read_text()
+podfile_checksum = sys.argv[3]
 commit = "f4294a13470d43260569d62aac6e1009fbef491a"
 
 if podfile.count(":commit => '{}'".format(commit)) != 1:
@@ -616,18 +661,19 @@ required_lock_contracts = (
     "CocoaLumberjack: 520616f8e72226ca2c729b43981b66bc483745ce",
     "Mapbox-iOS-SDK: 47847dd44285477e0dfffd0130f65c8a52823ada",
     "SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220",
-    "PODFILE CHECKSUM: de49009947665df59c3e8399b35c779a2ab5c3f2",
     "COCOAPODS: 1.3.1",
 )
 if any(lockfile.count(item) != 1 for item in required_lock_contracts):
     raise SystemExit("Legacy resolved pod versions, checksums, and CocoaPods metadata must not drift.")
+if lockfile.count(f"PODFILE CHECKSUM: {podfile_checksum}") != 1:
+    raise SystemExit("Podfile.lock checksum must match the checked-in Podfile contents.")
 PY
 
 if ! grep -Fq "PODFILE CHECKSUM" "$ROOT_DIR/README.md" ||
-  ! grep -Fq "requires CocoaPods 1.3.1 regeneration" "$ROOT_DIR/SECURITY.md" ||
-  ! grep -Fq "Regenerate the Podfile checksum with CocoaPods 1.3.1" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Podfile checksum must match" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "Keep the Podfile checksum aligned" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "mutable CocoaLumberjack \`master\` selector" "$ROOT_DIR/CHANGES.md"; then
-  printf '%s\n' "Repository guidance must document the immutable pod source and checksum limitation." >&2
+  printf '%s\n' "Repository guidance must document the immutable pod source and checksum integrity boundary." >&2
   exit 1
 fi
 
@@ -1096,18 +1142,33 @@ plan = Path(sys.argv[7]).read_text()
 frontmatter = plan.split("---", 2)[1]
 
 required_policy = (
-    "return normalized.isEmpty ? nil : normalized",
+    "labelBoundaryCharacters",
+    "invisibleLabelCharacters",
+    "CharacterSet.nonBaseCharacters",
+    "containsVisibleContent",
+    "trimmingCharacters(in: labelBoundaryCharacters)",
     'static let fallbackCategoryName = "Venue"',
-    "return normalized.isEmpty ? fallbackCategoryName : normalized",
+    "return containsVisibleContent(normalized) ? normalized : nil",
+    "return containsVisibleContent(normalized) ? normalized : fallbackCategoryName",
 )
 required_tests = (
     'expectVenueName("  Corner Cafe\\n", "Corner Cafe", "trimmed venue name")',
     'expectVenueName("", nil, "empty venue name")',
     'expectVenueName(" \\t\\n", nil, "whitespace-only venue name")',
+    'expectVenueName("\\u{200B}\\u{FEFF}", nil, "invisible-only venue name")',
+    'expectVenueName("\\u{2060}", nil, "format-only venue name")',
+    'expectVenueName("\\u{034F}", nil, "mark-only venue name")',
+    'expectVenueName(" \\u{200B}Corner Cafe\\u{FEFF}\\n", "Corner Cafe", "invisible-boundary venue name")',
     'expectVenueName("Café 東京", "Café 東京", "Unicode-safe venue name")',
+    'expectVenueName("Cafe\\u{301}", "Cafe\\u{301}", "decomposed Unicode venue name")',
     'expectCategoryName("Café 東京", "Café 東京", "Unicode-safe category name")',
+    'expectCategoryName("Cafe\\u{301}", "Cafe\\u{301}", "decomposed Unicode category name")',
     'expectCategoryName(nil, "Venue", "missing category fallback")',
     'expectCategoryName(" \\t\\n", "Venue", "whitespace-only category fallback")',
+    'expectCategoryName("\\u{200B}\\u{FEFF}", "Venue", "invisible-only category fallback")',
+    'expectCategoryName("\\u{2060}", "Venue", "format-only category fallback")',
+    'expectCategoryName("\\u{034F}", "Venue", "mark-only category fallback")',
+    'expectCategoryName(" \\u{200B}Coffee Shop\\u{FEFF}\\n", "Coffee Shop", "invisible-boundary category name")',
 )
 required_plan = (
     "## Verification Completed",
@@ -1117,7 +1178,7 @@ required_plan = (
     "historical Mapbox secret-scanning alert remains",
 )
 
-if policy.count("trimmingCharacters(in: .whitespacesAndNewlines)") != 2 or any(
+if policy.count("trimmingCharacters(in: labelBoundaryCharacters)") != 2 or any(
     item not in policy for item in required_policy
 ):
     raise SystemExit("Venue text policy must trim required names and preserve the category fallback.")
@@ -1153,8 +1214,8 @@ if [ ! -x "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" ]; then
   exit 1
 fi
 
-if ! grep -Fq 'blank venue names are rejected' "$ROOT_DIR/README.md" || \
-  ! grep -Fq 'blank venue names before UI publication' "$ROOT_DIR/SECURITY.md" || \
+if ! grep -Fq 'blank or invisible-only venue' "$ROOT_DIR/README.md" || \
+  ! grep -Fq 'blank or invisible-only venue names before' "$ROOT_DIR/SECURITY.md" || \
   ! grep -Fq 'Normalize venue text before rendering' "$ROOT_DIR/VISION.md" || \
   ! grep -Fq 'Normalize venue text before rendering' "$ROOT_DIR/CHANGES.md" || \
   ! grep -Fq 'Reject blank venue names before creating AR or map UI' "$ROOT_DIR/AGENTS.md"; then
@@ -1210,7 +1271,7 @@ if statuses != ["status: completed"] or any(item not in plan for item in require
     raise SystemExit("Reachability exact-status plan must record completed local verification.")
 PY
 
-if ! grep -Fq "expected HTTP 204 response" "$ROOT_DIR/README.md" ||
+if ! grep -Fq "succeeds only for its expected HTTP 204" "$ROOT_DIR/README.md" ||
   ! grep -Fq "HTTP 204 response; redirects" "$ROOT_DIR/SECURITY.md" ||
   ! grep -Fq "accepts only its expected HTTP 204 response" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "return exactly HTTP 204" "$ROOT_DIR/CHANGES.md" ||

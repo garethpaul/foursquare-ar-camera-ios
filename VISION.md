@@ -47,9 +47,9 @@ Current baseline:
   state while forwarding delegate updates.
 - Debug info label updates avoid force-unwrapping optional label text when
   partial AR state is available.
-- Reachability setup avoids force-unwrapping initialization before the offline
-  alert path.
-- The dedicated reachability probe accepts only its expected HTTP 204 response.
+- The offline alert uses the maintained reachability probe off the main queue.
+- The dedicated reachability probe accepts only its expected HTTP 204 response
+  without following redirects.
 - Foursquare venue lookup retries use a bounded cooldown when credentials are
   missing, requests fail, or successful responses contain no valid venues.
 - Venue lookup refuses redirects before credentials can be forwarded to a
@@ -82,8 +82,8 @@ Current baseline:
 Next priorities:
 
 - Verify AR, camera, location, Mapbox, and Foursquare behavior on a physical device
-- Regenerate the Podfile checksum with CocoaPods 1.3.1 before claiming a fresh
-  dependency installation
+- Keep the Podfile checksum aligned with reviewed Podfile changes before
+  claiming a fresh dependency installation
 - Add tests or manual checklists for missing credentials and API failure states
 - Keep venue tap handling resilient when SceneKit node shapes change
 - Keep debug overlays resilient when AR position, heading, and time values
