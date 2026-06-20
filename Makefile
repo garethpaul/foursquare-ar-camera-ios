@@ -1,7 +1,7 @@
 .PHONY: build check lint test
 
 SWIFTC ?= swiftc
-ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 lint test build: check
 
