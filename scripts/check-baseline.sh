@@ -28,6 +28,7 @@ VENUE_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-venue-request-timeouts.py"
 VENUE_TEXT_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-venue-name-boundary.md"
 RUNNER_SIGNAL_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md"
 LOCATION_LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-25-visible-core-location-lifecycle.md"
+VENUE_LOOKUP_LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-25-venue-lookup-lifecycle.md"
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
@@ -57,6 +58,7 @@ for path in \
   "FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift" \
   "FoursquareARCamera/Source/FoursquareVenueDistancePolicy.swift" \
   "FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift" \
+  "FoursquareARCamera/Source/FoursquareVenueLookupState.swift" \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
@@ -76,15 +78,18 @@ for path in \
   "docs/plans/2026-06-18-foursquare-venue-name-boundary.md" \
   "docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md" \
   "docs/plans/2026-06-25-visible-core-location-lifecycle.md" \
+  "docs/plans/2026-06-25-venue-lookup-lifecycle.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
   "scripts/run-foursquare-response-url-tests.sh" \
   "scripts/run-foursquare-venue-distance-tests.sh" \
   "scripts/run-foursquare-venue-text-tests.sh" \
+  "scripts/run-foursquare-venue-lookup-state-tests.sh" \
   "Tests/FoursquareResponseURLPolicyTests/main.swift" \
   "Tests/FoursquareVenueDistancePolicyTests/main.swift" \
   "Tests/FoursquareVenueTextPolicyTests/main.swift" \
+  "Tests/FoursquareVenueLookupStateTests/main.swift" \
   "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
@@ -126,7 +131,8 @@ makefile = Path(sys.argv[1]).read_text()
 fail_fast_contract = (
     'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-response-url-tests.sh" && \\',
     'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-distance-tests.sh" && \\',
-    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-text-tests.sh"; \\',
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-text-tests.sh" && \\',
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-lookup-state-tests.sh"; \\',
 )
 
 if any(fragment not in makefile for fragment in fail_fast_contract):
@@ -138,7 +144,8 @@ PY
 python3 - \
   "$ROOT_DIR/scripts/run-foursquare-response-url-tests.sh" \
   "$ROOT_DIR/scripts/run-foursquare-venue-distance-tests.sh" \
-  "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" <<'PY'
+  "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-lookup-state-tests.sh" <<'PY'
 import re
 import sys
 from pathlib import Path
@@ -307,8 +314,8 @@ request = 'self.foursquareSessionManager.request("https://api.foursquare.com/v2/
 status_validator = ".validate(statusCode: 200..<300)"
 final_url_validator = ".validate { _, response, _ in"
 content_type_validator = '.validate(contentType: ["application/json"])'
-response = ".responseJSON { response in"
-failure = 'self.allowVenueLookupRetryAfterDelay(reason: "Foursquare venue lookup failed.")'
+response = ".responseJSON { [weak self] response in"
+failure = 'reason: "Foursquare venue lookup failed.",'
 contract = (request, status_validator, final_url_validator, content_type_validator, response)
 positions = [lookup.find(fragment) for fragment in contract]
 
@@ -476,14 +483,14 @@ for widened in ("200..<300", "200..<400", "statusCode == 200"):
 PY
 
 if ! grep -Fq "private let venueLookupRetryDelay: TimeInterval = 30.0" "$view" ||
-  ! grep -Fq "private func allowVenueLookupRetryAfterDelay(reason: String)" "$view" ||
+  ! grep -Fq "private func allowVenueLookupRetryAfterDelay(reason: String, generation: UInt)" "$view" ||
   ! grep -Fq "DispatchQueue.main.asyncAfter(timeInterval: venueLookupRetryDelay)" "$view" ||
   ! grep -Fq "var validVenueCount = 0" "$view" ||
   ! grep -Fq "validVenueCount += 1" "$view" ||
   ! grep -Fq "if validVenueCount == 0" "$view" ||
   ! grep -Fq "No valid Foursquare venues were returned." "$view" ||
   grep -Fq "self.loaded = false" "$view"; then
-  printf '%s\n' "Foursquare venue lookup failures must release the loaded gate through a bounded retry delay." >&2
+  printf '%s\n' "Foursquare venue lookup failures must release the current generation through a bounded retry delay." >&2
   exit 1
 fi
 
@@ -1386,6 +1393,112 @@ if ! grep -Fq "succeeds only for its expected HTTP 204" "$ROOT_DIR/README.md" ||
   ! grep -Fq "return exactly HTTP 204" "$ROOT_DIR/CHANGES.md" ||
   ! grep -Fq "limited to exact HTTP 204 success" "$ROOT_DIR/AGENTS.md"; then
   printf '%s\n' "Project docs must preserve the exact reachability status boundary." >&2
+  exit 1
+fi
+
+python3 - \
+  "$ROOT_DIR/FoursquareARCamera/ViewController.swift" \
+  "$ROOT_DIR/FoursquareARCamera/Source/FoursquareVenueLookupState.swift" \
+  "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-lookup-state-tests.sh" \
+  "$ROOT_DIR/Tests/FoursquareVenueLookupStateTests/main.swift" \
+  "$VENUE_LOOKUP_LIFECYCLE_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+view, state, project, makefile, runner, tests, plan = (
+    Path(path).read_text(encoding="utf-8") for path in sys.argv[1:]
+)
+
+state_contract = (
+    "final class FoursquareVenueLookupState",
+    "latestGeneration = latestGeneration &+ 1",
+    "func beginIfIdle() -> UInt?",
+    "func accepts(generation: UInt) -> Bool",
+    "func markLoaded(generation: UInt) -> Bool",
+    "func beginRetryCooldown(generation: UInt) -> Bool",
+    "func allowRetry(generation: UInt) -> Bool",
+    "func cancelInFlight() -> Bool",
+    "guard case .loading(_) = phase else",
+)
+view_contract = (
+    "private let venueLookupState = FoursquareVenueLookupState()",
+    "private var venueLookupRequest: DataRequest?",
+    "venueLookupRequest?.cancel()",
+    "venueLookupState.cancelInFlight()",
+    "venueLookupState.beginIfIdle()",
+    "venueLookupState.accepts(generation: generation)",
+    "venueLookupState.markLoaded(generation: generation)",
+    "venueLookupState.beginRetryCooldown(generation: generation)",
+    "venueLookupState.allowRetry(generation: generation)",
+)
+test_contract = (
+    "duplicate lookup is rejected while loading",
+    "completed lookup is not invalidated on disappearance",
+    "retry cooldown survives scene disappearance",
+    "retry cooldown blocks an immediate replacement lookup",
+    "stale retry cannot release newer lookup",
+    "stale response cannot complete replacement lookup",
+)
+
+def validate(candidate_view, candidate_state):
+    if any(fragment not in candidate_state for fragment in state_contract):
+        raise ValueError("Venue lookup state must preserve generation-owned lifecycle transitions.")
+    if any(fragment not in candidate_view for fragment in view_contract):
+        raise ValueError("ViewController must cancel and reject stale venue lookup callbacks.")
+    if project.count("FoursquareVenueLookupState.swift in Sources") != 2 or project.count("/* FoursquareVenueLookupState.swift */") != 3:
+        raise ValueError("The production venue lookup state must remain in the app target.")
+    if makefile.count("run-foursquare-venue-lookup-state-tests.sh") != 1:
+        raise ValueError("Make check must execute the venue lookup lifecycle harness once.")
+    if any(fragment not in tests for fragment in test_contract):
+        raise ValueError("Venue lookup state tests must preserve stale-generation regressions.")
+    if runner.count("FoursquareVenueLookupState.swift") != 1 or runner.count("FoursquareVenueLookupStateTests/main.swift") != 1:
+        raise ValueError("Venue lookup lifecycle runner must compile production state with its harness.")
+    if re.findall(r"^status: .+$", plan, flags=re.MULTILINE) != ["status: completed"]:
+        raise ValueError("Venue lookup lifecycle plan must record completed verification.")
+
+validate(view, state)
+
+mutations = (
+    ("cancellation removal", view.replace("venueLookupRequest?.cancel()", "", 1), state),
+    (
+        "stale response acceptance removal",
+        view.replace("strongSelf.venueLookupState.accepts(generation: generation)", "true", 1),
+        state,
+    ),
+    (
+        "generation increment removal",
+        view,
+        state.replace("latestGeneration = latestGeneration &+ 1", "latestGeneration = latestGeneration", 1),
+    ),
+    (
+        "cooldown cancellation widening",
+        view,
+        state.replace("guard case .loading(_) = phase else", "guard case .coolingDown(_) = phase else", 1),
+    ),
+)
+for name, mutated_view, mutated_state in mutations:
+    try:
+        validate(mutated_view, mutated_state)
+    except ValueError:
+        continue
+    raise SystemExit(f"Venue lookup lifecycle hostile mutation survived: {name}")
+print("Venue lookup lifecycle hostile mutations rejected.")
+PY
+
+if [ ! -x "$ROOT_DIR/scripts/run-foursquare-venue-lookup-state-tests.sh" ]; then
+  printf '%s\n' "The venue lookup lifecycle test runner must remain executable." >&2
+  exit 1
+fi
+
+if ! grep -Fq "generation ownership prevents old responses or retry timers" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "stale callback cannot add off-screen annotations" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "generation checks reject stale response and retry callbacks" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "stale response/retry generations" "$ROOT_DIR/AGENTS.md" ||
+  ! grep -Fq "cycle: venue lookup lifecycle ownership" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Repository guidance must preserve venue lookup lifecycle ownership." >&2
   exit 1
 fi
 

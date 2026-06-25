@@ -27,7 +27,7 @@ Additional scan context:
 - Source directories: FoursquareARCamera
 - Dependency and build manifests: Podfile, Podfile.lock
 - Entry points or build surfaces: FoursquareARCamera.xcworkspace, FoursquareARCamera.xcodeproj
-- Test-looking files: one standalone Swift behavioral harness under `Tests/`
+- Test-looking files: four standalone Swift behavioral harnesses under `Tests/`
 
 ## Getting Started
 
@@ -87,9 +87,10 @@ directory. Verification resolves the checker relative to the loaded Makefile
 rather than the caller's directory.
 
 The `lint`, `test`, and `build` targets delegate to the same baseline. When
-`swiftc` is available, each gate compiles and runs the production Foursquare
-response URL policy against accepted and hostile endpoints before the static
-contracts. The baseline also verifies that credentials are build settings, tracked
+`swiftc` is available, each gate compiles and runs four production
+Foursquare policy/state harnesses for response URLs, distances, text, and venue
+lookup lifecycle ownership before the static contracts. The baseline also
+verifies that credentials are build settings, tracked
 machine artifacts are absent, location logs avoid detailed coordinates, and the
 venue mask asset is not force-unwrapped. The workspace can be listed when
 `xcodebuild` is installed. The venue tap interaction guard keeps one tap
@@ -105,6 +106,11 @@ added. Map annotation updates avoid force-unwrapping optional annotations while
 tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are
 missing, requests fail, or successful responses contain no valid venue payloads.
+In-flight venue lookups are cancelled when the AR scene disappears, and
+generation ownership prevents old responses or retry timers from mutating or
+unlocking a newer visible-scene lookup. Completed venue results remain loaded
+so returning to the scene does not duplicate annotations, and an active retry
+cooldown survives scene departure instead of permitting an immediate request.
 Venue lookup refuses redirects before sending venue query credentials, then
 validates a 2xx HTTP status and the final HTTPS
 api.foursquare.com endpoint and exact path. It also requires the exact

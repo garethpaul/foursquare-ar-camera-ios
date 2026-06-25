@@ -33,7 +33,9 @@
 
 ## Testing guidance
 
-- `Tests/FoursquareResponseURLPolicyTests/main.swift` is a standalone behavioral harness. When `swiftc` is available, every Make gate compiles it with the production policy before running the static baseline.
+- The four standalone harnesses under `Tests/` execute the production response
+  URL, distance, text, and venue lookup lifecycle sources when `swiftc` is
+  available, before every Make gate runs the static baseline.
 - Hosted macOS CI additionally parses the checked-in Xcode project; it does not install Pods, sign or launch the app, call live APIs, or test camera, AR, Mapbox, and location behavior.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
@@ -62,6 +64,10 @@
 - Reject blank venue names before creating AR or map UI, trim accepted venue
   text, and preserve the neutral fallback for missing or blank categories.
 - Keep credential, request, malformed-response, and empty-response retries bounded by the documented cooldown.
+- Cancel in-flight venue lookups when the visible AR scene disappears, reject
+  stale response/retry generations, and preserve completed lookup state to
+  avoid duplicate annotations after returning. Scene departure must preserve
+  an active retry cooldown.
 - Require Foursquare venue requests to refuse redirects before forwarding credential-bearing query parameters.
 - Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
 - Require a 2xx Foursquare response status before JSON parsing, and keep
