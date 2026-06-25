@@ -54,6 +54,9 @@ Current baseline:
   without following redirects.
 - Foursquare venue lookup retries use a bounded cooldown when credentials are
   missing, requests fail, or successful responses contain no valid venues.
+- In-flight venue requests are cancelled when the AR scene disappears, and
+  generation checks reject stale response and retry callbacks without
+  discarding completed venue results or active retry cooldowns.
 - Venue lookup refuses redirects before credentials can be forwarded to a
   redirect destination.
 - Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.

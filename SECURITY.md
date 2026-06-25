@@ -53,6 +53,10 @@ while displaying user or debug location markers.
 Foursquare venue lookup retries should stay bounded so missing credentials,
 failed requests, or empty/malformed responses do not create immediate request
 loops while location updates continue.
+In-flight venue requests should be cancelled when the visible AR scene
+disappears. Response and retry callbacks must retain generation ownership so a
+stale callback cannot add off-screen annotations or release a newer request.
+Scene departure must not clear an active retry cooldown.
 Foursquare venue networking uses a 15-second request timeout and a 30-second resource timeout.
 Credential-bearing Foursquare venue requests must refuse redirects before a
 redirect destination can receive their query parameters.

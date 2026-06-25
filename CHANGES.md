@@ -1,5 +1,53 @@
 # Changes
 
+## 2026-06-25T21:27:05Z — P1 correctness/privacy — cycle: venue lookup lifecycle ownership
+
+### Summary
+Bound Foursquare request and retry callbacks to the visible scene generation so
+off-screen or superseded work cannot mutate AR and compass annotations.
+
+### Work completed
+- Added an idle/loading/loaded state machine with unique lookup generations.
+- Retained and cancelled only in-flight Alamofire requests on scene departure.
+- Rejected stale response and retry callbacks while preserving completed venue
+  results across temporary scene disappearance.
+- Added a fourth standalone Swift harness plus static and four mutation
+  contracts.
+
+### Threads
+- Started: Foursquare request/retry generation ownership.
+- Continued: visible-scene Core Location ownership and bounded retry handling.
+- Stopped: none.
+
+### Files changed
+- `ViewController.swift`, `FoursquareVenueLookupState.swift`, Xcode project
+  membership, Make/static gates, behavioral tests, and maintenance docs.
+
+### Validation
+- RED: `make check` rejected the missing production lifecycle state.
+- GREEN: local static validation passes; this host has no `swiftc` or Xcode.
+- The hosted macOS gate will compile all four production policy/state harnesses.
+- Codex review caught the Swift 4-incompatible `&+=` spelling; the production
+  state now uses the legacy-compatible wrapping expression `value = value &+ 1`.
+- A second Codex pass caught scene departure clearing an active retry cooldown;
+  cooling down is now distinct from in-flight work and is not cancelled.
+
+### Bugs / findings
+- P1: an in-flight response could add venue UI after `viewWillDisappear`.
+- P1: an old delayed retry could clear the guard for a newer lookup generation.
+- P1 review: `&+=` compiled on current hosted Swift but not the preserved Swift
+  4.0 target; replaced it with the Swift 4-compatible `&+` expression.
+- P2 review: treating retry cooldown as in-flight work let scene departure
+  bypass the 30-second throttle; cooldown now has its own preserved phase.
+
+### Blockers
+- Camera, ARKit, Core Location, Mapbox, CocoaPods, credentials, and live
+  Foursquare behavior still require a compatible physical-device environment.
+
+### Next action
+- Require exact-head Codex review plus hosted macOS and CodeQL success before
+  merge, then preserve lifecycle ownership in future venue-flow changes.
+
 ## 2026-06-25 06:55 PDT
 
 - Bound GPS and compass delivery to the visible AR scene: scene run starts

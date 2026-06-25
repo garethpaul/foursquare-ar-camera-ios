@@ -41,9 +41,10 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     
     var updateInfoLabelTimer: Timer?
     
-    var loaded: Bool = false
     private let venueLookupRetryDelay: TimeInterval = 30.0
     private var hasVenueTapGesture = false
+    private let venueLookupState = FoursquareVenueLookupState()
+    private var venueLookupRequest: DataRequest?
     private let foursquareSessionManager: SessionManager = {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = SessionManager.defaultHTTPHeaders
@@ -69,10 +70,14 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         return trimmedValue
     }
 
-    private func allowVenueLookupRetryAfterDelay(reason: String) {
+    private func allowVenueLookupRetryAfterDelay(reason: String, generation: UInt) {
+        guard venueLookupState.beginRetryCooldown(generation: generation) else {
+            return
+        }
+
         DDLogWarn("\(reason) Allowing venue lookup retry after \(Int(venueLookupRetryDelay)) seconds.")
         DispatchQueue.main.asyncAfter(timeInterval: venueLookupRetryDelay) { [weak self] in
-            self?.loaded = false
+            _ = self?.venueLookupState.allowRetry(generation: generation)
         }
     }
 
@@ -156,6 +161,10 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         super.viewWillDisappear(animated)
         
         DDLogDebug("pause")
+        if venueLookupState.cancelInFlight() {
+            venueLookupRequest?.cancel()
+            venueLookupRequest = nil
+        }
         // Pause the view's session
         sceneLocationView.pause()
     }
@@ -179,14 +188,16 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     
     func getFoursquareLocations(_ currentLocation:CLLocation) {
         
-        // Check if the request has loaded to avoid multuple requests.
-        if self.loaded == false  {
-            self.loaded = true
+        // Check if the request has loaded to avoid multiple requests.
+        if let generation = venueLookupState.beginIfIdle() {
             let lat = String(currentLocation.coordinate.latitude)
             let lng = String(currentLocation.coordinate.longitude)
             guard let clientID = configuredValue("FoursquareClientID"),
                 let clientSecret = configuredValue("FoursquareClientSecret") else {
-                self.allowVenueLookupRetryAfterDelay(reason: "Skipping Foursquare venue lookup because API credentials are not configured.")
+                self.allowVenueLookupRetryAfterDelay(
+                    reason: "Skipping Foursquare venue lookup because API credentials are not configured.",
+                    generation: generation
+                )
                 return
             }
 
@@ -203,7 +214,9 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
             ]
             
             // Send HTTP request
-            self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)
+            let request = self.foursquareSessionManager.request("https://api.foursquare.com/v2/venues/search", parameters: parameters)
+            venueLookupRequest = request
+            request
                 .validate(statusCode: 200..<300)
                 .validate { _, response, _ in
                     guard FoursquareResponseURLPolicy.accepts(response.url) else {
@@ -213,9 +226,14 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                     return .success
                 }
                 .validate(contentType: ["application/json"])
-                .responseJSON { response in
-                switch response.result {
-                case .success(let value):
+                .responseJSON { [weak self] response in
+                    guard let strongSelf = self,
+                        strongSelf.venueLookupState.accepts(generation: generation) else {
+                        return
+                    }
+                    strongSelf.venueLookupRequest = nil
+                    switch response.result {
+                    case .success(let value):
                     let json = JSON(value)
                     let resp = json["response"]
                     let venues = resp["venues"]
@@ -267,25 +285,33 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
                         let venueLocationNode = LocationAnnotationNode(location: venueLocation, image: venueImage)
 
 
-                        self.ensureVenueTapGesture()
+                        strongSelf.ensureVenueTapGesture()
                         
-                        self.sceneLocationView.addLocationNodeWithConfirmedLocation(locationNode: venueLocationNode)
+                        strongSelf.sceneLocationView.addLocationNodeWithConfirmedLocation(locationNode: venueLocationNode)
 
                         let compassMarker = MGLPointAnnotation()
                         compassMarker.coordinate = venueCoordinate
-                        self.compass.addAnnotation(compassMarker)
+                        strongSelf.compass.addAnnotation(compassMarker)
                         validVenueCount += 1
                         
                     }
 
                     if validVenueCount == 0 {
-                        self.allowVenueLookupRetryAfterDelay(reason: "No valid Foursquare venues were returned.")
+                        strongSelf.allowVenueLookupRetryAfterDelay(
+                            reason: "No valid Foursquare venues were returned.",
+                            generation: generation
+                        )
+                    } else {
+                        _ = strongSelf.venueLookupState.markLoaded(generation: generation)
                     }
                     
-                case .failure:
-                    self.allowVenueLookupRetryAfterDelay(reason: "Foursquare venue lookup failed.")
+                    case .failure:
+                        strongSelf.allowVenueLookupRetryAfterDelay(
+                            reason: "Foursquare venue lookup failed.",
+                            generation: generation
+                        )
+                    }
                 }
-            }
             
         }
     }
