@@ -1,5 +1,13 @@
 # Changes
 
+## 2026-06-25 06:55 PDT
+
+- Bound GPS and compass delivery to the visible AR scene: scene run starts
+  authorized Core Location updates, while scene pause stops both services
+  before pausing AR and invalidating its estimate timer.
+- Prevented late authorization callbacks from restarting Core Location after
+  the visible AR scene has relinquished update ownership.
+
 ## 2026-06-18
 
 - Normalize venue text before rendering, rejecting blank required names and

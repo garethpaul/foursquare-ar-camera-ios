@@ -27,6 +27,7 @@ VENUE_TIMEOUT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-request-tim
 VENUE_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-venue-request-timeouts.py"
 VENUE_TEXT_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-venue-name-boundary.md"
 RUNNER_SIGNAL_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md"
+LOCATION_LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-25-visible-core-location-lifecycle.md"
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
@@ -74,6 +75,7 @@ for path in \
   "docs/plans/2026-06-17-foursquare-venue-distance-boundary.md" \
   "docs/plans/2026-06-18-foursquare-venue-name-boundary.md" \
   "docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md" \
+  "docs/plans/2026-06-25-visible-core-location-lifecycle.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
@@ -95,6 +97,26 @@ for path in \
   "docs/plans/2026-06-08-foursquare-ar-camera-ios-credential-baseline.md"; do
   require_file "$path"
 done
+
+for location_lifecycle_evidence in \
+  'status: completed' \
+  'All four Make gates passed' \
+  'hostile mutations were rejected' \
+  'xcodebuild was unavailable'; do
+  if ! grep -Fq "$location_lifecycle_evidence" "$LOCATION_LIFECYCLE_PLAN"; then
+    printf '%s\n' "Core Location lifecycle plan must keep completed evidence: $location_lifecycle_evidence" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fqi 'visible AR scene' "$ROOT_DIR/README.md" ||
+  ! grep -Fqi 'visible AR scene' "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fqi 'visible AR scene' "$ROOT_DIR/VISION.md" ||
+  ! grep -Fqi 'visible AR scene' "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq 'stopUpdatingLocationAndHeading()' "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Repository guidance must document visible-scene Core Location ownership." >&2
+  exit 1
+fi
 
 python3 - "$ROOT_DIR/Makefile" <<'PY'
 import sys
@@ -526,23 +548,110 @@ if grep -Fq "self.locationManager!" "$location_manager" ||
   exit 1
 fi
 
+scene_location_view="$ROOT_DIR/FoursquareARCamera/Source/Views/SceneLocationView.swift"
+for location_lifecycle_contract in \
+  'private var updatesRequested = false' \
+  'func startUpdatingLocationAndHeading()' \
+  'updatesRequested = true' \
+  'func stopUpdatingLocationAndHeading()' \
+  'updatesRequested = false' \
+  'manager.stopUpdatingLocation()' \
+  'manager.stopUpdatingHeading()'; do
+  if ! grep -Fq "$location_lifecycle_contract" "$location_manager"; then
+    printf '%s\n' "LocationManager must keep visibility-owned update contract: $location_lifecycle_contract" >&2
+    exit 1
+  fi
+done
+
+if grep -Fq 'manager.startUpdatingLocation()' "$location_manager" &&
+  ! grep -Fq 'if updatesRequested && isAuthorizedForLocationUpdates(status)' "$location_manager"; then
+  printf '%s\n' "Authorization callbacks must not restart Core Location after the AR view pauses." >&2
+  exit 1
+fi
+
+for scene_lifecycle_contract in \
+  'locationManager.startUpdatingLocationAndHeading()' \
+  'locationManager.stopUpdatingLocationAndHeading()'; do
+  if ! grep -Fq "$scene_lifecycle_contract" "$scene_location_view"; then
+    printf '%s\n' "SceneLocationView must own Core Location lifecycle: $scene_lifecycle_contract" >&2
+    exit 1
+  fi
+done
+
 if command -v python3 >/dev/null 2>&1; then
-  python3 - "$location_manager" <<'PY'
+  python3 - "$location_manager" "$scene_location_view" <<'PY'
+import re
 import sys
 from pathlib import Path
 
-source = Path(sys.argv[1]).read_text()
-init_start = source.index("override init()")
-request_start = source.index("func requestAuthorization")
-init_body = source[init_start:request_start]
+def strip_comments(source):
+    source = re.sub(r"/\*.*?\*/", "", source, flags=re.DOTALL)
+    return "\n".join(line.split("//", 1)[0] for line in source.splitlines())
 
-request_index = init_body.index("requestWhenInUseAuthorization()")
-start_index = init_body.index("startUpdatingLocation()")
-if request_index > start_index:
-    raise SystemExit("Location authorization must be requested before updates start.")
+def section(source, start, end):
+    start_index = source.find(start)
+    if start_index == -1:
+        raise SystemExit("Core Location lifecycle contract missing: " + start)
+    end_index = source.find(end, start_index)
+    if end_index == -1:
+        raise SystemExit("Core Location lifecycle contract missing: " + end)
+    return source[start_index:end_index]
+
+def required_index(source, contract):
+    index = source.find(contract)
+    if index == -1:
+        raise SystemExit("Core Location lifecycle contract missing: " + contract)
+    return index
+
+manager_source = strip_comments(Path(sys.argv[1]).read_text())
+scene_source = strip_comments(Path(sys.argv[2]).read_text())
+
+init_body = section(manager_source, "override init()", "func startUpdatingLocationAndHeading()")
+if "requestWhenInUseAuthorization()" not in init_body:
+    raise SystemExit("Location authorization must be requested during manager setup.")
+if ".startUpdatingLocation()" in init_body or ".startUpdatingHeading()" in init_body:
+    raise SystemExit("LocationManager initialization must not start hardware updates before the AR view runs.")
+
+start_body = section(manager_source, "func startUpdatingLocationAndHeading()", "func stopUpdatingLocationAndHeading()")
+start_contracts = [
+    "updatesRequested = true",
+    "guard isAuthorizedForLocationUpdates(status) else {",
+    "requestAuthorization()",
+    "locationManager?.startUpdatingHeading()",
+    "locationManager?.startUpdatingLocation()",
+]
+if not all(contract in start_body for contract in start_contracts):
+    raise SystemExit("LocationManager start must request authorized location and heading delivery.")
+
+stop_body = section(manager_source, "func stopUpdatingLocationAndHeading()", "func requestAuthorization()")
+stop_contracts = [
+    "updatesRequested = false",
+    "locationManager?.stopUpdatingLocation()",
+    "locationManager?.stopUpdatingHeading()",
+]
+if not all(contract in stop_body for contract in stop_contracts):
+    raise SystemExit("LocationManager stop must disable location and heading delivery.")
+
+authorization_body = section(manager_source, "didChangeAuthorization", "didUpdateLocations")
+guard_index = required_index(authorization_body, "if updatesRequested && isAuthorizedForLocationUpdates(status)")
+location_start_index = required_index(authorization_body, "manager.startUpdatingLocation()")
+heading_start_index = required_index(authorization_body, "manager.startUpdatingHeading()")
+if guard_index > min(location_start_index, heading_start_index):
+    raise SystemExit("Authorization callbacks must gate update restart on active AR ownership.")
+
+run_body = section(scene_source, "public func run()", "public func pause()")
+if required_index(run_body, "locationManager.startUpdatingLocationAndHeading()") > required_index(run_body, "session.run(configuration)"):
+    raise SystemExit("SceneLocationView must acquire Core Location before starting the AR session.")
+
+pause_body = section(scene_source, "public func pause()", "updateLocationData()")
+stop_index = required_index(pause_body, "locationManager.stopUpdatingLocationAndHeading()")
+pause_index = required_index(pause_body, "session.pause()")
+timer_index = required_index(pause_body, "updateEstimatesTimer?.invalidate()")
+if not stop_index < pause_index < timer_index:
+    raise SystemExit("SceneLocationView must stop Core Location before pausing AR and invalidating its timer.")
 PY
 else
-  printf '%s\n' "Skipping LocationManager order check: python3 is not installed."
+  printf '%s\n' "Skipping LocationManager lifecycle order check: python3 is not installed."
 fi
 
 reachability="$ROOT_DIR/FoursquareARCamera/Source/Reachability.swift"

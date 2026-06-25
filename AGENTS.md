@@ -53,6 +53,9 @@
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
 - Keep the dedicated connectivity probe limited to exact HTTP 204 success.
 - Keep Core Location updates gated on authorization before starting AR venue lookup behavior.
+- Keep `SceneLocationView.run()` and `pause()` paired with
+  `startUpdatingLocationAndHeading()` and `stopUpdatingLocationAndHeading()` so
+  GPS and compass delivery remains owned by the visible AR scene.
 - Keep location manager setup and heading forwarding resilient when optional Core Location state is unavailable.
 - Reject non-finite or out-of-range venue coordinates, and reject non-finite or negative distances, before creating AR nodes or map annotations.
 - Keep venue distance-to-feet conversion within Int bounds before rendering.

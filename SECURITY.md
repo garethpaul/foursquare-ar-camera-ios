@@ -41,6 +41,8 @@ If this project requests device permissions such as location, camera, microphone
 
 Core Location updates should stay gated on authorization before AR venue lookup
 behavior starts.
+GPS and compass delivery should remain owned by the visible AR scene and stop
+before that scene pauses, preventing off-screen sensor delivery and power use.
 Location manager setup should avoid force-unwrapping optional manager or heading
 state while forwarding Core Location updates.
 Debug label updates should not force-unwrap optional text because AR position,
