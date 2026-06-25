@@ -54,6 +54,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   CocoaLumberjack source selector is pinned to the exact Swift 4 commit already
   recorded by `Podfile.lock`.
 - Configure `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET` as local build settings, for example through an untracked `.xcconfig` file or Xcode scheme environment.
+- GPS and compass delivery belongs to the visible AR scene; leaving the screen
+  stops both Core Location services before the AR session and estimate timer
+  pause.
 
 This is a preserved Swift 4.0 and iOS 11-era sample, not a current production
 SDK baseline. The CocoaPods graph includes legacy dependencies, but

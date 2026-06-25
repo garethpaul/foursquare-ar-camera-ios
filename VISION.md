@@ -19,6 +19,8 @@ The current focus is:
 Priority:
 
 - Preserve the AR scene, compass, and nearby venue annotation flow
+- Keep GPS and compass delivery owned by the visible AR scene, stopping both
+  services before AR pause and restarting only while authorized and visible
 - Keep Foursquare and Mapbox credential handling visible
 - Avoid committing real API credentials, access tokens, or user location data
 - Maintain attribution and network reachability behavior

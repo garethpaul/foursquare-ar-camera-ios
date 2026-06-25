@@ -114,6 +114,8 @@ public class SceneLocationView: ARSCNView, ARSCNViewDelegate {
     }
     
     public func run() {
+        locationManager.startUpdatingLocationAndHeading()
+
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
@@ -132,6 +134,7 @@ public class SceneLocationView: ARSCNView, ARSCNViewDelegate {
     }
     
     public func pause() {
+        locationManager.stopUpdatingLocationAndHeading()
         session.pause()
         updateEstimatesTimer?.invalidate()
         updateEstimatesTimer = nil

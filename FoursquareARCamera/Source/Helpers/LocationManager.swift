@@ -20,6 +20,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     weak var delegate: LocationManagerDelegate?
     
     private var locationManager: CLLocationManager?
+    private var updatesRequested = false
     
     var currentLocation: CLLocation?
     
@@ -42,12 +43,26 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
         manager.delegate = self
         manager.requestWhenInUseAuthorization()
 
-        if isAuthorizedForLocationUpdates(CLLocationManager.authorizationStatus()) {
-            manager.startUpdatingHeading()
-            manager.startUpdatingLocation()
-        }
-        
         self.currentLocation = manager.location
+    }
+
+    func startUpdatingLocationAndHeading() {
+        updatesRequested = true
+
+        let status = CLLocationManager.authorizationStatus()
+        guard isAuthorizedForLocationUpdates(status) else {
+            requestAuthorization()
+            return
+        }
+
+        locationManager?.startUpdatingHeading()
+        locationManager?.startUpdatingLocation()
+    }
+
+    func stopUpdatingLocationAndHeading() {
+        updatesRequested = false
+        locationManager?.stopUpdatingLocation()
+        locationManager?.stopUpdatingHeading()
     }
     
     func requestAuthorization() {
@@ -66,9 +81,12 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     //MARK: - CLLocationManagerDelegate
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        if isAuthorizedForLocationUpdates(status) {
+        if updatesRequested && isAuthorizedForLocationUpdates(status) {
             manager.startUpdatingHeading()
             manager.startUpdatingLocation()
+        } else if !isAuthorizedForLocationUpdates(status) {
+            manager.stopUpdatingLocation()
+            manager.stopUpdatingHeading()
         }
     }
     
