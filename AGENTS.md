@@ -33,7 +33,7 @@
 
 ## Testing guidance
 
-- The four standalone harnesses under `Tests/` execute the production response
+- The five standalone harnesses under `Tests/` execute the production response
   URL, distance, text, and venue lookup lifecycle sources when `swiftc` is
   available, before every Make gate runs the static baseline.
 - Hosted macOS CI additionally parses the checked-in Xcode project; it does not install Pods, sign or launch the app, call live APIs, or test camera, AR, Mapbox, and location behavior.
@@ -54,6 +54,7 @@
 - Do not commit `.xcconfig` files, API credentials, signing material, camera output, or user location data.
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
 - Keep the dedicated connectivity probe limited to exact HTTP 204 success.
+- Keep offline-alert callbacks generation-owned by the current visible AR scene.
 - Keep Core Location updates gated on authorization before starting AR venue lookup behavior.
 - Keep `SceneLocationView.run()` and `pause()` paired with
   `startUpdatingLocationAndHeading()` and `stopUpdatingLocationAndHeading()` so

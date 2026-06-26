@@ -1,5 +1,48 @@
 # Changes
 
+## 2026-06-26T03:06:41Z — P1 lifecycle/correctness — cycle: reachability presentation ownership
+
+### Summary
+Bound asynchronous offline-alert presentation to the current visible AR scene
+so hidden or superseded reachability callbacks cannot present stale UI.
+
+### Work completed
+- Added a Swift 4-compatible visible-generation state.
+- Moved reachability probe startup from `viewDidLoad` to `viewWillAppear`.
+- Invalidated presentation ownership from `viewWillDisappear`.
+- Added a fifth standalone production-state harness and hostile contracts.
+
+### Threads
+- None; the focused lifecycle change was implemented directly.
+
+### Files changed
+- `ViewController.swift`, `FoursquareReachabilityPresentationState.swift`, the
+  Xcode project, harness/Make/static gates, guidance, and implementation plans.
+
+### Validation
+- RED: the Swift harness failed because production presentation state was missing.
+- GREEN: current, disappeared, superseded, and replacement generations pass.
+- All five production Swift harnesses passed in a network-disabled Swift 5.10 container.
+- The canonical static gate passed and rejected four hostile presentation mutations.
+- `make lint`, `make test`, `make build`, and `make check` passed through the
+  container-backed Swift compiler/execution adapter.
+- Hosted Check runs `28214619678` and `28214620695` and CodeQL run
+  `28214619620` passed on the reviewed head.
+- Codex review was attempted but blocked by OpenAI API HTTP 401. Manual review
+  found and fixed two trailing spaces in design links; no runtime finding remained.
+
+### Bugs / findings
+- P1: the `viewDidLoad` probe could present an offline alert after scene departure
+  or during a later appearance.
+
+### Blockers
+- Camera, ARKit, Core Location, Mapbox, credentials, and live connectivity still
+  require a compatible device environment.
+
+### Next action
+- Merge the final hosted-green head, then preserve generation ownership in
+  future connectivity and presentation changes.
+
 ## 2026-06-25T21:27:05Z — P1 correctness/privacy — cycle: venue lookup lifecycle ownership
 
 ### Summary

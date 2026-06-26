@@ -59,6 +59,7 @@ for path in \
   "FoursquareARCamera/Source/FoursquareVenueDistancePolicy.swift" \
   "FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift" \
   "FoursquareARCamera/Source/FoursquareVenueLookupState.swift" \
+  "FoursquareARCamera/Source/FoursquareReachabilityPresentationState.swift" \
   "FoursquareARCamera/Source/Helpers/LocationManager.swift" \
   "FoursquareARCamera/Source/Reachability.swift" \
   "FoursquareARCamera/Source/Views/FSQView.swift" \
@@ -79,6 +80,7 @@ for path in \
   "docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md" \
   "docs/plans/2026-06-25-visible-core-location-lifecycle.md" \
   "docs/plans/2026-06-25-venue-lookup-lifecycle.md" \
+  "docs/plans/2026-06-25-reachability-presentation-lifecycle.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
@@ -86,10 +88,12 @@ for path in \
   "scripts/run-foursquare-venue-distance-tests.sh" \
   "scripts/run-foursquare-venue-text-tests.sh" \
   "scripts/run-foursquare-venue-lookup-state-tests.sh" \
+  "scripts/run-foursquare-reachability-presentation-state-tests.sh" \
   "Tests/FoursquareResponseURLPolicyTests/main.swift" \
   "Tests/FoursquareVenueDistancePolicyTests/main.swift" \
   "Tests/FoursquareVenueTextPolicyTests/main.swift" \
   "Tests/FoursquareVenueLookupStateTests/main.swift" \
+  "Tests/FoursquareReachabilityPresentationStateTests/main.swift" \
   "docs/plans/2026-06-13-reachability-exact-204.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-fsq-view-nib-outlet-guard.md" \
@@ -132,7 +136,8 @@ fail_fast_contract = (
     'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-response-url-tests.sh" && \\',
     'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-distance-tests.sh" && \\',
     'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-text-tests.sh" && \\',
-    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-lookup-state-tests.sh"; \\',
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-lookup-state-tests.sh" && \\',
+    'SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-reachability-presentation-state-tests.sh"; \\',
 )
 
 if any(fragment not in makefile for fragment in fail_fast_contract):
@@ -145,7 +150,8 @@ python3 - \
   "$ROOT_DIR/scripts/run-foursquare-response-url-tests.sh" \
   "$ROOT_DIR/scripts/run-foursquare-venue-distance-tests.sh" \
   "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" \
-  "$ROOT_DIR/scripts/run-foursquare-venue-lookup-state-tests.sh" <<'PY'
+  "$ROOT_DIR/scripts/run-foursquare-venue-lookup-state-tests.sh" \
+  "$ROOT_DIR/scripts/run-foursquare-reachability-presentation-state-tests.sh" <<'PY'
 import re
 import sys
 from pathlib import Path
@@ -1499,6 +1505,110 @@ if ! grep -Fq "generation ownership prevents old responses or retry timers" "$RO
   ! grep -Fq "stale response/retry generations" "$ROOT_DIR/AGENTS.md" ||
   ! grep -Fq "cycle: venue lookup lifecycle ownership" "$ROOT_DIR/CHANGES.md"; then
   printf '%s\n' "Repository guidance must preserve venue lookup lifecycle ownership." >&2
+  exit 1
+fi
+
+python3 - \
+  "$ROOT_DIR/FoursquareARCamera/ViewController.swift" \
+  "$ROOT_DIR/FoursquareARCamera/Source/FoursquareReachabilityPresentationState.swift" \
+  "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/scripts/run-foursquare-reachability-presentation-state-tests.sh" \
+  "$ROOT_DIR/Tests/FoursquareReachabilityPresentationStateTests/main.swift" <<'PY'
+import sys
+from pathlib import Path
+
+view, state, project, makefile, runner, tests = (
+    Path(path).read_text(encoding="utf-8") for path in sys.argv[1:]
+)
+
+state_contract = (
+    "final class FoursquareReachabilityPresentationState",
+    "latestGeneration = latestGeneration &+ 1",
+    "func beginVisibleScene() -> UInt",
+    "func endVisibleScene()",
+    "func accepts(generation: UInt) -> Bool",
+    "visibleGeneration = nil",
+    "return visibleGeneration == generation",
+)
+test_contract = (
+    "current visible generation is accepted",
+    "disappeared generation is rejected",
+    "superseded generation stays rejected",
+    "earlier visible probe is rejected",
+    "latest visible probe is accepted",
+)
+
+def validate(candidate_view, candidate_state):
+    if any(fragment not in candidate_state for fragment in state_contract):
+        raise ValueError("Reachability presentation state must reject hidden and stale generations.")
+    if "private let reachabilityPresentationState = FoursquareReachabilityPresentationState()" not in candidate_view:
+        raise ValueError("ViewController must own reachability presentation state.")
+    probe = candidate_view[candidate_view.index("private func startReachabilityProbe"):candidate_view.index("private func allowVenueLookupRetryAfterDelay")]
+    if "reachabilityPresentationState.accepts" not in probe or probe.index("reachabilityPresentationState.accepts") > probe.index("strongSelf.present(alert"):
+        raise ValueError("Reachability callback must validate generation before presentation.")
+    did_load = candidate_view[candidate_view.index("override func viewDidLoad"):candidate_view.index("func imageTapped")]
+    if "Reachability.isConnectedToNetwork()" in did_load:
+        raise ValueError("Reachability probe must not start from viewDidLoad.")
+    appear = candidate_view[candidate_view.index("override func viewWillAppear"):candidate_view.index("override func viewWillDisappear")]
+    if not (
+        appear.index("beginVisibleScene()")
+        < appear.index("startReachabilityProbe")
+        < appear.index("sceneLocationView.run()")
+    ):
+        raise ValueError("Visible scene must own probe startup before AR runs.")
+    disappear = candidate_view[candidate_view.index("override func viewWillDisappear"):candidate_view.index("override func viewDidLayoutSubviews")]
+    if disappear.index("endVisibleScene()") > disappear.index("sceneLocationView.pause()"):
+        raise ValueError("Scene departure must invalidate alert presentation before pause.")
+    if project.count("FoursquareReachabilityPresentationState.swift in Sources") != 2 or project.count("/* FoursquareReachabilityPresentationState.swift */") != 3:
+        raise ValueError("Reachability presentation state must remain in the app target.")
+    if makefile.count("run-foursquare-reachability-presentation-state-tests.sh") != 1:
+        raise ValueError("Make check must execute the reachability presentation harness once.")
+    if any(fragment not in tests for fragment in test_contract):
+        raise ValueError("Reachability presentation tests must preserve lifecycle regressions.")
+    if runner.count("FoursquareReachabilityPresentationState.swift") != 1 or runner.count("FoursquareReachabilityPresentationStateTests/main.swift") != 1:
+        raise ValueError("Reachability presentation runner must compile production state with its harness.")
+
+validate(view, state)
+
+mutations = (
+    ("stale generation acceptance", view, state.replace("return visibleGeneration == generation", "return visibleGeneration != nil", 1)),
+    ("disappearance invalidation removal", view, state.replace("visibleGeneration = nil", "visibleGeneration = visibleGeneration", 1)),
+    ("callback guard removal", view.replace("strongSelf.reachabilityPresentationState.accepts(\n                            generation: generation\n                        )", "true", 1), state),
+    ("scene invalidation removal", view.replace("reachabilityPresentationState.endVisibleScene()", "", 1), state),
+)
+for name, mutated_view, mutated_state in mutations:
+    try:
+        validate(mutated_view, mutated_state)
+    except (ValueError, IndexError):
+        continue
+    raise SystemExit(f"Reachability presentation hostile mutation survived: {name}")
+print("Reachability presentation hostile mutations rejected.")
+PY
+
+if [ ! -x "$ROOT_DIR/scripts/run-foursquare-reachability-presentation-state-tests.sh" ]; then
+  printf '%s\n' "The reachability presentation state test runner must remain executable." >&2
+  exit 1
+fi
+
+for reachability_presentation_evidence in \
+  "Status: Completed" \
+  "All five production Swift harnesses passed" \
+  "four reachability presentation hostile" \
+  '`xcodebuild` was unavailable locally' \
+  "No live connectivity"; do
+  if ! grep -Fq "$reachability_presentation_evidence" "$ROOT_DIR/docs/plans/2026-06-25-reachability-presentation-lifecycle.md"; then
+    printf '%s\n' "Reachability presentation plan must keep completed evidence: $reachability_presentation_evidence" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq "current visible-scene generation" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "hidden or superseded probes cannot present UI" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "current visible generation" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "offline-alert callbacks generation-owned" "$ROOT_DIR/AGENTS.md" ||
+  ! grep -Fq "cycle: reachability presentation ownership" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Repository guidance must preserve reachability presentation ownership." >&2
   exit 1
 fi
 
