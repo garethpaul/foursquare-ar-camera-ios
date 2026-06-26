@@ -26,6 +26,10 @@ so hidden or superseded reachability callbacks cannot present stale UI.
 - The canonical static gate passed and rejected four hostile presentation mutations.
 - `make lint`, `make test`, `make build`, and `make check` passed through the
   container-backed Swift compiler/execution adapter.
+- Hosted Check runs `28214619678` and `28214620695` and CodeQL run
+  `28214619620` passed on the reviewed head.
+- Codex review was attempted but blocked by OpenAI API HTTP 401. Manual review
+  found and fixed two trailing spaces in design links; no runtime finding remained.
 
 ### Bugs / findings
 - P1: the `viewDidLoad` probe could present an offline alert after scene departure
@@ -36,8 +40,8 @@ so hidden or superseded reachability callbacks cannot present stale UI.
   require a compatible device environment.
 
 ### Next action
-- Run the complete Make gate in the Swift container, then require hosted macOS
-  and CodeQL success before merge.
+- Merge the final hosted-green head, then preserve generation ownership in
+  future connectivity and presentation changes.
 
 ## 2026-06-25T21:27:05Z — P1 correctness/privacy — cycle: venue lookup lifecycle ownership
 

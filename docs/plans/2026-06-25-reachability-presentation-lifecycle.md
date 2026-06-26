@@ -61,5 +61,11 @@ Status: Completed
 - `make lint`, `make test`, `make build`, and `make check` passed with all five
   harnesses and four reachability presentation hostile mutations;
   `xcodebuild` was unavailable locally.
+- Hosted Check runs `28214619678` and `28214620695` passed macOS Swift harness
+  and Xcode project validation on commit
+  `1181194215e4330e8ed76314f6b3891bb3bcbad7`.
+- Hosted CodeQL run `28214619620` passed Actions and Python analysis.
+- `codex review --base origin/master` was attempted but could not authenticate
+  to the OpenAI API (HTTP 401). Manual exact-head review found two trailing
+  spaces in design links; commit `1181194` removed them, and no runtime finding remained.
 - No live connectivity, camera, location, Mapbox, or Foursquare request ran.
-- Hosted macOS compilation/project validation and CodeQL remain required before merge.
