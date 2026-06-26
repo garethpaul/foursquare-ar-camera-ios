@@ -31,6 +31,7 @@ LOCATION_LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-25-visible-core-location-l
 VENUE_LOOKUP_LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-25-venue-lookup-lifecycle.md"
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
+REQUEST_LOCATION_PLAN="$ROOT_DIR/docs/plans/2026-06-26-foursquare-request-location-boundary.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -55,6 +56,7 @@ for path in \
   "FoursquareARCamera.xcodeproj/project.pbxproj" \
   "FoursquareARCamera/Info.plist" \
   "FoursquareARCamera/ViewController.swift" \
+  "FoursquareARCamera/Source/FoursquareRequestLocationPolicy.swift" \
   "FoursquareARCamera/Source/FoursquareResponseURLPolicy.swift" \
   "FoursquareARCamera/Source/FoursquareVenueDistancePolicy.swift" \
   "FoursquareARCamera/Source/FoursquareVenueTextPolicy.swift" \
@@ -81,15 +83,18 @@ for path in \
   "docs/plans/2026-06-25-visible-core-location-lifecycle.md" \
   "docs/plans/2026-06-25-venue-lookup-lifecycle.md" \
   "docs/plans/2026-06-25-reachability-presentation-lifecycle.md" \
+  "docs/plans/2026-06-26-foursquare-request-location-boundary.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
   "scripts/run-foursquare-response-url-tests.sh" \
+  "scripts/run-foursquare-request-location-tests.sh" \
   "scripts/run-foursquare-venue-distance-tests.sh" \
   "scripts/run-foursquare-venue-text-tests.sh" \
   "scripts/run-foursquare-venue-lookup-state-tests.sh" \
   "scripts/run-foursquare-reachability-presentation-state-tests.sh" \
   "Tests/FoursquareResponseURLPolicyTests/main.swift" \
+  "Tests/FoursquareRequestLocationPolicyTests/main.swift" \
   "Tests/FoursquareVenueDistancePolicyTests/main.swift" \
   "Tests/FoursquareVenueTextPolicyTests/main.swift" \
   "Tests/FoursquareVenueLookupStateTests/main.swift" \
@@ -1609,6 +1614,111 @@ if ! grep -Fq "current visible-scene generation" "$ROOT_DIR/README.md" ||
   ! grep -Fq "offline-alert callbacks generation-owned" "$ROOT_DIR/AGENTS.md" ||
   ! grep -Fq "cycle: reachability presentation ownership" "$ROOT_DIR/CHANGES.md"; then
   printf '%s\n' "Repository guidance must preserve reachability presentation ownership." >&2
+  exit 1
+fi
+
+python3 - \
+  "$ROOT_DIR/FoursquareARCamera/ViewController.swift" \
+  "$ROOT_DIR/FoursquareARCamera/Source/FoursquareRequestLocationPolicy.swift" \
+  "$ROOT_DIR/Tests/FoursquareRequestLocationPolicyTests/main.swift" \
+  "$ROOT_DIR/FoursquareARCamera.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ROOT_DIR/scripts/run-foursquare-request-location-tests.sh" \
+  "$REQUEST_LOCATION_PLAN" <<'PY'
+import sys
+from pathlib import Path
+
+view = Path(sys.argv[1]).read_text()
+policy = Path(sys.argv[2]).read_text()
+tests = Path(sys.argv[3]).read_text()
+project = Path(sys.argv[4]).read_text()
+makefile = Path(sys.argv[5]).read_text()
+runner = Path(sys.argv[6]).read_text()
+plan = Path(sys.argv[7]).read_text()
+
+policy_contract = (
+    "latitude.isFinite",
+    "longitude.isFinite",
+    "(-90.0...90.0).contains(latitude)",
+    "(-180.0...180.0).contains(longitude)",
+)
+test_contract = (
+    'accepted: true, "ordinary coordinate"',
+    'accepted: true, "minimum boundaries"',
+    'accepted: true, "maximum boundaries"',
+    'accepted: false, "latitude above range"',
+    'accepted: false, "latitude below range"',
+    'accepted: false, "longitude above range"',
+    'accepted: false, "longitude below range"',
+    'accepted: false, "NaN latitude"',
+    'accepted: false, "NaN longitude"',
+    'accepted: false, "infinite latitude"',
+    'accepted: false, "infinite longitude"',
+)
+
+def validate(candidate_view, candidate_policy, candidate_tests, candidate_project, candidate_makefile, candidate_runner):
+    if any(fragment not in candidate_policy for fragment in policy_contract):
+        raise ValueError("Request coordinates must remain finite and geographically bounded.")
+    lookup = candidate_view[candidate_view.index("func getFoursquareLocations"):candidate_view.index("\n    @objc", candidate_view.index("func getFoursquareLocations"))]
+    guard_index = lookup.index("FoursquareRequestLocationPolicy.accepts(")
+    begin_index = lookup.index("venueLookupState.beginIfIdle()")
+    request_index = lookup.index("foursquareSessionManager.request")
+    if not guard_index < begin_index < request_index:
+        raise ValueError("Request location validation must precede lookup ownership and networking.")
+    if 'DDLogWarn("Skipping Foursquare venue lookup because the current location is invalid.")' not in lookup:
+        raise ValueError("Invalid request locations must use a coordinate-free diagnostic.")
+    if any(fragment not in candidate_tests for fragment in test_contract):
+        raise ValueError("Executable request-location boundary cases must remain registered.")
+    if candidate_project.count("FoursquareRequestLocationPolicy.swift in Sources") != 2 or candidate_project.count("/* FoursquareRequestLocationPolicy.swift */") != 3:
+        raise ValueError("Request location policy must remain a member of the app target.")
+    if candidate_makefile.count("run-foursquare-request-location-tests.sh") != 1:
+        raise ValueError("Make check must execute the request-location harness once.")
+    if candidate_runner.count("FoursquareRequestLocationPolicy.swift") != 1 or candidate_runner.count("FoursquareRequestLocationPolicyTests/main.swift") != 1:
+        raise ValueError("Request-location runner must compile production policy with its harness.")
+
+validate(view, policy, tests, project, makefile, runner)
+
+mutations = (
+    ("finite latitude removal", view, policy.replace("latitude.isFinite &&", "true &&", 1), tests, project, makefile, runner),
+    ("latitude range expansion", view, policy.replace("(-90.0...90.0)", "(-900.0...900.0)", 1), tests, project, makefile, runner),
+    ("production guard removal", view.replace("FoursquareRequestLocationPolicy.accepts(", "FoursquareRequestLocationPolicy.removed(", 1), policy, tests, project, makefile, runner),
+    ("NaN regression removal", view, policy, tests.replace('accepted: false, "NaN latitude"', 'accepted: true, "NaN latitude"', 1), project, makefile, runner),
+    ("app target removal", view, policy, tests, project.replace("FoursquareRequestLocationPolicy.swift in Sources", "FoursquareRequestLocationPolicy.swift omitted", 1), makefile, runner),
+    ("Make wiring removal", view, policy, tests, project, makefile.replace("run-foursquare-request-location-tests.sh", "request-location-tests-omitted.sh", 1), runner),
+    ("runner production source removal", view, policy, tests, project, makefile, runner.replace("FoursquareRequestLocationPolicy.swift", "FoursquareRequestLocationPolicyOmitted.swift", 1)),
+)
+for name, *mutation in mutations:
+    try:
+        validate(*mutation)
+    except (ValueError, IndexError):
+        continue
+    raise SystemExit(f"Request location hostile mutation survived: {name}")
+
+required_plan = (
+    "status: completed",
+    "RED: `make check` rejected the missing production request-location policy",
+    "GREEN: repository-root and external-directory `make check` passed",
+    "Seven request-location hostile mutations were rejected",
+    "All six production Swift harnesses passed",
+    "No live Foursquare request was made",
+)
+if any(fragment not in plan for fragment in required_plan):
+    raise SystemExit("Request location plan must preserve completed local evidence.")
+
+print("Request location hostile mutations rejected.")
+PY
+
+if [ ! -x "$ROOT_DIR/scripts/run-foursquare-request-location-tests.sh" ]; then
+  printf '%s\n' "The request location test runner must remain executable." >&2
+  exit 1
+fi
+
+if ! grep -Fq "current lookup coordinates are finite and geographically bounded" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "current-location coordinates before lookup ownership" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "Validate current-location coordinates before venue request construction" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Reject invalid current-location coordinates before claiming venue lookup state" "$ROOT_DIR/AGENTS.md" ||
+  ! grep -Fq "cycle: request location boundary" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Repository guidance must preserve the Foursquare request location boundary." >&2
   exit 1
 fi
 

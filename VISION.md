@@ -71,6 +71,8 @@ Current baseline:
   response handling.
 - Venue response coordinates and distances are finite and range-checked before
   AR nodes or map annotations are created.
+- Current lookup coordinates are finite and range-checked before venue lookup
+  state is claimed or a Foursquare request is constructed.
 - Bound venue distance conversion before integer rendering.
 - Normalize venue text before rendering, rejecting blank required names and
   retaining the neutral category fallback.
@@ -104,6 +106,7 @@ Next priorities:
   overlays
 - Preserve bounded Foursquare venue lookup retries when changing API failure
   handling
+- Validate current-location coordinates before venue request construction
 - Preserve 2xx status validation ahead of Foursquare JSON response parsing
 - Preserve exact final HTTPS endpoint validation ahead of media validation
 - Preserve exact JSON response media type validation ahead of response handling

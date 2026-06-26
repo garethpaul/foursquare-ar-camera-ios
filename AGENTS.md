@@ -61,6 +61,9 @@
   GPS and compass delivery remains owned by the visible AR scene.
 - Keep location manager setup and heading forwarding resilient when optional Core Location state is unavailable.
 - Reject non-finite or out-of-range venue coordinates, and reject non-finite or negative distances, before creating AR nodes or map annotations.
+- Reject invalid current-location coordinates before claiming venue lookup state
+  or constructing a credential-bearing Foursquare request; do not log the
+  rejected coordinates.
 - Keep venue distance-to-feet conversion within Int bounds before rendering.
 - Reject blank venue names before creating AR or map UI, trim accepted venue
   text, and preserve the neutral fallback for missing or blank categories.

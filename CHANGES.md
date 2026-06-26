@@ -1,5 +1,42 @@
 # Changes
 
+## 2026-06-26T12:34:00Z — P1 correctness/privacy — cycle: request location boundary
+
+### Summary
+Rejected invalid current-location coordinates before the app can claim venue
+lookup ownership or construct a credential-bearing Foursquare request.
+
+### Work completed
+- Added a Foundation-only finite geographic coordinate policy to the app target.
+- Applied the policy before lookup generation acquisition and request parameters.
+- Kept invalid-location diagnostics free of coordinate values.
+- Added an executable production-policy harness and seven hostile mutations.
+- Updated security, verification, contributor, and roadmap guidance.
+
+### Threads
+- None; the focused request boundary was implemented directly.
+
+### Files changed
+- `FoursquareRequestLocationPolicy.swift`, `ViewController.swift`, and the Xcode
+  project — production policy, ordering, and app-target membership.
+- `Tests/`, `scripts/`, and `Makefile` — executable and static regressions.
+- `README.md`, `SECURITY.md`, `VISION.md`, `AGENTS.md`, and this changelog —
+  maintained boundary guidance.
+- `docs/plans/2026-06-26-foursquare-request-location-boundary.md` — completed
+  implementation and local evidence.
+
+### Validation
+- RED: `make check` rejected the missing production policy.
+- GREEN: repository-root and external-directory `make check` passed the static
+  baseline; this host has no `swiftc` or `xcodebuild`.
+- All six production Swift harnesses passed in a network-disabled Swift 5.10
+  container.
+- Seven focused hostile mutations were rejected.
+
+### Blockers
+- Xcode project parsing and physical-device AR, Core Location, Mapbox, and live
+  Foursquare behavior require hosted macOS or a compatible device environment.
+
 ## 2026-06-26T03:06:41Z — P1 lifecycle/correctness — cycle: reachability presentation ownership
 
 ### Summary

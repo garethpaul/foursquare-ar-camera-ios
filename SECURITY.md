@@ -43,6 +43,10 @@ If this project requests device permissions such as location, camera, microphone
 
 Core Location updates should stay gated on authorization before AR venue lookup
 behavior starts.
+Validate current-location coordinates before lookup ownership or construction
+of a credential-bearing Foursquare request. Non-finite or out-of-range
+coordinates must be rejected without logging coordinate values, and a rejected
+estimate must not block a later valid estimate.
 GPS and compass delivery should remain owned by the visible AR scene and stop
 before that scene pauses, preventing off-screen sensor delivery and power use.
 Location manager setup should avoid force-unwrapping optional manager or heading

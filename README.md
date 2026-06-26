@@ -87,9 +87,10 @@ directory. Verification resolves the checker relative to the loaded Makefile
 rather than the caller's directory.
 
 The `lint`, `test`, and `build` targets delegate to the same baseline. When
-`swiftc` is available, each gate compiles and runs five production
-Foursquare policy/state harnesses for response URLs, distances, text, and venue
-lookup lifecycle ownership before the static contracts. The baseline also
+`swiftc` is available, each gate compiles and runs six production
+Foursquare policy/state harnesses for request locations, response URLs,
+distances, text, and venue lookup lifecycle ownership before the static
+contracts. The baseline also
 verifies that credentials are build settings, tracked
 machine artifacts are absent, location logs avoid detailed coordinates, and the
 venue mask asset is not force-unwrapped. The workspace can be listed when
@@ -106,6 +107,7 @@ added. Map annotation updates avoid force-unwrapping optional annotations while
 tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are
 missing, requests fail, or successful responses contain no valid venue payloads.
+Foursquare requests begin only after current lookup coordinates are finite and geographically bounded; rejected locations do not claim lookup state or construct a credential-bearing request.
 In-flight venue lookups are cancelled when the AR scene disappears, and
 generation ownership prevents old responses or retry timers from mutating or
 unlocking a newer visible-scene lookup. Completed venue results remain loaded
