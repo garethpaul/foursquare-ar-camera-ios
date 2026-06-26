@@ -24,6 +24,12 @@ Helpful reports include:
 
 ## Project Security Posture
 
+The historical public Mapbox token alert remains open until the credential
+owner provides revocation or rotation evidence; current credential
+configuration contains only build-setting placeholders. Repository checks
+prevent public Mapbox token formats from returning, but repository evidence
+cannot prove provider-side revocation.
+
 - This repository appears to be an Apple platform application or Swift sample. The active security scope is the code and documentation on the default branch.
 - Review found authentication, token, or session-related code paths; changes in those areas should receive security-focused review before merge.
 - Review found external API integrations or credential-adjacent configuration; changes in those areas should receive security-focused review before merge.

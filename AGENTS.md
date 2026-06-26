@@ -51,6 +51,9 @@
 
 - Detected references to Foursquare, Mapbox. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
 - Required local build settings: `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and `FOURSQUARE_CLIENT_SECRET`.
+- The historical public Mapbox token alert remains open until the credential
+  owner provides revocation or rotation evidence; current credential
+  configuration contains only build-setting placeholders.
 - Do not commit `.xcconfig` files, API credentials, signing material, camera output, or user location data.
 - Avoid logging detailed location coordinates, camera frames, Foursquare credentials, Mapbox tokens, or raw venue responses.
 - Keep the dedicated connectivity probe limited to exact HTTP 204 success.

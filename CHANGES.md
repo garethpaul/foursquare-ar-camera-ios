@@ -1,5 +1,63 @@
 # Changes
 
+## 2026-06-26 07:29 PDT - P1 - Record historical Mapbox revocation blocker
+
+### Summary
+
+Audited all public secret-scanning alerts and confirmed the flagged Mapbox blob
+is absent from the current default branch. The historical public Mapbox token
+alert remains open until the credential owner provides revocation or rotation
+evidence; current credential configuration contains only build-setting placeholders.
+
+### Work completed
+
+- Preserved the existing current-head token-placeholder and public-token-format
+  guards.
+- Added synchronized maintainer, public, security, product, and plan guidance
+  that distinguishes repository remediation from provider-side revocation.
+- Added a baseline contract so the unresolved credential-owner action cannot be
+  silently omitted or falsely reported as complete.
+
+### Threads
+
+- None; GitHub secret-scanning state, alert locations, current blob identities,
+  repository history, and local contracts were reviewed directly.
+
+### Files changed
+
+- `scripts/check-baseline.sh` — durable historical-alert contract.
+- `AGENTS.md`, `README.md`, `SECURITY.md`, and `VISION.md` — synchronized
+  credential-owner blocker.
+- `docs/plans/2026-06-26-historical-mapbox-alert.md` — completed evidence plan.
+- `CHANGES.md` — this maintenance record.
+
+### Validation
+
+- RED baseline — rejected the missing historical-alert plan.
+- All four Make aliases and an absolute-Make invocation from an unrelated
+  directory passed the credential baseline, timeout checker, and maintained
+  hostile lifecycle/location mutations.
+- One isolated SECURITY guidance-removal mutation — rejected.
+- Shell syntax, Python compilation, and `git diff --check` — passed.
+- Executable Swift policy tests and Xcode project listing — skipped because
+  `swiftc` and `xcodebuild` are unavailable; hosted macOS remains required.
+
+### Bugs / findings
+
+- P1 security operations: the current branch is remediated, but GitHub reports
+  the historical public Mapbox token alert with unknown validity and no
+  revocation evidence.
+
+### Blockers
+
+- Only the credential owner can confirm provider-side revocation or rotation;
+  the alert must not be resolved as revoked without that evidence.
+
+### Next action
+
+- Obtain Mapbox revocation or rotation evidence, then resolve secret-scanning
+  alert 1 through the GitHub security UI or API.
+
 ## 2026-06-26T12:34:00Z — P1 correctness/privacy — cycle: request location boundary
 
 ### Summary

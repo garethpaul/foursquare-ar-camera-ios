@@ -34,6 +34,9 @@ Current baseline:
   `Pods-FoursquareARCamera` references use the same target name.
 - `MAPBOX_ACCESS_TOKEN`, `FOURSQUARE_CLIENT_ID`, and
   `FOURSQUARE_CLIENT_SECRET` are local build settings.
+- The historical public Mapbox token alert remains open until the credential
+  owner provides revocation or rotation evidence; current credential
+  configuration contains only build-setting placeholders.
 - detailed location logs are avoided in the venue lookup and scene-location
   delegate flow.
 - Venue rendering keeps working without force-unwrapping the optional
