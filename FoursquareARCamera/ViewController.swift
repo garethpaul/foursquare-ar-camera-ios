@@ -195,11 +195,19 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     // MARK: Get foursquare locations
     
     func getFoursquareLocations(_ currentLocation:CLLocation) {
+        let coordinate = currentLocation.coordinate
+        guard FoursquareRequestLocationPolicy.accepts(
+            latitude: coordinate.latitude,
+            longitude: coordinate.longitude
+        ) else {
+            DDLogWarn("Skipping Foursquare venue lookup because the current location is invalid.")
+            return
+        }
         
         // Check if the request has loaded to avoid multiple requests.
         if let generation = venueLookupState.beginIfIdle() {
-            let lat = String(currentLocation.coordinate.latitude)
-            let lng = String(currentLocation.coordinate.longitude)
+            let lat = String(coordinate.latitude)
+            let lng = String(coordinate.longitude)
             guard let clientID = configuredValue("FoursquareClientID"),
                 let clientSecret = configuredValue("FoursquareClientSecret") else {
                 self.allowVenueLookupRetryAfterDelay(
