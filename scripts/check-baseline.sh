@@ -32,6 +32,7 @@ VENUE_LOOKUP_LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-25-venue-lookup-lifecy
 REACHABILITY_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-reachability-exact-204.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 REQUEST_LOCATION_PLAN="$ROOT_DIR/docs/plans/2026-06-26-foursquare-request-location-boundary.md"
+HISTORICAL_MAPBOX_ALERT_PLAN="$ROOT_DIR/docs/plans/2026-06-26-historical-mapbox-alert.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -84,6 +85,7 @@ for path in \
   "docs/plans/2026-06-25-venue-lookup-lifecycle.md" \
   "docs/plans/2026-06-25-reachability-presentation-lifecycle.md" \
   "docs/plans/2026-06-26-foursquare-request-location-boundary.md" \
+  "docs/plans/2026-06-26-historical-mapbox-alert.md" \
   "docs/plans/2026-06-15-foursquare-redirect-refusal.md" \
   "docs/plans/2026-06-15-foursquare-venue-request-timeouts.md" \
   "scripts/check-venue-request-timeouts.py" \
@@ -912,6 +914,25 @@ if ! grep -Fq "GitHub Actions" "$ROOT_DIR/README.md" ||
   printf '%s\n' "Project docs must record the hosted project validation baseline." >&2
   exit 1
 fi
+
+historical_mapbox_alert_contract="The historical public Mapbox token alert remains open until the credential owner provides revocation or rotation evidence; current credential configuration contains only build-setting placeholders."
+for historical_mapbox_alert_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
+  if ! tr '\n' ' ' < "$ROOT_DIR/$historical_mapbox_alert_doc" | tr -s '[:space:]' ' ' | grep -Fq "$historical_mapbox_alert_contract"; then
+    printf '%s\n' "$historical_mapbox_alert_doc must document the unresolved historical Mapbox alert." >&2
+    exit 1
+  fi
+done
+
+for historical_mapbox_alert_plan_contract in \
+  "status: completed" \
+  "validity remains unknown" \
+  "credential-owner revocation or rotation evidence" \
+  "make check"; do
+  if ! grep -Fq "$historical_mapbox_alert_plan_contract" "$HISTORICAL_MAPBOX_ALERT_PLAN"; then
+    printf '%s\n' "Historical Mapbox alert plan must record: $historical_mapbox_alert_plan_contract" >&2
+    exit 1
+  fi
+done
 
 if ! grep -Fq "status: completed" "$PLAN"; then
   printf '%s\n' "Plan must be marked completed." >&2
