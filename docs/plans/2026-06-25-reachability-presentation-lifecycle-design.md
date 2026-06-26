@@ -13,8 +13,8 @@ a later appearance.
 Apple documents `viewWillAppear(_:)` as the point immediately before a view is
 added to a hierarchy and `viewWillDisappear(_:)` as the point before removal:
 
-- <https://developer.apple.com/documentation/uikit/uiviewcontroller/viewwillappear(_:)> 
-- <https://developer.apple.com/documentation/uikit/uiviewcontroller/viewwilldisappear(_:)> 
+- <https://developer.apple.com/documentation/uikit/uiviewcontroller/viewwillappear(_)>
+- <https://developer.apple.com/documentation/uikit/uiviewcontroller/viewwilldisappear(_)>
 
 ## Constraints
 
