@@ -43,6 +43,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     
     private let venueLookupRetryDelay: TimeInterval = 30.0
     private var hasVenueTapGesture = false
+    private let reachabilityPresentationState = FoursquareReachabilityPresentationState()
     private let venueLookupState = FoursquareVenueLookupState()
     private var venueLookupRequest: DataRequest?
     private let foursquareSessionManager: SessionManager = {
@@ -70,6 +71,27 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         return trimmedValue
     }
 
+    private func startReachabilityProbe(generation: UInt) {
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            if !Reachability.isConnectedToNetwork() {
+                DispatchQueue.main.async {
+                    guard let strongSelf = self,
+                        strongSelf.reachabilityPresentationState.accepts(
+                            generation: generation
+                        ) else {
+                        return
+                    }
+
+                    let alert = UIAlertController(title: "Oops", message: "We are currently struggling to access to the internet. This app requires access to the internet in order to find locations around you.", preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default) { action in
+                        // perhaps use action.title here
+                    })
+                    strongSelf.present(alert, animated: true)
+                }
+            }
+        }
+    }
+
     private func allowVenueLookupRetryAfterDelay(reason: String, generation: UInt) {
         guard venueLookupState.beginRetryCooldown(generation: generation) else {
             return
@@ -84,23 +106,6 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     
     override func viewDidLoad() {
         super.viewDidLoad()
-  
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            if !Reachability.isConnectedToNetwork() {
-                DispatchQueue.main.async {
-                    guard let strongSelf = self else {
-                        return
-                    }
-
-                    let alert = UIAlertController(title: "Oops", message: "We are currently struggling to access to the internet. This app requires access to the internet in order to find locations around you.", preferredStyle: UIAlertControllerStyle.alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default) { action in
-                        // perhaps use action.title here
-                    })
-                    strongSelf.present(alert, animated: true)
-                }
-            }
-        }
-    
         
         // Add Foursquare Attribution
         let imgAttr = UIImage.init(named: "fsq")
@@ -153,6 +158,8 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        let reachabilityGeneration = reachabilityPresentationState.beginVisibleScene()
+        startReachabilityProbe(generation: reachabilityGeneration)
         DDLogDebug("run")
         sceneLocationView.run()
     }
@@ -161,6 +168,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MGLMapViewDelegate, S
         super.viewWillDisappear(animated)
         
         DDLogDebug("pause")
+        reachabilityPresentationState.endVisibleScene()
         if venueLookupState.cancelInFlight() {
             venueLookupRequest?.cancel()
             venueLookupRequest = nil

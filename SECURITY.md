@@ -36,6 +36,8 @@ Helpful reports include:
 
 The dedicated connectivity probe should report success only for its expected
 HTTP 204 response; redirects and other status codes remain offline results.
+Offline alert presentation must remain owned by the current visible-scene
+generation so hidden or superseded probes cannot present UI.
 
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 

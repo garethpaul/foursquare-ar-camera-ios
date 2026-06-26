@@ -10,7 +10,8 @@ check:
 		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-response-url-tests.sh" && \
 		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-distance-tests.sh" && \
 		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-text-tests.sh" && \
-		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-lookup-state-tests.sh"; \
+		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-lookup-state-tests.sh" && \
+		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-reachability-presentation-state-tests.sh"; \
 	else \
 		echo "swiftc unavailable; executable Foursquare policy tests skipped"; \
 	fi

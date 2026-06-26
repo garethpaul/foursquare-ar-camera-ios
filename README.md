@@ -27,7 +27,7 @@ Additional scan context:
 - Source directories: FoursquareARCamera
 - Dependency and build manifests: Podfile, Podfile.lock
 - Entry points or build surfaces: FoursquareARCamera.xcworkspace, FoursquareARCamera.xcodeproj
-- Test-looking files: four standalone Swift behavioral harnesses under `Tests/`
+- Test-looking files: five standalone Swift behavioral harnesses under `Tests/`
 
 ## Getting Started
 
@@ -87,7 +87,7 @@ directory. Verification resolves the checker relative to the loaded Makefile
 rather than the caller's directory.
 
 The `lint`, `test`, and `build` targets delegate to the same baseline. When
-`swiftc` is available, each gate compiles and runs four production
+`swiftc` is available, each gate compiles and runs five production
 Foursquare policy/state harnesses for response URLs, distances, text, and venue
 lookup lifecycle ownership before the static contracts. The baseline also
 verifies that credentials are build settings, tracked
@@ -100,8 +100,8 @@ Location manager setup and heading forwarding avoid force-unwrapping optional
 state.
 Debug info label updates avoid force-unwrapping optional label text when partial
 AR state is available. The offline alert uses the maintained reachability probe
-off the main queue, and that probe succeeds only for its expected HTTP 204
-response. FSQView nib outlet setup is guarded before venue card subviews are
+off the main queue, accepts callbacks only for the current visible-scene
+generation, and succeeds only for its expected HTTP 204 response. FSQView nib outlet setup is guarded before venue card subviews are
 added. Map annotation updates avoid force-unwrapping optional annotations while
 tracking the user and debug location estimate.
 Foursquare venue lookup retries use a bounded cooldown when credentials are
@@ -161,6 +161,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   timestamp data is available.
 - Keep reachability setup resilient so network-check initialization cannot crash
   before the offline alert path.
+- Keep offline-alert callbacks owned by the current visible-scene generation.
 - Keep FSQView nib outlet setup resilient so missing or miswired venue card
   views do not crash rendering.
 - Keep map annotation updates resilient so optional annotation state cannot

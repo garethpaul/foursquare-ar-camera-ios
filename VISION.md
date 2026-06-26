@@ -50,6 +50,7 @@ Current baseline:
 - Debug info label updates avoid force-unwrapping optional label text when
   partial AR state is available.
 - The offline alert uses the maintained reachability probe off the main queue.
+- Offline alert callbacks are accepted only for the current visible generation.
 - The dedicated reachability probe accepts only its expected HTTP 204 response
   without following redirects.
 - Foursquare venue lookup retries use a bounded cooldown when credentials are
@@ -97,6 +98,7 @@ Next priorities:
 - Preserve the LocationManager optional-state guard when changing Core Location
   setup or heading forwarding
 - Keep reachability setup optional-safe when changing network checks
+- Keep reachability presentation generation-owned by the visible AR scene
 - Preserve the FSQView nib outlet guard when changing venue card rendering
 - Preserve the map annotation optional-state guard when changing map tracking
   overlays
